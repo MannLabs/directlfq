@@ -1,0 +1,6 @@
+recursive-include directlfq *
+include settings.ini
+include LICENSE
+include CONTRIBUTING.md
+include README.md
+recursive-exclude * __pycache__

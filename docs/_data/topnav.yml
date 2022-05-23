@@ -1,0 +1,12 @@
+topnav:
+- title: Topnav
+  items:
+    - title: github
+      external_url: https://github.com/ammarcsj/nbdev_template
+repo_name = ms_empire_python
+company_name = mpi_biochemistry/tree/master/
+
+#Topnav dropdowns
+topnav_dropdowns:
+- title: Topnav dropdowns
+  folders:
