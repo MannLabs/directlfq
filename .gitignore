@@ -157,6 +157,7 @@ release/one_click_macos_gui/dist
 logs
 
 #tests
+tmp.py
 tests/ptmsite_mapping/results
 tests/ratio_tests/tissue_example.ipynb
 tests/ratio_tests/outlier_scoring_phosphatase_set.ipynb

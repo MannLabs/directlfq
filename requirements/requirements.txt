@@ -1,3 +1,7 @@
 numpy
 pandas
 dash
+matplotlib
+dask
+seaborn
+numba

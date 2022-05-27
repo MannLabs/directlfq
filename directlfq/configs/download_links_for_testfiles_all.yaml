@@ -1,0 +1,52 @@
+#the files that are used for the system tests are stored on a MPI datashared and the download links as well as the directory and file names are stored here
+system_tests:
+  sensitivity_tests:
+    Spectronaut_LargeFC:
+      20210210_154121_S209-S-1-240min_Report.tsv : https://datashare.biochem.mpg.de/s/Cby3nX5OLzaKYBT
+      samplemap.tsv : https://datashare.biochem.mpg.de/s/KvlFNWSIMgxymhH
+      housekeeping_proteins.tsv : https://datashare.biochem.mpg.de/s/cG2qTnoU1XxxdB2
+      MP-LFC-OT.xlsx : https://datashare.biochem.mpg.de/s/X3wufplPBUKUmdU
+    Spectronaut_SmallFC:
+      20210624_120140_MP-DIA-multi-organis_Report_smallfc_COMPLETE.tsv.zip : https://datashare.biochem.mpg.de/s/0zOnHihjcG7Ku7l
+      samplemap.tsv : https://datashare.biochem.mpg.de/s/Fr1U1otBZfF55TH
+      housekeeping_proteins.tsv : https://datashare.biochem.mpg.de/s/uzlrHaGlNgarngQ
+      MP-SFC-OT.xlsx : https://datashare.biochem.mpg.de/s/77Dwh2RFGzcmvdp
+    phospho_peptides:
+      20210309_173814_DIA_dilution_benchmark_nLClib_5PTMs_20190523_Report.tsv : https://datashare.biochem.mpg.de/s/pGn2lBdPT4qJwwW
+      20190515_153557_dDIA_Report_Qvalue_noimput_LocNorm.xls : https://datashare.biochem.mpg.de/s/oZBvhjVQxYVL2KH
+      samplemap.tsv : https://datashare.biochem.mpg.de/s/7GWgnGeSM2T0BNQ
+    MaxQuant:
+      peptides.txt : https://datashare.biochem.mpg.de/s/ocOp7c6DMMxjpZy
+      samplemap.tsv : https://datashare.biochem.mpg.de/s/fSsqb7zgrXrQKKO
+      prot2organism.tsv : https://datashare.biochem.mpg.de/s/hbYebY0utGk7COq
+    empires_comparison:
+      normed_intensities_c1_vs_c2.tsv : https://datashare.biochem.mpg.de/s/i49YV6YhPP3B3EG
+      reference_c1_vs_c2 : https://datashare.biochem.mpg.de/s/pkY8QuUTsEdfigi
+  ratio_tests:
+    mann_labs_mouse_tissues:
+      diann_results_mbr.tsv : https://datashare.biochem.mpg.de/s/ARaIoDM1fchaNI8
+      samples.map.1techrep.tsv : https://datashare.biochem.mpg.de/s/qZULkw5a3ODFGxJ
+    mann_labs_shortgradient:
+      20211026_160136_20211011_Report.tsv.zip : https://datashare.biochem.mpg.de/s/By6qgEbNDZ7Dn04
+      samplemap.tsv : https://datashare.biochem.mpg.de/s/j641S0GWNbPJnM0
+      yeast_report_filt.tsv : https://datashare.biochem.mpg.de/s/L1ywp1jkUVKprkM
+    mann_labs_longgradient:
+      DIANN:
+        DIANN_report.zip : https://datashare.biochem.mpg.de/s/ADr3bHd7p51XJfI
+        samples.map.tsv : https://datashare.biochem.mpg.de/s/v2paJsljQA3qjeK
+        yeast_report_fastafiltered.tsv : https://datashare.biochem.mpg.de/s/wfiDqRMqTDTZgzP
+      spectronaut:
+        samples.map.tsv : https://datashare.biochem.mpg.de/s/c4WdizcoJB8D3G5
+        yeast_report_fastafiltered.tsv : https://datashare.biochem.mpg.de/s/yubLHUQrkSOrKk6
+        thermo_yeast_hela_marvin_more_cols.zip : https://datashare.biochem.mpg.de/s/DnfQ8vVdJv7lWCS
+  fastas:
+    uniprot-proteome-up000005640_human.fasta : https://datashare.biochem.mpg.de/s/pWdFejtw3IP4z9F
+    uniprot-organism_Escherichia+coli+(strain+K12)+[83333].fasta : https://datashare.biochem.mpg.de/s/u7KvMwo6veZhAb6
+    Homo_sapiens.GRCh38.pep.all.fasta : https://datashare.biochem.mpg.de/s/jzOxUkuXKXkWvkU
+    uniprot-filtered-organism Homo+sapiens+(Human)+[9606] +AND+review--.fasta : https://datashare.biochem.mpg.de/s/BIrwuWnZSglclsI
+  
+# ptmsite_mapping:
+#   shortened_plugin_outputv4_loc_prob_75.txt.zip : https://datashare.biochem.mpg.de/s/GqnXbsMNbk57BXp
+#   samplemap.tsv : https://datashare.biochem.mpg.de/s/hpVYri1Xx5oN7jr
+#   FIHQQPQSSSPVYGSSAK.tsv : https://datashare.biochem.mpg.de/s/xNBpilIk3ocaEbi
+#   shortened_aq.tsv.zip : https://datashare.biochem.mpg.de/s/AQhyQPOLIzOr2ZM
