@@ -20,7 +20,7 @@ __all__ = ['get_samples_used_from_samplemap_file', 'get_samples_used_from_sample
            'get_original_file_from_aq_reformat', 'import_config_dict', 'load_samplemap', 'prepare_loaded_tables',
            'LongTableReformater', 'AcquisitionTableHandler', 'AcquisitionTableInfo', 'AcquisitionTableHeaders',
            'AcquisitionTableOutputPaths', 'AcquisitionTableReformater', 'AcquisitionTableHeaderFilter',
-           'merge_acquisition_df_parameter_df']
+           'merge_acquisition_df_parameter_df', 'plot_withincond_fcs']
 
 # Cell
 import os
@@ -1059,3 +1059,29 @@ def merge_acquisition_df_parameter_df(acquisition_df, parameter_df, groupby_merg
         merged_df = merged_df.groupby('ion').max().reset_index()
     merged_df = merged_df.dropna(axis=1, how='all')
     return merged_df
+
+# Cell
+
+import matplotlib.pyplot as plt
+from scipy import stats
+import itertools
+
+def plot_withincond_fcs(normed_intensity_df, cut_extremes = True):
+    """takes a normalized intensity dataframe and plots the fold change distribution between all samples. Column = sample, row = ion"""
+
+    samplecombs = list(itertools.combinations(normed_intensity_df.columns, 2))
+
+    for spair in samplecombs:#compare all pairs of samples
+        s1 = spair[0]
+        s2 = spair[1]
+        diff_fcs = normed_intensity_df[s1].to_numpy() - normed_intensity_df[s2].to_numpy() #calculate fold changes by subtracting log2 intensities of both samples
+
+        if cut_extremes:
+            cutoff = max(abs(np.nanquantile(diff_fcs,0.025)), abs(np.nanquantile(diff_fcs, 0.975))) #determine 2.5% - 97.5% interval, i.e. remove extremes
+            range = (-cutoff, cutoff)
+        else:
+            range = None
+        plt.hist(diff_fcs,80,density=True, histtype='step',range=range) #set the cutoffs to focus the visualization
+        plt.xlabel("log2 peptide fcs")
+
+    plt.show()

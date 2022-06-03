@@ -2,8 +2,9 @@
 
 __all__ = ['plot_lines', 'plot_points', 'get_tps_fps', 'annotate_dataframe', 'compare_to_reference',
            'compare_normalization', 'print_nonref_hits', 'ResultsTable', 'ResultsTableDirectLFQ',
-           'ResultsTableMaxQuant', 'OrganismAnnotator', 'PlotConfig', 'MultiOrganismIntensityFCPlotter',
-           'scatter_annotated_ratioresults']
+           'ResultsTableMaxQuant', 'OrganismAnnotator', 'OrganismAnnotatorMaxQuant', 'OrganismAnnotatorSpectronaut',
+           'OrganismAnnotatorDIANN', 'PlotConfig', 'MultiOrganismIntensityFCPlotter', 'InputDFCreator', 'TimedLFQRun',
+           'RuntimeInfo', 'LFQTimer']
 
 # Cell
 import matplotlib.pyplot as plt
@@ -193,51 +194,89 @@ class ResultsTableMaxQuant(ResultsTable):
 
 
 # Cell
+from abc import ABC, abstractmethod
 
-class OrganismAnnotator():
-    def __init__(self, mapping_file, protein_column = 'id', organism_colum = 'Species'):
+class OrganismAnnotator(ABC):
+    def __init__(self, mapping_file, protein_column = 'id', organism_column = 'Species'):
         self._mapping_file = mapping_file
         self._protein_column = protein_column
-        self._organism_column = organism_colum
-        self._protein_organism_mapping_df = self.__load_reduce_mapping_dataframe()
+        self._organism_column = organism_column
+        self._protein_organism_mapping_df = self._load_reduce_mapping_dataframe()
+        super().__init__()
 
     def annotate_table_with_organism(self, results_table):
-        organism_column = results_table.organism_column
-        protein_column = results_table.protein_column
 
-        results_df = self.__add_organism_column(results_table.formated_dataframe, organism_column, protein_column)
-        results_df = self.__filter_non_matching_proteins(results_df, organism_column)
+        self.__add_organism_column_to_results_table(results_table)
+        self.__filter_non_matching_proteins(results_table)
 
-        results_table.formated_dataframe = results_df
 
     def save_protein_organism_map(self, outfile):
         self._protein_organism_mapping_df.to_csv(outfile, sep = "\t", index = None)
 
+    @abstractmethod
+    def _load_reduce_mapping_dataframe(self):
+        pass
 
-    def __load_reduce_mapping_dataframe(self):
-        mapping_df = pd.read_csv(self._mapping_file, sep = "\t", usecols=[self._protein_column, self._organism_column], encoding='latin1').drop_duplicates()
-        mapping_df = self.__filter_double_mapping_organism(mapping_df)
-        return mapping_df
-
-    def __filter_double_mapping_organism(self, protein2organism_df):
+    def _filter_double_mapping_organism(self, protein2organism_df):
         protein2organism_df = protein2organism_df[[";" not in x for x in protein2organism_df[self._organism_column].astype('str')]] #a semicolon seperates different organism entries
         return protein2organism_df
 
-
-    def __add_organism_column(self, results_df,organism_column, protein_column):
+    def __add_organism_column_to_results_table(self, results_table):
         protein2organism_dict = self.__get_protein2organism_dict()
-        results_df[organism_column] = [protein2organism_dict.get(x) for x in results_df[protein_column].astype('str')]
-        return results_df
+        proteins_resultstable = results_table.formated_dataframe[results_table.protein_column].astype('str')
+        results_table.formated_dataframe[results_table.organism_column] = [protein2organism_dict.get(x) for x in proteins_resultstable]
 
     def __get_protein2organism_dict(self):
         protein2organism = dict(zip(self._protein_organism_mapping_df[self._protein_column].astype('str'), self._protein_organism_mapping_df[self._organism_column]))
         return protein2organism
 
     @staticmethod
-    def __filter_non_matching_proteins(results_df, organism_column):
-        results_df = results_df[[x is not None for x in results_df[organism_column]]]
-        return results_df
+    def __filter_non_matching_proteins(results_table):
+        list_indicating_if_protein_matches = [x is not None for x in results_table.formated_dataframe[results_table.organism_column]]
+        results_table.formated_dataframe = results_table.formated_dataframe[list_indicating_if_protein_matches]
 
+
+
+# Cell
+class OrganismAnnotatorMaxQuant(OrganismAnnotator):
+    def __init__(self, mapping_file, protein_column = 'id', organism_column = 'Species'):
+        super().__init__(mapping_file=mapping_file, protein_column= protein_column, organism_column= organism_column)
+
+    def _load_reduce_mapping_dataframe(self):
+        mapping_df = pd.read_csv(self._mapping_file, sep = "\t", usecols=[self._protein_column, self._organism_column], encoding='latin1').drop_duplicates()
+        mapping_df = self._filter_double_mapping_organism(mapping_df)
+        return mapping_df
+
+
+# Cell
+class OrganismAnnotatorSpectronaut(OrganismAnnotator):
+    def __init__(self, mapping_file,protein_column="PG.ProteinGroups", organism_column="PG.Organisms"):
+        super().__init__(mapping_file=mapping_file, protein_column= protein_column, organism_column= organism_column)
+
+    def _load_reduce_mapping_dataframe(self):
+        mapping_df = pd.read_csv(self._mapping_file, sep = "\t", usecols=[self._protein_column, self._organism_column], encoding='latin1').drop_duplicates()
+        mapping_df = self._filter_double_mapping_organism(mapping_df)
+        return mapping_df
+
+
+# Cell
+class OrganismAnnotatorDIANN(OrganismAnnotator):
+    def __init__(self, mapping_file, protein_column = 'Protein.Group', organism_column = 'Protein.Names'):
+        super().__init__(mapping_file=mapping_file, protein_column= protein_column, organism_column= organism_column)
+
+    def _load_reduce_mapping_dataframe(self):
+        mapping_df = pd.read_csv(self._mapping_file, sep = "\t", usecols=[self._protein_column, self._organism_column], encoding='latin1').drop_duplicates()
+        mapping_df[self._organism_column] = [self.__get_organism_from_protein_name(x) for x in mapping_df[self._organism_column]]
+        mapping_df = mapping_df.drop_duplicates()
+        return mapping_df
+
+    @staticmethod
+    def __get_organism_from_protein_name(protein_name):
+        split_name = protein_name.split("_")
+        if len(split_name) <2:
+            return "None"
+        else:
+            return split_name[-1]
 
 # Cell
 import numpy as np
@@ -298,15 +337,107 @@ class MultiOrganismIntensityFCPlotter():
 
 
 
-def scatter_annotated_ratioresults(alphaquant_results_file):
-    results_ratios = aqbench.ResultsTableRatios(alphaquant_results_file, input_name="AlphaQuant")
-    mapping_file = "mapping_file.tsv"
 
-    speciesannotator = aqbench.SpeciesAnnotator(mapping_file=mapping_file, protein_column="Protein.Group", species_colum="Organism")
-    speciesannotator.annotate_table_with_species(results_ratios)
-    ax = plt.axes()
-    plotconfig  = PlotConfig(x_axisboundaries=[-4, 4])
+# Cell
+import pandas as pd
+import directlfq.lfq_manager as lfqmgr
+import directlfq.normalization as lfqnorm
+import directlfq.protein_intensity_estimation as lfq_protein_estimation
+import time
+import math
 
-    MultiOrganismIntensityFCPlotter(ax,results_ratios,plotconfig=plotconfig)
-    ax.get_figure().savefig(f"{alphaquant_results_file}.ratio_plots.pdf", bbox_inches = 'tight')
-    return ax
+class InputDFCreator():
+    def __init__(self, template_df, desired_number_of_samples):
+        self._template_df = template_df
+        self._desired_number_of_samples = desired_number_of_samples
+        self._column_names = list(self._template_df.columns)
+        self._header_list = []
+        self._create_list_of_df_headers()
+
+        self.input_df = None
+
+        self._create_input_dataframe()
+
+    def _create_input_dataframe(self):
+
+        template_dataframe_dict = self._template_df.to_dict(orient = 'list')
+        input_dataframe_dict = {x : template_dataframe_dict.get(self._get_original_column_name(x))  for x in self._header_list}
+        self.input_df = pd.DataFrame(input_dataframe_dict, index=self._template_df.index)
+
+    def _create_list_of_df_headers(self):
+        self._append_replicate_column_names_to_headerlist()
+        self._append_remaining_column_names_to_headerlist()
+
+
+    def _append_replicate_column_names_to_headerlist(self):
+        num_samples_in_df = len(self._column_names)
+        num_replicates_of_column_names = math.floor(self._desired_number_of_samples/num_samples_in_df)
+        for idx in range(num_replicates_of_column_names):
+            self._header_list += [f"{x}_AND_{idx}" for x in self._column_names]
+
+    def _append_remaining_column_names_to_headerlist(self):
+        num_samples_in_df = len(self._column_names)
+        num_remaining_samples = self._desired_number_of_samples%num_samples_in_df
+        self._header_list +=[f"{self._column_names[x]}_AND_remainder" for x in range(num_remaining_samples)]
+
+    @staticmethod
+    def _get_original_column_name(new_column_name):
+        return new_column_name.split("_AND_")[0]
+
+# Cell
+
+class TimedLFQRun():
+    def __init__(self, formatted_df, name):
+        self.name = name
+        self.runtime_info = RuntimeInfo()
+        self.num_samples = len(formatted_df.columns)
+        self._formatted_df = formatted_df
+
+    def run_from_formatted_df(self):
+        self.runtime_info._start_samplenorm = time.time()
+        input_df_normed = lfqnorm.SampleNormalizationManager(self._formatted_df).complete_dataframe
+        self.runtime_info._end_samplenorm = time.time()
+        self.runtime_info._start_protein_norm = time.time()
+        lfq_protein_estimation.estimate_protein_intensities(input_df_normed,min_nonan=2,maximum_df_length=100)
+        self.runtime_info._end_protein_norm = time.time()
+        self.runtime_info.calculate_runtimes()
+
+class RuntimeInfo():
+    def __init__(self):
+        self._start_samplenorm= None
+        self._end_samplenorm = None
+        self._start_protein_norm = None
+        self._end_protein_norm = None
+
+        self.overall_runtime = None
+        self.runtime_samplenorm = None
+        self.runtime_protein_norm = None
+
+    def calculate_runtimes(self):
+        self.overall_runtime = (self._end_protein_norm - self._start_samplenorm)/60
+        self.runtime_samplenorm = (self._end_samplenorm - self._start_samplenorm)/60
+        self.runtime_protein_norm = (self._end_protein_norm - self._start_protein_norm)/60
+
+
+# Cell
+import pandas as pd
+import directlfq.utils as lfq_utils
+
+class LFQTimer():
+    def __init__(self, template_file, list_of_samplenumbers_to_check, name):
+        self._template_file = template_file
+        self._samplenumbers_to_check = list_of_samplenumbers_to_check
+        self._name = name
+        self._template_df = None
+        self._read_template_file()
+        self.timed_lfq_runs = []
+        self._iterate_through_sizes()
+
+    def _read_template_file(self):
+        self._template_df = pd.read_csv(self._template_file, sep = "\t")
+        self._template_df = lfq_utils.index_and_log_transform_input_df(self._template_df)
+
+    def _iterate_through_sizes(self):
+        for samplenumber in self._samplenumbers_to_check:
+            formatted_df = InputDFCreator(self._template_df, desired_number_of_samples=samplenumber).input_df
+            self.timed_lfq_runs.append(TimedLFQRun(formatted_df,self._name).run_from_formatted_df())

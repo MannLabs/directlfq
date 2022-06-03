@@ -8,12 +8,11 @@ import directlfq.protein_intensity_estimation as lfqprot_estimation
 import directlfq.utils as lfqutils
 
 
-def run_lfq(input_file = None, input_type_to_use = None, min_nonan = 1):
-    input_file = lfqutils.reformat_and_save_input_file(input_file, input_type_to_use = input_type_to_use)
-    input_df = lfqutils.import_data(input_file=input_file)
+def run_lfq(input_file = None, input_type_to_use = None, min_nonan = 1, maximum_number_of_ions_to_use_per_protein = 100, number_of_quadratic_samples = 100):
+    input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use)
     input_df = lfqutils.index_and_log_transform_input_df(input_df)
-    input_df_normed = lfqnorm.normalize_dataframe_between_samples(input_df)
-    protein_df, ion_df = lfqprot_estimation.estimate_protein_intensities(input_df_normed,min_nonan=min_nonan)
+    input_df_normed = lfqnorm.SampleNormalizationManager(input_df, num_samples_quadratic=number_of_quadratic_samples).complete_dataframe
+    protein_df, ion_df = lfqprot_estimation.estimate_protein_intensities(input_df_normed,min_nonan=min_nonan,maximum_df_length=maximum_number_of_ions_to_use_per_protein)
     save_protein_df(protein_df, input_file)
     save_ion_df(ion_df, input_file)
 

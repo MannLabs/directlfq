@@ -435,7 +435,86 @@ spectronaut_fragion_isotopes:
   #     comparator: "=="
   #     value: False
 
-  
+
+
+spectronaut_fragion_isotopes_filtered:
+  format: longtable
+  sample_ID: R.Label
+  quant_ID:
+    fragion: F.PeakArea
+    ms1iso: FG.MS1IsotopeIntensities (Measured)
+  protein_cols:
+   - PG.ProteinGroups
+  ion_cols:
+   - FG.Id
+   - F.FrgIon
+   - F.FrgLossType
+   - F.Charge
+  split_cols:
+    FG.MS1IsotopeIntensities (Measured): ";"
+  ion_hierarchy:
+    fragion:
+      order: [SEQ, MOD, CHARGE, FRGION]
+      mapping:
+        SEQ: 
+         - PEP.StrippedSequence
+        MOD: 
+         - EG.ModifiedSequence
+        CHARGE: 
+         - FG.Charge
+        FRGION: 
+         - F.FrgIon
+         - F.FrgLossType
+         - F.Charge
+    ms1iso:
+      order: [SEQ, MOD, CHARGE, MS1ISOTOPES]
+      mapping:
+        SEQ: 
+         - PEP.StrippedSequence
+        MOD: 
+         - EG.ModifiedSequence
+        CHARGE: 
+         - FG.Charge
+        MS1ISOTOPES:
+         - FG.MS1IsotopeIntensities (Measured)
+  filters:
+    fragion_intensity:
+      param: F.PeakArea
+      comparator: ">"
+      value: 5.0
+    used_for_quant:
+      param: EG.UsedForPeptideQuantity
+      comparator: "=="
+      value: True
+    decoy_filt:
+      param: EG.IsDecoy
+      comparator: "=="
+      value: False
+    shape_quality: 
+      param: FG.ShapeQualityScore
+      comparator: ">"
+      value: 0.4
+    fragion_interference:
+      param: F.PossibleInterference
+      comparator: "=="
+      value: False
+  use_iontree: True
+  ml_level: CHARGE
+  # filters:
+  #   decoy_filt:
+  #     param: EG.IsDecoy
+  #     comparator: "=="
+  #     value: False
+  #   shape_quality: 
+  #     param: FG.ShapeQualityScore (MS2)
+  #     comparator: ">"
+  #     value: 0.4
+  #   fragion_interference:
+  #     param: F.PossibleInterference
+  #     comparator: "=="
+  #     value: False
+
+
 spectronaut_precursor:
   format: longtable
   sample_ID: R.Label
