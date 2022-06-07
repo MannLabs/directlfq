@@ -86,6 +86,17 @@ maxquant_evidence_benchmark:
    - Modified sequence
    - Charge
 
+maxquant_evidence_andre_benchmark:
+  format: longtable
+  sample_ID: Experiment #Raw file
+  quant_ID: Intensity
+  protein_cols:
+   - Protein group IDs
+  ion_cols:
+   - Sequence
+   - Modifications
+   - Charge
+
 maxquant_evidence_maxdia_benchmark:
   format: longtable
   sample_ID: Experiment #Raw file
@@ -513,6 +524,40 @@ spectronaut_fragion_isotopes_filtered:
   #     param: F.PossibleInterference
   #     comparator: "=="
   #     value: False
+
+
+spectronaut_fragion_isotopes_filtered_iq:
+  format: longtable
+  sample_ID: R.FileName
+  quant_ID:
+    fragion: F.PeakArea
+  protein_cols:
+   - PG.ProteinGroups
+  ion_cols:
+   - FG.Id
+   - F.FrgIon
+   - F.FrgLossType
+   - F.Charge
+  split_cols:
+    FG.MS1IsotopeIntensities (Measured): ";"
+  ion_hierarchy:
+    fragion:
+      order: [SEQ, MOD, CHARGE, FRGION]
+      mapping:
+        SEQ: 
+         - PEP.StrippedSequence
+        MOD: 
+         - EG.ModifiedSequence
+        CHARGE: 
+         - FG.Charge
+        FRGION: 
+         - F.FrgIon
+         - F.FrgLossType
+  filters:
+    used_for_quant:
+      param: F.ExcludedFromQuantification
+      comparator: "=="
+      value: False
 
 
 spectronaut_precursor:

@@ -3,8 +3,8 @@
 __all__ = ['plot_lines', 'plot_points', 'get_tps_fps', 'annotate_dataframe', 'compare_to_reference',
            'compare_normalization', 'print_nonref_hits', 'ResultsTable', 'ResultsTableDirectLFQ',
            'ResultsTableMaxQuant', 'OrganismAnnotator', 'OrganismAnnotatorMaxQuant', 'OrganismAnnotatorSpectronaut',
-           'OrganismAnnotatorDIANN', 'PlotConfig', 'MultiOrganismIntensityFCPlotter', 'InputDFCreator', 'TimedLFQRun',
-           'RuntimeInfo', 'LFQTimer']
+           'OrganismAnnotatorDIANN', 'PlotConfig', 'MultiOrganismIntensityFCPlotter', 'ResultsTableBiological',
+           'CVcalculator', 'InputDFCreator', 'TimedLFQRun', 'RuntimeInfo', 'LFQTimer']
 
 # Cell
 import matplotlib.pyplot as plt
@@ -337,6 +337,56 @@ class MultiOrganismIntensityFCPlotter():
 
 
 
+
+# Cell
+import pandas as pd
+import directlfq.utils as lfq_utils
+
+class ResultsTableBiological():
+    def __init__(self, results_file, samplemap, name):
+        self._results_file = results_file
+        self._samplemap = samplemap
+        self._name = name
+
+        self.results_df = None
+        self.cond2samples = {}
+
+        self._load_results_table()
+        self._load_cond2samples()
+
+    def _load_results_table(self):
+        self.results_df = pd.read_csv(self._results_file, sep = "\t")
+
+    def _load_cond2samples(self):
+        samplemap_df = lfq_utils.load_samplemap(self._samplemap)
+        for sample, cond in zip(samplemap_df["sample"], samplemap_df["condition"]):
+            self.cond2samples[cond] = self.cond2samples.get(cond, []) + [sample]
+
+
+
+# Cell
+import numpy as np
+class CVcalculator():
+    def __init__(self, resultstable_biological):
+        self._results_table = resultstable_biological
+        self.cvs = []
+        self._calculate_cvs()
+
+    def _calculate_cvs(self):
+        for samples in self._results_table.cond2samples.values():
+            self._add_protein_cvs_for_condition(samples)
+
+    def _add_protein_cvs_for_condition(self, samples):
+        subtable = self._results_table.results_df[samples]
+        protein_cvs = subtable.apply(self._cv_function,axis = 1)
+        protein_cvs = [x for x in protein_cvs if not np.isnan(x)]
+        self.cvs += list(protein_cvs)
+
+    @staticmethod
+    def _cv_function(x):
+        if sum(~np.isnan(x)) <2:
+            return np.nan
+        return np.nanstd(x, ddof=1,) / np.nanmean(x) ##ddof ensures that the sample mean std estimate is used
 
 # Cell
 import pandas as pd
