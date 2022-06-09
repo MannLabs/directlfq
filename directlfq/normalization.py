@@ -4,7 +4,8 @@ __all__ = ['get_normfacts', 'set_samples_with_only_single_intensity_to_nan', 'ap
            'create_distance_matrix', 'calc_distance', 'calc_nanvar', 'calc_nanmedian', 'update_distance_matrix',
            'get_fcdistrib', 'determine_anchor_and_shift_sample', 'shift_samples', 'get_total_shift', 'merge_distribs',
            'normalize_dataframe_between_samples', 'normalize_ion_profiles', 'drop_nas_if_possible',
-           'calculate_fraction_with_no_NAs', 'SampleNormalizationManager', 'SampleShifterLinear']
+           'calculate_fraction_with_no_NAs', 'NormalizationManager', 'NormalizationManagerSamples',
+           'NormalizationManagerProtein', 'SampleShifterLinearToMedian', 'SampleShifterLinear']
 
 # Cell
 import numpy as np
@@ -213,8 +214,8 @@ import pandas as pd
 
 
 def normalize_dataframe_between_samples(ion_dataframe):
-    sample2shift = get_normfacts(drop_nas_if_possible(ion_dataframe).to_numpy().T)
-    df_c_normed = pd.DataFrame(apply_sampleshifts(ion_dataframe.to_numpy().T, sample2shift).T, index = ion_dataframe.index, columns = ion_dataframe.columns)
+    sample2shift = get_normfacts(drop_nas_if_possible(ion_dataframe).to_numpy())
+    df_c_normed = pd.DataFrame(apply_sampleshifts(ion_dataframe.to_numpy(), sample2shift), index = ion_dataframe.index, columns = ion_dataframe.columns)
     return df_c_normed
 
 def normalize_ion_profiles(protein_profile_df):
@@ -240,62 +241,104 @@ def calculate_fraction_with_no_NAs(df, df_nonnans):
 
 # Cell
 
-class SampleNormalizationManager():
+class NormalizationManager():
     def __init__(self, complete_dataframe, num_samples_quadratic = 100):
         self.complete_dataframe = complete_dataframe
         self._num_samples_quadratic = num_samples_quadratic
-        self._quadratic_subset_columns = None
-        self._linear_subset_columns = None
+        self._rows_sorted_by_number_valid_values = None
+        self._quadratic_subset_rows = None
+        self._linear_subset_rows = None
         self._merged_reference_sample = None #pd.Series with mean intensity
-        self._run_normalization()
+        self.normalization_function = None
 
     def _run_normalization(self):
-        if len(self.complete_dataframe.columns) <= self._num_samples_quadratic:
+        if len(self.complete_dataframe.index) <= self._num_samples_quadratic:
             self._normalize_complete_input_quadratic()
         else:
             self._normalize_quadratic_and_linear()
 
     def _normalize_complete_input_quadratic(self):
-        self.complete_dataframe =  normalize_dataframe_between_samples(self.complete_dataframe)
+        self.complete_dataframe =  self.normalization_function(self.complete_dataframe)
 
     def _normalize_quadratic_and_linear(self):
-        self._determine_subset_columns()
+        self._determine_subset_rows()
         self._normalize_quadratic_selection()
         self._create_reference_sample()
         self._shift_remaining_dataframe_to_reference_sample()
 
-    def _determine_subset_columns(self):
-        np.random.seed(42)
-        self._quadratic_subset_columns = list(np.random.choice(self.complete_dataframe.columns, size=self._num_samples_quadratic, replace=False))
-        self._linear_subset_columns = [x for x in self.complete_dataframe.columns if x not in self._quadratic_subset_columns]
+    def _determine_subset_rows(self):
+        self._determine_sorted_rows()
+        self._quadratic_subset_rows = self._rows_sorted_by_number_valid_values[:self._num_samples_quadratic]
+        self._linear_subset_rows = [x for x in self.complete_dataframe.index if x not in self._quadratic_subset_rows]
+
+    def _determine_sorted_rows(self):
+        rows = self.complete_dataframe.index
+        self._rows_sorted_by_number_valid_values =  sorted(rows, key= lambda idx : self._get_num_nas_in_row(self.complete_dataframe.loc[idx,:]))
 
     def _normalize_quadratic_selection(self):
-        quadratic_subset_dataframe = self.complete_dataframe[self._quadratic_subset_columns]
-        self.complete_dataframe.loc[:,self._quadratic_subset_columns] = normalize_dataframe_between_samples(quadratic_subset_dataframe)
+        quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows]
+        self.complete_dataframe.loc[self._quadratic_subset_rows,:] = self.normalization_function(quadratic_subset_dataframe)
 
     def _create_reference_sample(self):
-        quadratic_subset_dataframe = self.complete_dataframe[self._quadratic_subset_columns]
-        self._merged_reference_sample = quadratic_subset_dataframe.mean(axis=1)
+        quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows]
+        self._merged_reference_sample = quadratic_subset_dataframe.median(axis=0)
 
     def _shift_remaining_dataframe_to_reference_sample(self):
-        linear_subset_dataframe = self.complete_dataframe[self._linear_subset_columns]
+        linear_subset_dataframe = self.complete_dataframe.loc[self._linear_subset_rows]
         linear_shifted_dataframe = SampleShifterLinear(linear_subset_dataframe, self._merged_reference_sample).ion_dataframe
-        self.complete_dataframe.loc[:, self._linear_subset_columns] = linear_shifted_dataframe
+        self.complete_dataframe.loc[ self._linear_subset_rows, :] = linear_shifted_dataframe
+
+    @staticmethod
+    def _get_num_nas_in_row(row):
+        return sum(np.isnan(row.to_numpy()))
+
+class NormalizationManagerSamples(NormalizationManager):
+    def __init__(self, complete_dataframe, num_samples_quadratic):
+        complete_dataframe = complete_dataframe.T #the samples to shift are in each row, therefore the df needs to be transposed
+        super().__init__(complete_dataframe, num_samples_quadratic)
+        self.normalization_function = normalize_dataframe_between_samples
+        self._run_normalization()
+        self.complete_dataframe = complete_dataframe.T
+
+class NormalizationManagerProtein(NormalizationManager):
+    def __init__(self, complete_dataframe, num_samples_quadratic):
+        super().__init__(complete_dataframe, num_samples_quadratic)
+        self.normalization_function = normalize_ion_profiles
+        self._rows_sorted_by_number_valid_values = None
+        self._run_normalization()
+
+
+
+# Cell
+
+class SampleShifterLinearToMedian():
+    def __init__(self, ion_dataframe):
+        self.ion_dataframe = ion_dataframe
+        self._merged_reference_sample = ion_dataframe.median(axis=0)
+        self._shift_to_median()
+
+    def _shift_to_median(self):
+        self.ion_dataframe = SampleShifterLinear(self.ion_dataframe, self._merged_reference_sample).ion_dataframe
+
 
 
 # Cell
 class SampleShifterLinear():
     def __init__(self, ion_dataframe, reference_column):
         self.ion_dataframe = ion_dataframe
-        self._reference_column = reference_column
-        self._shift_samples_to_reference_sample()
+        self._ion_dataframe_values = ion_dataframe.to_numpy()
+        self._reference_column = reference_column.to_numpy()
+        self._shift_columns_to_reference_sample()
+        self._update_ion_dataframe()
 
-    def _shift_samples_to_reference_sample(self):
-        samples = self.ion_dataframe.columns
-        for sample in samples:
-            self._shift_to_reference_sample(sample)
+    def _shift_columns_to_reference_sample(self):
+        num_rows = self._ion_dataframe_values.shape[0]
+        for row_idx in range(num_rows):
+            self._shift_to_reference_sample(row_idx)
 
-    def _shift_to_reference_sample(self, sample):
-        sample_column = self.ion_dataframe.loc[:, sample]
-        distance_to_reference = calc_distance(metric='median', samples_1=self._reference_column.to_numpy(), samples_2=sample_column.to_numpy()) #reference-sample = distance
-        self.ion_dataframe.loc[:,sample] += distance_to_reference
+    def _shift_to_reference_sample(self, row_idx):
+        distance_to_reference = calc_distance(metric='median', samples_1=self._reference_column, samples_2=self._ion_dataframe_values[row_idx,:]) #reference-sample = distance
+        self._ion_dataframe_values[row_idx, :] += distance_to_reference
+
+    def _update_ion_dataframe(self):
+        self.ion_dataframe.loc[:,:] = self._ion_dataframe_values

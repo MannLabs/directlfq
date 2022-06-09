@@ -6,12 +6,13 @@ __all__ = ['get_samples_used_from_samplemap_file', 'get_samples_used_from_sample
            'get_middle_elem', 'get_nonna_array', 'get_non_nas_from_pd_df', 'get_ionints_from_pd_df',
            'invert_dictionary', 'get_z_from_p_empirical', 'count_fraction_outliers_from_expected_fc',
            'create_or_replace_folder', 'write_chunk_to_file', 'index_and_log_transform_input_df',
-           'get_relevant_columns', 'get_relevant_columns_config_dict', 'get_quant_ids_from_config_dict',
-           'get_sample_ids_from_config_dict', 'get_channel_ids_from_config_dict', 'load_config',
-           'get_type2relevant_cols', 'filter_input', 'merge_protein_and_ion_cols', 'merge_protein_cols_and_ion_dict',
-           'get_quantitative_columns', 'get_ionname_columns', 'adapt_headers_on_extended_df', 'split_extend_df',
-           'add_merged_ionnames', 'reformat_and_write_longtable_according_to_config', 'adapt_subtable',
-           'process_with_dask', 'reshape_input_df', 'sort_and_add_columns', 'extend_sample_allcolumns_for_plexdia_case',
+           'remove_allnan_rows_input_df', 'get_relevant_columns', 'get_relevant_columns_config_dict',
+           'get_quant_ids_from_config_dict', 'get_sample_ids_from_config_dict', 'get_channel_ids_from_config_dict',
+           'load_config', 'get_type2relevant_cols', 'filter_input', 'merge_protein_and_ion_cols',
+           'merge_protein_cols_and_ion_dict', 'get_quantitative_columns', 'get_ionname_columns',
+           'adapt_headers_on_extended_df', 'split_extend_df', 'add_merged_ionnames',
+           'reformat_and_write_longtable_according_to_config', 'adapt_subtable', 'process_with_dask',
+           'reshape_input_df', 'sort_and_add_columns', 'extend_sample_allcolumns_for_plexdia_case',
            'adapt_input_df_columns_in_case_of_plexDIA', 'extend_sampleID_column_for_plexDIA_case',
            'set_mtraq_reduced_ion_column_into_dataframe', 'remove_mtraq_modifications_from_ion_ids', 'is_plexDIA_table',
            'parse_channel_from_peptide_column', 'merge_sample_id_and_channels', 'merge_channel_and_sample_string',
@@ -178,6 +179,13 @@ def write_chunk_to_file(chunk, filepath ,write_header):
 def index_and_log_transform_input_df(data_df):
     data_df = data_df.set_index(["protein", "ion"])
     return np.log2(data_df.replace(0, np.nan))
+
+# Cell
+def remove_allnan_rows_input_df(data_df):
+    return data_df.dropna(axis = 0, how = 'all')
+
+
+
 
 # Cell
 import yaml

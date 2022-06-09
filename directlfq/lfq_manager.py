@@ -6,13 +6,18 @@ __all__ = ['run_lfq', 'save_protein_df', 'save_ion_df']
 import directlfq.normalization as lfqnorm
 import directlfq.protein_intensity_estimation as lfqprot_estimation
 import directlfq.utils as lfqutils
+import warnings
 
 
-def run_lfq(input_file = None, input_type_to_use = None, min_nonan = 1, maximum_number_of_ions_to_use_per_protein = 100, number_of_quadratic_samples = 100):
+warnings.filterwarnings(action='once')
+
+
+def run_lfq(input_file = None, input_type_to_use = None, min_nonan = 1, maximum_number_of_quadratic_ions_to_use_per_protein = 10, number_of_quadratic_samples = 100):
     input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use)
     input_df = lfqutils.index_and_log_transform_input_df(input_df)
-    input_df_normed = lfqnorm.SampleNormalizationManager(input_df, num_samples_quadratic=number_of_quadratic_samples).complete_dataframe
-    protein_df, ion_df = lfqprot_estimation.estimate_protein_intensities(input_df_normed,min_nonan=min_nonan,maximum_df_length=maximum_number_of_ions_to_use_per_protein)
+    input_df = lfqutils.remove_allnan_rows_input_df(input_df)
+    input_df_normed = lfqnorm.NormalizationManagerSamples(input_df, num_samples_quadratic=number_of_quadratic_samples).complete_dataframe
+    protein_df, ion_df = lfqprot_estimation.estimate_protein_intensities(input_df_normed,min_nonan=min_nonan,num_samples_quadratic=maximum_number_of_quadratic_ions_to_use_per_protein)
     save_protein_df(protein_df, input_file)
     save_ion_df(ion_df, input_file)
 

@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import directlfq.normalization as lfqnorm
 
-def estimate_protein_intensities(normed_df, min_nonan, maximum_df_length):
+def estimate_protein_intensities(normed_df, min_nonan, num_samples_quadratic):
     "derives protein pseudointensities from between-sample normalized data"
     prot_ints = []
     ion_ints = []
@@ -23,13 +23,13 @@ def estimate_protein_intensities(normed_df, min_nonan, maximum_df_length):
         count_prots+=1
 
         protvals = pd.DataFrame(normed_df.loc[protein]).copy()#DataFrame definition to avoid pandas Series objects
-        protvals = ProtvalCutter(protvals, maximum_df_length=maximum_df_length).get_dataframe()
+        protvals = ProtvalCutter(protvals, maximum_df_length=100).get_dataframe()
         summed_pepint = np.nansum(2**protvals)
 
         if(protvals.shape[1]<2):
             normed_protvals = protvals
         else:
-            normed_protvals = lfqnorm.normalize_ion_profiles(protvals)
+            normed_protvals = lfqnorm.NormalizationManagerProtein(protvals, num_samples_quadratic = num_samples_quadratic).complete_dataframe
 
         ion_ints.append(normed_protvals)
         scaled_vec = get_protein_profile_from_shifted_peptides(normed_protvals, summed_pepint, min_nonan)

@@ -4,7 +4,7 @@ __all__ = ['plot_lines', 'plot_points', 'get_tps_fps', 'annotate_dataframe', 'co
            'compare_normalization', 'print_nonref_hits', 'ResultsTable', 'ResultsTableDirectLFQ',
            'ResultsTableMaxQuant', 'OrganismAnnotator', 'OrganismAnnotatorMaxQuant', 'OrganismAnnotatorSpectronaut',
            'OrganismAnnotatorDIANN', 'PlotConfig', 'MultiOrganismIntensityFCPlotter', 'ResultsTableBiological',
-           'CVcalculator', 'InputDFCreator', 'TimedLFQRun', 'RuntimeInfo', 'LFQTimer']
+           'CVInfoDataset', 'CVDistributionPlotter', 'InputDFCreator', 'TimedLFQRun', 'RuntimeInfo', 'LFQTimer']
 
 # Cell
 import matplotlib.pyplot as plt
@@ -346,7 +346,7 @@ class ResultsTableBiological():
     def __init__(self, results_file, samplemap, name):
         self._results_file = results_file
         self._samplemap = samplemap
-        self._name = name
+        self.name = name
 
         self.results_df = None
         self.cond2samples = {}
@@ -356,6 +356,7 @@ class ResultsTableBiological():
 
     def _load_results_table(self):
         self.results_df = pd.read_csv(self._results_file, sep = "\t")
+        self.results_df = self.results_df.replace(0, np.nan)
 
     def _load_cond2samples(self):
         samplemap_df = lfq_utils.load_samplemap(self._samplemap)
@@ -366,9 +367,10 @@ class ResultsTableBiological():
 
 # Cell
 import numpy as np
-class CVcalculator():
+class CVInfoDataset():
     def __init__(self, resultstable_biological):
         self._results_table = resultstable_biological
+        self.name = resultstable_biological.name
         self.cvs = []
         self._calculate_cvs()
 
@@ -384,9 +386,33 @@ class CVcalculator():
 
     @staticmethod
     def _cv_function(x):
+        x = x.to_numpy()
         if sum(~np.isnan(x)) <2:
             return np.nan
         return np.nanstd(x, ddof=1,) / np.nanmean(x) ##ddof ensures that the sample mean std estimate is used
+
+# Cell
+import seaborn as sns
+class CVDistributionPlotter():
+    def __init__(self, list_of_dataset_cv_infos, ax):
+        self._list_of_dataset_cv_infos = list_of_dataset_cv_infos
+        self._ax  = ax
+        self._plot_histograms()
+
+    def _plot_histograms(self):
+        for dataset_cv_info in self._list_of_dataset_cv_infos:
+            self._add_cv_histogram(dataset_cv_info)
+
+    def _add_cv_histogram(self, dataset_cv_info):
+        cvs = dataset_cv_info.cvs
+        all_cvs = len(cvs)
+        cvs = [x for x in cvs if x<0.75]
+        print(f"{all_cvs - len(cvs)} are very large for {dataset_cv_info.name}")
+        print(len(cvs))
+        print(np.nanmean(cvs))
+        print(np.nanmedian(cvs))
+        self._ax.hist(cvs, label=dataset_cv_info.name, cumulative=False, histtype='step', density=False, bins=150, linewidth = 1.5)
+
 
 # Cell
 import pandas as pd
@@ -442,13 +468,14 @@ class TimedLFQRun():
         self.runtime_info = RuntimeInfo()
         self.num_samples = len(formatted_df.columns)
         self._formatted_df = formatted_df
+        self._run_from_formatted_df()
 
-    def run_from_formatted_df(self):
+    def _run_from_formatted_df(self):
         self.runtime_info._start_samplenorm = time.time()
-        input_df_normed = lfqnorm.SampleNormalizationManager(self._formatted_df).complete_dataframe
+        input_df_normed = lfqnorm.NormalizationManagerSamples(self._formatted_df, num_samples_quadratic=100).complete_dataframe
         self.runtime_info._end_samplenorm = time.time()
         self.runtime_info._start_protein_norm = time.time()
-        lfq_protein_estimation.estimate_protein_intensities(input_df_normed,min_nonan=2,maximum_df_length=100)
+        lfq_protein_estimation.estimate_protein_intensities(input_df_normed,min_nonan=1, num_samples_quadratic=10)
         self.runtime_info._end_protein_norm = time.time()
         self.runtime_info.calculate_runtimes()
 
@@ -490,4 +517,4 @@ class LFQTimer():
     def _iterate_through_sizes(self):
         for samplenumber in self._samplenumbers_to_check:
             formatted_df = InputDFCreator(self._template_df, desired_number_of_samples=samplenumber).input_df
-            self.timed_lfq_runs.append(TimedLFQRun(formatted_df,self._name).run_from_formatted_df())
+            self.timed_lfq_runs.append(TimedLFQRun(formatted_df,self._name))
