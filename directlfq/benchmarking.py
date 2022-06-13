@@ -4,8 +4,8 @@ __all__ = ['plot_lines', 'plot_points', 'get_tps_fps', 'annotate_dataframe', 'co
            'compare_normalization', 'print_nonref_hits', 'ResultsTable', 'ResultsTableDirectLFQ', 'ResultsTableIq',
            'ResultsTableMaxQuant', 'OrganismAnnotator', 'OrganismAnnotatorMaxQuant', 'OrganismAnnotatorSpectronaut',
            'OrganismAnnotatorDIANN', 'PlotConfig', 'MultiOrganismIntensityFCPlotter', 'ResultsTableBiological',
-           'CVInfoDataset', 'CVDistributionPlotter', 'HistPlotConfig', 'InputDFCreator', 'TimedLFQRun', 'RuntimeInfo',
-           'LFQTimer']
+           'CVInfoDataset', 'CVDistributionPlotter', 'HistPlotConfig', 'SampleListScaler', 'SampleIndexIQScaler',
+           'ScaledDFCreatorDirectLFQFormat', 'ScaledDFCreatorIQFormat', 'TimedLFQRun', 'RuntimeInfo', 'LFQTimer']
 
 # Cell
 import matplotlib.pyplot as plt
@@ -452,43 +452,115 @@ import directlfq.protein_intensity_estimation as lfq_protein_estimation
 import time
 import math
 
-class InputDFCreator():
-    def __init__(self, template_df, desired_number_of_samples):
-        self._template_df = template_df
+
+class SampleListScaler():
+    def __init__(self, sample_list, desired_number_of_samples):
+        self._sample_list = sample_list
         self._desired_number_of_samples = desired_number_of_samples
-        self._column_names = list(self._template_df.columns)
-        self._header_list = []
-        self._create_list_of_df_headers()
 
-        self.input_df = None
+        self.num_replicates_of_sample_list = None
+        self.num_remaining_samples = None
 
-        self._create_input_dataframe()
+        self.scaled_sample_list = []
+        self._define_scaled_sample_list()
 
-    def _create_input_dataframe(self):
+    def _define_scaled_sample_list(self):
+        self._define_number_of_replicates_of_samples()
+        self._define_number_of_remaining_samples()
+        self._append_replicate_sample_names_to_scaled_sample_list()
+        self._append_remaining_sample_names_to_scaled_sample_list()
 
-        template_dataframe_dict = self._template_df.to_dict(orient = 'list')
-        input_dataframe_dict = {x : template_dataframe_dict.get(self._get_original_column_name(x))  for x in self._header_list}
-        self.input_df = pd.DataFrame(input_dataframe_dict, index=self._template_df.index)
+    def _define_number_of_replicates_of_samples(self):
+        num_samples_in_df = len(self._sample_list)
+        self.num_replicates_of_sample_list = math.floor(self._desired_number_of_samples/num_samples_in_df)
 
-    def _create_list_of_df_headers(self):
-        self._append_replicate_column_names_to_headerlist()
-        self._append_remaining_column_names_to_headerlist()
+    def _define_number_of_remaining_samples(self):
+        num_samples_in_df = len(self._sample_list)
+        self.num_remaining_samples = self._desired_number_of_samples%num_samples_in_df
 
+    def _append_replicate_sample_names_to_scaled_sample_list(self):
+        for idx in range(self.num_replicates_of_sample_list):
+            self.scaled_sample_list += [f"{x}_AND_{idx}" for x in self._sample_list]
 
-    def _append_replicate_column_names_to_headerlist(self):
-        num_samples_in_df = len(self._column_names)
-        num_replicates_of_column_names = math.floor(self._desired_number_of_samples/num_samples_in_df)
-        for idx in range(num_replicates_of_column_names):
-            self._header_list += [f"{x}_AND_{idx}" for x in self._column_names]
-
-    def _append_remaining_column_names_to_headerlist(self):
-        num_samples_in_df = len(self._column_names)
-        num_remaining_samples = self._desired_number_of_samples%num_samples_in_df
-        self._header_list +=[f"{self._column_names[x]}_AND_remainder" for x in range(num_remaining_samples)]
+    def _append_remaining_sample_names_to_scaled_sample_list(self):
+        self.scaled_sample_list +=[f"{self._sample_list[x]}_AND_remainder" for x in range(self.num_remaining_samples)]
 
     @staticmethod
-    def _get_original_column_name(new_column_name):
-        return new_column_name.split("_AND_")[0]
+    def get_original_sample_name(new_sample_name):
+        return new_sample_name.split("_AND_")[0]
+
+
+class SampleIndexIQScaler(SampleListScaler):
+    def __init__(self, sample_index_list, desired_number_of_samples):
+        self._sample_list = sample_index_list
+        self._desired_number_of_samples = desired_number_of_samples
+        self.scaled_sample_list = []
+
+    def _append_replicate_sample_names_to_scaled_sample_list(self):
+        for idx in range(self._num_replicates_of_sample_list):
+            offset_to_zero_idx = len(set(self._sample_list))*idx
+            self.scaled_sample_list += [ x + offset_to_zero_idx for x in self._sample_list]
+
+    def _append_remaining_sample_names_to_scaled_sample_list(self):
+        offset_to_zero_idx = self.scaled_sample_list[-1]+1
+        self.scaled_sample_list +=[x + offset_to_zero_idx for x in range(self._num_remaining_samples)]
+
+
+class ScaledDFCreatorDirectLFQFormat():
+    def __init__(self, template_df, desired_number_of_samples):
+        self._template_df = template_df
+        self._column_names = list(self._template_df.columns)
+        self._samplelist_scaler = SampleListScaler(self._column_names, desired_number_of_samples)
+        self.scaled_df = None
+        self._create_scaled_dataframe()
+
+    def _create_scaled_dataframe(self):
+        template_dataframe_dict = self._template_df.to_dict(orient = 'list')
+        input_dataframe_dict = {x : template_dataframe_dict.get(self._samplelist_scaler.get_original_sample_name(x))  for x in self._samplelist_scaler.scaled_sample_list}
+        self.scaled_df = pd.DataFrame(input_dataframe_dict, index=self._template_df.index)
+
+
+class ScaledDFCreatorIQFormat():
+    def __init__(self, quant_df, sample_list_df, desired_number_of_samples):
+        self._quant_df = quant_df
+        self._sample_list = sample_list_df["sample_list"]
+        self._desired_number_of_samples = desired_number_of_samples
+        self._create_scaled_quant_df()
+
+        self._samplelist_scaler = None
+        self._create_scaled_sample_list_df()
+
+    def _create_scaled_quant_df(self):
+        self._create_indexes_to_expand_quant_df()
+        self.scaled_quant_df = self._quant_df.set_index("sample_list").loc[self._indexes_to_expand_quant_df]
+        self.scaled_quant_df["sample_list"] = self._get_new_samples_column()
+        self.scaled_quant_df = self.scaled_quant_df.reset_index(drop= True)
+
+    def _create_scaled_sample_list_df(self):
+        self._samplelist_scaler = SampleListScaler(sample_list = self._sample_list, desired_number_of_samples= len(set(self.scaled_quant_df["sample_list"])))
+        self.scaled_sample_list_df = pd.DataFrame({"sample_list" : self._samplelist_scaler.scaled_sample_list})
+
+    def _create_indexes_to_expand_quant_df(self):
+        num_scaled_samples = self._desired_number_of_samples
+        num_samples = len(self._sample_list)
+        indexes_of_scaled_sample_list = list(range(num_scaled_samples))
+        self._indexes_to_expand_quant_df = [x%num_samples+1 for x in indexes_of_scaled_sample_list]
+
+    def _get_new_samples_column(self):
+        scaled_repeated_sample_list = self.scaled_quant_df.index
+        previous_sample = scaled_repeated_sample_list[0]
+        new_sample_list = [1]
+
+        sample_id = 1
+        for sample in scaled_repeated_sample_list[1:]:
+            if sample != previous_sample:
+                sample_id +=1
+                previous_sample = sample
+            new_sample_list.append(sample_id)
+
+        return new_sample_list
+
+
 
 # Cell
 
