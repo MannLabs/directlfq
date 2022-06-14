@@ -520,6 +520,10 @@ class ScaledDFCreatorDirectLFQFormat():
         self.scaled_df = pd.DataFrame(input_dataframe_dict, index=self._template_df.index)
 
 
+from io import BytesIO
+from csv import writer
+import pandas as pd
+
 class ScaledDFCreatorIQFormat():
     def __init__(self, quant_df, sample_list_df, desired_number_of_samples):
         self._quant_df = quant_df
@@ -532,9 +536,18 @@ class ScaledDFCreatorIQFormat():
 
     def _create_scaled_quant_df(self):
         self._create_indexes_to_expand_quant_df()
-        self.scaled_quant_df = self._quant_df.set_index("sample_list").loc[self._indexes_to_expand_quant_df]
+        self._quant_df = self._quant_df.set_index("sample_list")#.loc[self._indexes_to_expand_quant_df]
+        self.scaled_quant_df = self._get_scaled_quant_df(self._indexes_to_expand_quant_df)
         self.scaled_quant_df["sample_list"] = self._get_new_samples_column()
         self.scaled_quant_df = self.scaled_quant_df.reset_index(drop= True)
+
+    def _get_scaled_quant_df(self, indexes):
+        list_of_sub_dfs = []
+        for idx in indexes:
+            rows = pd.DataFrame(self._quant_df.loc[[idx]])
+            list_of_sub_dfs.append(rows)
+
+        return pd.concat(list_of_sub_dfs)
 
     def _create_scaled_sample_list_df(self):
         self._samplelist_scaler = SampleListScaler(sample_list = self._sample_list, desired_number_of_samples= len(set(self.scaled_quant_df["sample_list"])))
