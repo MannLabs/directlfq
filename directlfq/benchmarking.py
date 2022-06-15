@@ -432,7 +432,8 @@ class CVDistributionPlotter():
         print(len(cvs))
         print(np.nanmean(cvs))
         print(np.nanmedian(cvs))
-        self._ax.hist(cvs, label=dataset_cv_info.name, cumulative=self._histconfig.cumulative, histtype=self._histconfig.histtype, density=self._histconfig.density, bins=self._histconfig.bins, linewidth = 1.5)
+        labelname = f"{dataset_cv_info.name} ({all_cvs})"
+        self._ax.hist(cvs, label=labelname, cumulative=self._histconfig.cumulative, histtype=self._histconfig.histtype, density=self._histconfig.density, bins=self._histconfig.bins, linewidth = 1.5)
 
 
 class HistPlotConfig():

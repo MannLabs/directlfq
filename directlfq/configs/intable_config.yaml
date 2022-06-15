@@ -270,6 +270,42 @@ diann_fragion_isotopes_raw:
   ml_level: CHARGE
 
 
+diann_fragion_isotopes_raw_charite_dataset:
+  format: longtable
+  sample_ID: File.Name
+  quant_ID:
+    fragion: Fragment.Quant.Raw
+    #Fragment.Quant.Raw
+    ms1iso: Ms1.Area
+  protein_cols:
+   - Protein.Group
+  split_cols:
+    Fragment.Quant.Raw: ";"
+  ion_hierarchy:
+    fragion:
+      order: [SEQ, MOD, CHARGE, FRGION]
+      mapping:
+        SEQ: 
+         - Stripped.Sequence
+        MOD: 
+         - Modified.Sequence
+        CHARGE: 
+         - Precursor.Charge
+        FRGION: 
+         - Fragment.Quant.Raw
+    ms1iso:
+      order: [SEQ, MOD, CHARGE, MS1ISOTOPES]
+      mapping:
+        SEQ: 
+         - Stripped.Sequence
+        MOD: 
+         - Modified.Sequence
+        CHARGE: 
+         - Precursor.Charge
+        MS1ISOTOPES:
+         - Precursor.Charge
+  use_iontree: True
+  ml_level: CHARGE
 
 
 diann_fragion:
@@ -310,6 +346,20 @@ diann_precursor:
   #     comparator: ">"
   #     value: 0.3
 
+diann_precursor_filename_sampleid:
+  format: longtable
+  sample_ID: File.Name
+  quant_ID: Precursor.Quantity
+  protein_cols:
+   - Genes
+  ion_cols:
+   - Precursor.Id
+  # filters:
+  #   shape_quality:
+  #     param: Quantity.Quality
+  #     comparator: ">"
+  #     value: 0.3
+
 
 diann_sequence:
   format: longtable
@@ -334,6 +384,16 @@ diann_protein:
    - Protein.Group
   ion_cols:
    - Protein.Names
+
+
+diann_gene:
+  format: longtable
+  sample_ID: File.Name
+  quant_ID: Genes.MaxLFQ
+  protein_cols:
+   - Genes
+  ion_cols:
+   - Genes
 
 
 spectronaut_ptm_fragion_isotopes:
