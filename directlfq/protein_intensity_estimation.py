@@ -27,7 +27,7 @@ def estimate_protein_intensities(normed_df, min_nonan, num_samples_quadratic):
 
 def get_list_of_tuple_w_protein_profiles_and_shifted_peptides(allprots, normed_df, num_samples_quadratic, min_nonan):
     multiprocessing.freeze_support()
-    num_cores = multiprocessing.cpu_count() if multiprocessing.cpu_count() <= 62 else 62
+    num_cores = multiprocessing.cpu_count() if multiprocessing.cpu_count() < 61 else 61 #windows upper thread limit
     pool = multiprocessing.Pool(num_cores)
     print(f"using {pool._processes} processes")
     list_of_tuple_w_protein_profiles_and_shifted_peptides = pool.map(functools.partial(calculate_peptide_and_protein_intensities,  allprots = allprots,normed_df = normed_df,
