@@ -11,7 +11,6 @@ import numpy as np
 import directlfq.normalization as lfqnorm
 import multiprocessing
 import functools
-import tqdm
 
 def estimate_protein_intensities(normed_df, min_nonan, num_samples_quadratic):
     "derives protein pseudointensities from between-sample normalized data"
@@ -30,7 +29,7 @@ def get_list_of_tuple_w_protein_profiles_and_shifted_peptides(allprots, normed_d
     multiprocessing.freeze_support()
     pool = multiprocessing.Pool()
     print(f"using {pool._processes} processes")
-    list_of_tuple_w_protein_profiles_and_shifted_peptides = pool.map(functools.partial(calculate_peptide_and_protein_intensities,  allprots = allprots,normed_df = normed_df, #list(tqdm.tqdm(
+    list_of_tuple_w_protein_profiles_and_shifted_peptides = pool.map(functools.partial(calculate_peptide_and_protein_intensities,  allprots = allprots,normed_df = normed_df,
     num_samples_quadratic = num_samples_quadratic, min_nonan = min_nonan),range(len(allprots)))
     pool.close()
 
