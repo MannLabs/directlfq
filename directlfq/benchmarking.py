@@ -432,7 +432,8 @@ class CVDistributionPlotter():
         print(len(cvs))
         print(np.nanmean(cvs))
         print(np.nanmedian(cvs))
-        self._ax.hist(cvs, label=dataset_cv_info.name, cumulative=self._histconfig.cumulative, histtype=self._histconfig.histtype, density=self._histconfig.density, bins=self._histconfig.bins, linewidth = 1.5)
+        labelname = f"{dataset_cv_info.name} ({all_cvs})"
+        self._ax.hist(cvs, label=labelname, cumulative=self._histconfig.cumulative, histtype=self._histconfig.histtype, density=self._histconfig.density, bins=self._histconfig.bins, linewidth = 1.5)
 
 
 class HistPlotConfig():
@@ -441,8 +442,6 @@ class HistPlotConfig():
         self.histtype = histtype
         self.density = density
         self.bins = bins
-
-
 
 # Cell
 import pandas as pd
@@ -631,5 +630,5 @@ class LFQTimer():
 
     def _iterate_through_sizes(self):
         for samplenumber in self._samplenumbers_to_check:
-            formatted_df = InputDFCreator(self._template_df, desired_number_of_samples=samplenumber).input_df
+            formatted_df = ScaledDFCreatorDirectLFQFormat(self._template_df, desired_number_of_samples=samplenumber).input_df
             self.timed_lfq_runs.append(TimedLFQRun(formatted_df,self._name))

@@ -157,6 +157,9 @@ release/one_click_macos_gui/dist
 logs
 
 #tests
+test_data/.owncloudsync.log
+test_data/.sync_journal.db
+test_data/.sync_journal.db-wal
 tmp.py
 tests/ptmsite_mapping/results
 tests/ratio_tests/tissue_example.ipynb
