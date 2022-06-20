@@ -630,5 +630,5 @@ class LFQTimer():
 
     def _iterate_through_sizes(self):
         for samplenumber in self._samplenumbers_to_check:
-            formatted_df = ScaledDFCreatorDirectLFQFormat(self._template_df, desired_number_of_samples=samplenumber).input_df
+            formatted_df = ScaledDFCreatorDirectLFQFormat(self._template_df, desired_number_of_samples=samplenumber).scaled_df
             self.timed_lfq_runs.append(TimedLFQRun(formatted_df,self._name))
