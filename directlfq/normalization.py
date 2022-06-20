@@ -226,7 +226,7 @@ def normalize_ion_profiles(protein_profile_df):
 
 
 def drop_nas_if_possible(df):
-    df_nonans = df.dropna(axis=0)
+    df_nonans = df.dropna(axis=1)
     fraction_nonans = calculate_fraction_with_no_NAs(df, df_nonans)
     if fraction_nonans<0.05:
         print('to few values for normalization without missing values. Including missing values')
@@ -235,7 +235,7 @@ def drop_nas_if_possible(df):
         return df_nonans
 
 def calculate_fraction_with_no_NAs(df, df_nonnans):
-    return len(df_nonnans.index)/len(df.index)
+    return len(df_nonnans.columns)/len(df.columns)
 
 
 
@@ -273,7 +273,7 @@ class NormalizationManager():
 
     def _determine_sorted_rows(self):
         rows = self.complete_dataframe.index
-        self._rows_sorted_by_number_valid_values =  sorted(rows, key= lambda idx : self._get_num_nas_in_row(self.complete_dataframe.loc[idx,:]))
+        self._rows_sorted_by_number_valid_values =  sorted(rows, key= lambda idx : self._get_num_nas_in_row(self.complete_dataframe.loc[idx,:].to_numpy()))
 
     def _normalize_quadratic_selection(self):
         quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows]
@@ -289,8 +289,9 @@ class NormalizationManager():
         self.complete_dataframe.loc[ self._linear_subset_rows, :] = linear_shifted_dataframe
 
     @staticmethod
+    @njit
     def _get_num_nas_in_row(row):
-        return sum(np.isnan(row.to_numpy()))
+        return sum(np.isnan(row))
 
 class NormalizationManagerSamples(NormalizationManager):
     def __init__(self, complete_dataframe, num_samples_quadratic):

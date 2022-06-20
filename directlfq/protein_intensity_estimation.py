@@ -59,6 +59,7 @@ def get_protein_dataframe_from_list_of_protein_profiles(allprots, list_of_tuple_
     protein_df = protein_df.replace(np.nan, 0)
     return protein_df
 
+
 def calculate_peptide_and_protein_intensities(idx, allprots,normed_df , num_samples_quadratic, min_nonan):
     if(idx%100 ==0):
         print(f"prot {idx} of {len(allprots)}")
@@ -102,6 +103,7 @@ def get_list_with_protein_value_for_each_sample(normalized_peptide_profile_df, m
 
 # Cell
 import pandas as pd
+from numba import njit
 
 class ProtvalCutter():
     def __init__(self, protvals_df, maximum_df_length = 100):
@@ -119,11 +121,12 @@ class ProtvalCutter():
 
     def _determine_nansorted_df_index(self):
         idxs = self._protvals_df.index
-        self._sorted_idx =  sorted(idxs, key= lambda idx : self._get_num_nas_in_row(self._protvals_df.loc[idx]))
+        self._sorted_idx =  sorted(idxs, key= lambda idx : self._get_num_nas_in_row(self._protvals_df.loc[idx].to_numpy()))
 
     @staticmethod
+    @njit
     def _get_num_nas_in_row(row):
-        return sum(np.isnan(row.to_numpy()))
+        return sum(np.isnan(row))
 
 
     def get_dataframe(self):
