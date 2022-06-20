@@ -5,7 +5,7 @@ __all__ = ['plot_lines', 'plot_points', 'get_tps_fps', 'annotate_dataframe', 'co
            'ResultsTableMaxQuant', 'OrganismAnnotator', 'OrganismAnnotatorMaxQuant', 'OrganismAnnotatorSpectronaut',
            'OrganismAnnotatorDIANN', 'PlotConfig', 'MultiOrganismIntensityFCPlotter', 'ResultsTableBiological',
            'CVInfoDataset', 'CVDistributionPlotter', 'HistPlotConfig', 'SampleListScaler', 'SampleIndexIQScaler',
-           'ScaledDFCreatorDirectLFQFormat', 'ScaledDFCreatorIQFormat', 'TimedLFQRun', 'RuntimeInfo', 'LFQTimer']
+           'ScaledDFCreatorDirectLFQFormat', 'ScaledDFCreatorIQFormat', 'LFQTimer', 'TimedLFQRun', 'RuntimeInfo']
 
 # Cell
 import matplotlib.pyplot as plt
@@ -575,42 +575,6 @@ class ScaledDFCreatorIQFormat():
 
 
 # Cell
-
-class TimedLFQRun():
-    def __init__(self, formatted_df, name):
-        self.name = name
-        self.runtime_info = RuntimeInfo()
-        self.num_samples = len(formatted_df.columns)
-        self._formatted_df = formatted_df
-        self._run_from_formatted_df()
-
-    def _run_from_formatted_df(self):
-        self.runtime_info._start_samplenorm = time.time()
-        input_df_normed = lfqnorm.NormalizationManagerSamples(self._formatted_df, num_samples_quadratic=100).complete_dataframe
-        self.runtime_info._end_samplenorm = time.time()
-        self.runtime_info._start_protein_norm = time.time()
-        lfq_protein_estimation.estimate_protein_intensities(input_df_normed,min_nonan=1, num_samples_quadratic=10)
-        self.runtime_info._end_protein_norm = time.time()
-        self.runtime_info.calculate_runtimes()
-
-class RuntimeInfo():
-    def __init__(self):
-        self._start_samplenorm= None
-        self._end_samplenorm = None
-        self._start_protein_norm = None
-        self._end_protein_norm = None
-
-        self.overall_runtime = None
-        self.runtime_samplenorm = None
-        self.runtime_protein_norm = None
-
-    def calculate_runtimes(self):
-        self.overall_runtime = (self._end_protein_norm - self._start_samplenorm)/60
-        self.runtime_samplenorm = (self._end_samplenorm - self._start_samplenorm)/60
-        self.runtime_protein_norm = (self._end_protein_norm - self._start_protein_norm)/60
-
-
-# Cell
 import pandas as pd
 import directlfq.utils as lfq_utils
 
@@ -631,4 +595,40 @@ class LFQTimer():
     def _iterate_through_sizes(self):
         for samplenumber in self._samplenumbers_to_check:
             formatted_df = ScaledDFCreatorDirectLFQFormat(self._template_df, desired_number_of_samples=samplenumber).scaled_df
-            self.timed_lfq_runs.append(TimedLFQRun(formatted_df,self._name))
+            self.timed_lfq_runs.append(TimedLFQRun(formatted_df,self._name).run_from_formatted_df())
+
+
+# Cell
+
+class TimedLFQRun():
+    def __init__(self, formatted_df, name):
+        self.name = name
+        self.runtime_info = RuntimeInfo()
+        self.num_samples = len(formatted_df.columns)
+        self._formatted_df = formatted_df
+
+    def run_from_formatted_df(self):
+        self.runtime_info._start_samplenorm = time.time()
+        input_df_normed = lfqnorm.NormalizationManagerSamples(self._formatted_df, num_samples_quadratic=100).complete_dataframe
+        self.runtime_info._end_samplenorm = time.time()
+        self.runtime_info._start_protein_norm = time.time()
+        lfq_protein_estimation.estimate_protein_intensities(input_df_normed,min_nonan=1, num_samples_quadratic=10)
+        self.runtime_info._end_protein_norm = time.time()
+        self.runtime_info.calculate_runtimes()
+        return self
+
+class RuntimeInfo():
+    def __init__(self):
+        self._start_samplenorm= None
+        self._end_samplenorm = None
+        self._start_protein_norm = None
+        self._end_protein_norm = None
+
+        self.overall_runtime = None
+        self.runtime_samplenorm = None
+        self.runtime_protein_norm = None
+
+    def calculate_runtimes(self):
+        self.overall_runtime = (self._end_protein_norm - self._start_samplenorm)/60
+        self.runtime_samplenorm = (self._end_samplenorm - self._start_samplenorm)/60
+        self.runtime_protein_norm = (self._end_protein_norm - self._start_protein_norm)/60

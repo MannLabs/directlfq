@@ -131,9 +131,9 @@ index = {"run_lfq": "01_lfq_manager.ipynb",
          "SampleIndexIQScaler": "12_benchmarking.ipynb",
          "ScaledDFCreatorDirectLFQFormat": "12_benchmarking.ipynb",
          "ScaledDFCreatorIQFormat": "12_benchmarking.ipynb",
+         "LFQTimer": "12_benchmarking.ipynb",
          "TimedLFQRun": "12_benchmarking.ipynb",
          "RuntimeInfo": "12_benchmarking.ipynb",
-         "LFQTimer": "12_benchmarking.ipynb",
          "TestFileDownloader": "13_testfile_handling.ipynb",
          "DownloadLinkConverter": "13_testfile_handling.ipynb"}
 
