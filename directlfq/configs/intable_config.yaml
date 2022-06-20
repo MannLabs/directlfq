@@ -109,6 +109,18 @@ maxquant_evidence_maxdia_benchmark:
    - Charge
 
 
+maxquant_evidence_proteins_column:
+  format: longtable
+  sample_ID: Experiment #Raw file
+  quant_ID: Intensity
+  protein_cols:
+   - Proteins
+  ion_cols:
+   - Sequence
+   - Modifications
+   - Charge
+
+
 diann_fragion_isotopes_plexDIA_raw:
   format: longtable
   channel_ID: 
