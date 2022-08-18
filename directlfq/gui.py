@@ -7,7 +7,7 @@ import pandas as pd
 # visualization
 import panel as pn
 import bokeh.server.views.ws
-import alphaquant.dashboard_parts as dashboard_parts
+import directlfq.dashboard_parts as dashboard_parts
 
 
 def get_css_style(
@@ -107,10 +107,10 @@ class AlphaQuantGUI(GUI):
     # TODO: docstring
     def __init__(self, start_server=False):
         super().__init__(
-            name="AlphaQuant",
-            github_url='https://github.com/MannLabs/alphaquant',
+            name="directLFQ",
+            github_url='https://github.com/MannLabs/directLFQ',
         )
-        self.project_description = """### AlphaQuant is an open-source package for sensitive detection of protein abundance changes."""
+        self.project_description = """### directLFQ provides ratio-based normalization and protein intensity estimation for small and very large numbers of proteomes."""
         self.manual_path = os.path.join(
             os.path.dirname(__file__),
             "docs",
@@ -118,19 +118,19 @@ class AlphaQuantGUI(GUI):
         )
         self.main_widget = dashboard_parts.MainWidget(
             self.project_description,
-            self.manual_path
+           # self.manual_path
         )
 
         # ERROR/WARNING MESSAGES
         self.error_message_upload = "The selected file can't be uploaded. Please check the instructions for data uploading."
 
         self.run_pipeline = dashboard_parts.RunPipeline()
-        self.tabs = dashboard_parts.Tabs(self.run_pipeline)
+        #self.tabs = dashboard_parts.Tabs(self.run_pipeline)
 
         self.layout += [
             self.main_widget.create(),
             self.run_pipeline.create(),
-            self.tabs.create(),
+         #   self.tabs.create(),
         ]
         if start_server:
             self.start_server()

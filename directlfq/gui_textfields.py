@@ -17,10 +17,10 @@ class Descriptions():
 
 
     project_instruction = panel.pane.Markdown("""
-        #### How to use AlphaQuant:
+        #### How to use directLFQ:
         1. Provide the filepath to your proteomic datasets analyzed by
-        Spectronaut, DIA-NN, AlphaPept or MaxQuant (see instructions below!).
-        2. (optional) An output folder to store output tables and plots is chosen automatically, change the folder if needed
+        Spectronaut, DIA-NN or MaxQuant (see instructions below!).
+        2. Select the type of the input table you have specified from the dropdown menu
         3. Click on the _RUN PIPELINE_ button, you can follow the progress on the terminal window
         """,
         width=ButtonConfiguration.width,

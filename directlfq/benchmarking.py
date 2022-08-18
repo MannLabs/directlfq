@@ -2,10 +2,11 @@
 
 __all__ = ['plot_lines', 'plot_points', 'get_tps_fps', 'annotate_dataframe', 'compare_to_reference',
            'compare_normalization', 'print_nonref_hits', 'ResultsTable', 'ResultsTableDirectLFQ', 'ResultsTableIq',
-           'ResultsTableMaxQuant', 'OrganismAnnotator', 'OrganismAnnotatorMaxQuant', 'OrganismAnnotatorSpectronaut',
-           'OrganismAnnotatorDIANN', 'PlotConfig', 'MultiOrganismIntensityFCPlotter', 'ResultsTableBiological',
-           'CVInfoDataset', 'CVDistributionPlotter', 'HistPlotConfig', 'SampleListScaler', 'SampleIndexIQScaler',
-           'ScaledDFCreatorDirectLFQFormat', 'ScaledDFCreatorIQFormat', 'LFQTimer', 'TimedLFQRun', 'RuntimeInfo']
+           'ResultsTableMaxQuant', 'ResultsTableMerger', 'OrganismAnnotator', 'OrganismAnnotatorMaxQuant',
+           'OrganismAnnotatorSpectronaut', 'OrganismAnnotatorDIANN', 'PlotConfig', 'MultiOrganismIntensityFCPlotter',
+           'ResultsTableBiological', 'CVInfoDataset', 'CVDistributionPlotter', 'HistPlotConfig', 'SampleListScaler',
+           'SampleIndexIQScaler', 'ScaledDFCreatorDirectLFQFormat', 'ScaledDFCreatorIQFormat', 'LFQTimer',
+           'TimedLFQRun', 'RuntimeInfo']
 
 # Cell
 import matplotlib.pyplot as plt
@@ -214,6 +215,34 @@ class ResultsTableMaxQuant(ResultsTable):
 
 
 # Cell
+class ResultsTableMerger():
+    def __init__(self, method_name2results_df):
+        self._method_name2results_df = method_name2results_df
+        self._list_of_tables = []
+
+        self.merged_table = None
+
+        self._define_merged_table()
+
+    def _define_merged_table(self):
+        self._collect_list_of_annotated_tables()
+        self.merged_table = pd.concat(self._list_of_tables)
+        self._filter_merged_table_for_valid_fcs()
+
+    def _collect_list_of_annotated_tables(self):
+        for method, df in self._method_name2results_df.items():
+            self._add_method_column(method, df)
+            self._list_of_tables.append(df)
+
+    def _filter_merged_table_for_valid_fcs(self):
+        is_valid = [np.isfinite(x) for x in self.merged_table["log2fc"]]
+        self.merged_table = self.merged_table[is_valid]
+
+    @staticmethod
+    def _add_method_column(method, df):
+        df["method"] = method
+
+# Cell
 from abc import ABC, abstractmethod
 
 class OrganismAnnotator(ABC):
@@ -302,8 +331,7 @@ class OrganismAnnotatorDIANN(OrganismAnnotator):
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import numpy as np
-import matplotlib.pyplot as plt
+import directlfq.visualizations as lfq_viz
 
 
 class PlotConfig():
@@ -313,49 +341,73 @@ class PlotConfig():
         self._colormaps = colormaps
 
 class MultiOrganismIntensityFCPlotter():
-    def __init__(self, ax, resultstable_w_ratios, plotconfig = PlotConfig()):
+    def __init__(self, ax, resultstable_w_ratios, organisms_to_plot = None, fcs_to_expect = None, title = ""):
         self.ax = ax
+        self._color_scheme = lfq_viz.AlphaPeptColorMap()
         self._resultstable_w_ratios = resultstable_w_ratios
         self._organism_column = resultstable_w_ratios.organism_column
         self._log2fc_column = resultstable_w_ratios.log2fc_column
         self._mean_intensity_column = resultstable_w_ratios.mean_intensity_column
-        self._plotconfig = plotconfig
 
-        self._all_organisms = self._get_all_organisms_used()
-        self._title = self._get_title()
+        self._organisms_to_plot = self._get_organisms_to_plot(organisms_to_plot)
+        self._fcs_to_expect = fcs_to_expect
+
+        self._title = self._get_title(title)
         self._scatter_per_organism()
+        self._add_expected_lines()
 
+    def _get_organisms_to_plot(self, organisms_to_plot):
+        if organisms_to_plot is not None:
+            return organisms_to_plot
+        else:
+            return sorted(list(set(self._resultstable_w_ratios.formated_dataframe[self._organism_column].astype('str'))))
 
-    def _get_all_organisms_used(self):
-        return sorted(list(set(self._resultstable_w_ratios.formated_dataframe[self._organism_column].astype('str'))))
+    def _get_title(self, title):
+        if title !="":
+            self._print_infos_about_data()
+            return title
+        return self._generate_title()
 
-    def _get_title(self):
-        title = ""
-        for organism in self._all_organisms:
+    def _print_infos_about_data(self):
+        for organism in self._organisms_to_plot:
             subtable_organism = self._get_organism_subtable(organism)
-            title += self._extend_title(organism,subtable_organism)
+            print(self._get_stats_of_organism(organism, subtable_organism))
+
+    def _generate_title(self):
+        for organism in self._organisms_to_plot:
+            subtable_organism = self._get_organism_subtable(organism)
+            title += self._get_stats_of_organism(organism, subtable_organism)
         return title
 
     def _scatter_per_organism(self):
         complete_table = self._resultstable_w_ratios.formated_dataframe.copy()
         complete_table[self._mean_intensity_column] = np.log2(complete_table[self._mean_intensity_column])
-        sns.scatterplot(data= complete_table, x = self._log2fc_column, y=self._mean_intensity_column, hue=self._organism_column, alpha=0.15, ax=self.ax, hue_order=self._all_organisms)
+        complete_table = self._remove_omitted_organisms_from_table(complete_table)
+        color_palette = sns.color_palette(self._color_scheme.colorlist_hex, n_colors=len(self._organisms_to_plot))
+        sns.scatterplot(data= complete_table, x =self._mean_intensity_column, y= self._log2fc_column, hue=self._organism_column, alpha=0.15, ax=self.ax, hue_order=self._organisms_to_plot, palette=color_palette)
         self.ax.set_title(self._title)
-        self.ax.set_xlim(self._plotconfig.x_axisboundaries)
+
+    def _remove_omitted_organisms_from_table(self, complete_table):
+        row_w_permitted_organism = [x in self._organisms_to_plot for x in complete_table["organism"]]
+        return complete_table[row_w_permitted_organism]
+
+    def _add_expected_lines(self):
+        if self._fcs_to_expect is not None:
+            for idx, fc in enumerate(self._fcs_to_expect):
+                color = self._color_scheme.colorlist[idx]
+                self.ax.axhline(fc, color = color)
 
     def _get_organism_subtable(self, organism):
         complete_table = self._resultstable_w_ratios.formated_dataframe
         return complete_table[complete_table[self._organism_column] == organism]
 
-    def _extend_title(self, organism, subtable_organism):
+    def _get_stats_of_organism(self, organism, subtable_organism):
         fcs = subtable_organism[self._log2fc_column].to_numpy()
         fcs = fcs[np.isfinite(fcs)]
         median_fc = np.nanmedian(fcs)
         std_fc = np.nanstd(fcs)
         num_ratios = sum(~np.isnan(fcs))
         return f"{organism} num:{num_ratios} median_FC:{median_fc:.2} STD:{std_fc:.2}\n"
-
-
 
 
 # Cell
@@ -413,6 +465,7 @@ class CVInfoDataset():
 
 # Cell
 import seaborn as sns
+import directlfq.visualizations as lfq_viz
 class CVDistributionPlotter():
     def __init__(self, list_of_dataset_cv_infos, ax, cumulative=False, histtype='step', density=False, bins=150):
         self._histconfig = HistPlotConfig(cumulative, histtype, density, bins)
@@ -421,6 +474,7 @@ class CVDistributionPlotter():
         self._plot_histograms()
 
     def _plot_histograms(self):
+        self._ax.set_prop_cycle(color = lfq_viz.AlphaPeptColorMap().colorlist_hex)
         for dataset_cv_info in self._list_of_dataset_cv_infos:
             self._add_cv_histogram(dataset_cv_info)
 
@@ -433,7 +487,9 @@ class CVDistributionPlotter():
         print(np.nanmean(cvs))
         print(np.nanmedian(cvs))
         labelname = f"{dataset_cv_info.name} ({all_cvs})"
-        self._ax.hist(cvs, label=labelname, cumulative=self._histconfig.cumulative, histtype=self._histconfig.histtype, density=self._histconfig.density, bins=self._histconfig.bins, linewidth = 1.5)
+        color = next(self._ax._get_lines.prop_cycler)["color"]
+        self._ax.hist(cvs, label=labelname, cumulative=self._histconfig.cumulative, histtype='stepfilled', density=self._histconfig.density, bins=self._histconfig.bins, linewidth = 1.5, alpha = 0.5, color = color)
+        self._ax.hist(cvs, cumulative=self._histconfig.cumulative, histtype='step', density=self._histconfig.density, bins=self._histconfig.bins, linewidth = 1.5, color = color, edgecolor = color)
 
 
 class HistPlotConfig():
