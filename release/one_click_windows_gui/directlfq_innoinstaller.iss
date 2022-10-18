@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "directlfq"
-#define MyAppVersion "0.0.6"
+#define MyAppVersion "0.1.0"
 #define MyAppPublisher "Max Planck Institute of Biochemistry and the University of Copenhagen, Mann Labs"
 #define MyAppURL "https://github.com/MannLabs/directlfq"
 #define MyAppExeName "directlfq_gui.exe"
