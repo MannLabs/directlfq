@@ -514,8 +514,6 @@ def reshape_input_df(input_df, config_dict):
     input_df = input_df.astype({'quant_val': 'float'})
     input_df = adapt_input_df_columns_in_case_of_plexDIA(input_df=input_df, config_dict_for_type=config_dict)
     input_reshaped = pd.pivot_table(input_df, index = ['protein', 'ion'], columns = config_dict.get("sample_ID"), values = 'quant_val', fill_value=0)
-    if input_reshaped.iloc[:,0].replace(0, np.nan).median() <100: #when values are small, rescale by a constant factor to prevent rounding errors in the subsequent aq analyses
-        input_reshaped = input_reshaped *10000
 
     input_reshaped = input_reshaped.reset_index()
     return input_reshaped
@@ -645,7 +643,7 @@ def import_data(input_file, input_type_to_use = None, samples_subset = None, res
     """
 
     samples_subset = add_ion_protein_headers_if_applicable(samples_subset)
-    if "aq_reformat" in input_file:
+    if "aq_reformat" in input_file or "aq_reformat" in input_type_to_use:
         file_to_read = input_file
     else:
         file_to_read = reformat_and_save_input_file(input_file=input_file, input_type_to_use=input_type_to_use)

@@ -55,13 +55,15 @@ import directlfq.protein_intensity_estimation as lfq_protint
 import matplotlib.pyplot as plt
 
 class IonTraceCompararisonPlotter():
-    def __init__(self, proteome_df, selected_protein):
+    def __init__(self, proteome_df, selected_protein, axis_unnormed, axis_normed):
         self._proteome_df = proteome_df
         self._selected_protein = selected_protein
         self._protein_df_before_norm = None
         self._protein_df_after_norm = None
 
-        self.axes = plt.subplots(ncols=2)[1]
+        self.axis_unnormed = axis_unnormed
+        self.axis_normed = axis_normed
+
         self._prepare_data_and_plot_ion_traces_before_and_after_normalization()
 
     def _prepare_data_and_plot_ion_traces_before_and_after_normalization(self):
@@ -80,10 +82,10 @@ class IonTraceCompararisonPlotter():
         self._protein_df_after_norm = lfq_norm.NormalizationManagerProtein(self._protein_df_before_norm.copy(), num_samples_quadratic = 10).complete_dataframe
 
     def _plot_before_norm(self):
-        IonTraceVisualizer(self._protein_df_before_norm,ax= self.axes[0])
+        IonTraceVisualizer(self._protein_df_before_norm,ax= self.axis_unnormed)
 
     def _plot_after_norm(self):
-        visualizer = IonTraceVisualizer(self._protein_df_after_norm, ax=self.axes[1])
+        visualizer = IonTraceVisualizer(self._protein_df_after_norm, ax=self.axis_normed)
         median_list = lfq_protint.get_list_with_protein_value_for_each_sample(self._protein_df_after_norm, min_nonan=1)
         visualizer.add_median_trace(median_list)
 
@@ -113,14 +115,19 @@ class IonTraceVisualizer():
         ap_colormap = AlphaPeptColorMap()
         sns.lineplot(data = self._plot_df, ax=self._ax, legend=None, palette=ap_colormap.seaborn_mapname_linear)
         self._ax.set_xticks(range(self._num_samples))
+        self._annotate_x_ticks(sample_names=self._protein_df.columns)
 
     def _define_prepared_dataframe(self):
-        self._plot_df = self._protein_df
+        self._plot_df = self._protein_df.copy()
         self._plot_df.columns = range(self._num_samples)
         self._plot_df = self._plot_df.T
 
     def add_median_trace(self, list_of_median_values):
         sns.lineplot(x = range(len(list_of_median_values)), y = list_of_median_values, ax=self._ax,color='black', linewidth=3)
+
+    #function that annotates x ticks of an axis with the sample names
+    def _annotate_x_ticks(self, sample_names):
+        self._ax.set_xticklabels(sample_names, rotation=90)
 
 
 
@@ -142,7 +149,7 @@ class MultiOrganismMultiMethodBoxPlot():
 
     def plot_boxplot(self):
         color_palette = sns.color_palette(self._color_scheme.colorlist_hex, n_colors=len(self._fcs_to_expect))
-        sns.violinplot(data=self._method_ratio_results_table, x="method", y = "log2fc", hue= "organism", palette=color_palette, hue_order=self._organisms_to_plot)
+        sns.violinplot(data=self._method_ratio_results_table, x="method", y = "log2fc", hue= "organism", palette=color_palette, hue_order=self._organisms_to_plot, ax=self.ax)
 
     def _add_expected_fold_changes(self):
         if self._fcs_to_expect is not None:

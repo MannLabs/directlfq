@@ -76,14 +76,24 @@ maxquant_peptides_benchmarking:
   use_iontree: False
 
 
-maxquant_evidence_benchmark:
+maxquant_evidence_organellar_benchmark:
   format: longtable
   sample_ID: Experiment #Raw file
   quant_ID: Intensity
   protein_cols:
-   - Protein group IDs
+   - Protein IDs
   ion_cols:
    - Modified sequence
+   - Charge
+
+maxquant_evidence_benchmark_iqnormed:
+  format: longtable
+  sample_ID: Experiment #Raw file
+  quant_ID: Intensity
+  protein_cols:
+   - Protein.group.IDs
+  ion_cols:
+   - Modified.sequence
    - Charge
 
 maxquant_evidence_andre_benchmark:
@@ -205,6 +215,30 @@ diann_fragion_isotopes_plexDIA:
   use_iontree: True
   ml_level: CHARGE
 
+
+diann_precursors_plexDIA:
+  format: longtable
+  channel_ID: 
+   - Channel.0
+   - Channel.4
+   - Channel.8
+  sample_ID: Run
+  quant_ID:
+    precursor: Precursor.Translated
+  protein_cols:
+   - Protein.Group
+  ion_hierarchy:
+    precursor:
+      order: [SEQ, MOD, CHARGE]
+      mapping:
+        SEQ: 
+         - Stripped.Sequence
+        MOD: 
+         - Modified.Sequence
+        CHARGE: 
+         - Precursor.Charge
+  use_iontree: True
+  ml_level: CHARGE
 
 diann_fragion_isotopes:
   format: longtable
@@ -457,6 +491,7 @@ spectronaut_ptm_fragion_isotopes:
   ml_level: CHARGE
 
 
+
 spectronaut_fragion_isotopes:
   format: longtable
   sample_ID: R.Label
@@ -517,6 +552,8 @@ spectronaut_fragion_isotopes:
   #     param: F.PossibleInterference
   #     comparator: "=="
   #     value: False
+
+
 
 
 

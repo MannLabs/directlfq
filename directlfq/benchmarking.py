@@ -440,15 +440,25 @@ class ResultsTableBiological():
 # Cell
 import numpy as np
 class CVInfoDataset():
-    def __init__(self, resultstable_biological):
+    def __init__(self, resultstable_biological, ignore_missing_columns = False):
         self._results_table = resultstable_biological
+        self._ignore_missing_columns = ignore_missing_columns
+
         self.name = resultstable_biological.name
         self.cvs = []
+
+
         self._calculate_cvs()
 
     def _calculate_cvs(self):
         for samples in self._results_table.cond2samples.values():
+            if self._ignore_missing_columns:
+                samples = self._reduce_samples_to_existing_columns(samples)
             self._add_protein_cvs_for_condition(samples)
+
+    def _reduce_samples_to_existing_columns(self, samples):
+        existing_columns = [x for x in samples if x in self._results_table.results_df.columns]
+        return existing_columns
 
     def _add_protein_cvs_for_condition(self, samples):
         subtable = self._results_table.results_df[samples]
@@ -584,14 +594,17 @@ class ScaledDFCreatorIQFormat():
         self._quant_df = quant_df
         self._sample_list = sample_list_df["sample_list"]
         self._desired_number_of_samples = desired_number_of_samples
-        self._create_scaled_quant_df()
-
         self._samplelist_scaler = None
+
+        self.scaled_quant_df = None
+
+        self._create_scaled_quant_df()
         self._create_scaled_sample_list_df()
 
     def _create_scaled_quant_df(self):
         self._create_indexes_to_expand_quant_df()
         self._quant_df = self._quant_df.set_index("sample_list")#.loc[self._indexes_to_expand_quant_df]
+
         self.scaled_quant_df = self._get_scaled_quant_df(self._indexes_to_expand_quant_df)
         self.scaled_quant_df["sample_list"] = self._get_new_samples_column()
         self.scaled_quant_df = self.scaled_quant_df.reset_index(drop= True)
