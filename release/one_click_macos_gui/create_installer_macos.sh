@@ -20,7 +20,7 @@ python setup.py sdist bdist_wheel
 
 # Setting up the local package
 cd release/one_click_macos_gui
-pip install "../../dist/directlfq-0.1.0-py3-none-any.whl[stable]"
+pip install "../../dist/directlfq-0.2.0-py3-none-any.whl[stable]"
 
 # Creating the stand-alone pyinstaller folder
 pip install pyinstaller==4.10
@@ -40,5 +40,5 @@ cp ../../LICENSE Resources/LICENSE
 cp ../logos/alpha_logo.png Resources/alpha_logo.png
 chmod 777 scripts/*
 
-pkgbuild --root dist/directlfq --identifier de.mpg.biochem.directlfq.app --version 0.1.0 --install-location /Applications/directlfq.app --scripts scripts directlfq.pkg
+pkgbuild --root dist/directlfq --identifier de.mpg.biochem.directlfq.app --version 0.2.0 --install-location /Applications/directlfq.app --scripts scripts directlfq.pkg
 productbuild --distribution distribution.xml --resources Resources --package-path directlfq.pkg dist/directlfq_gui_installer_macos.pkg
