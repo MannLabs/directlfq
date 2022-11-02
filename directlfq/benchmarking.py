@@ -681,7 +681,7 @@ class TimedLFQRun():
         input_df_normed = lfqnorm.NormalizationManagerSamples(self._formatted_df, num_samples_quadratic=50).complete_dataframe
         self.runtime_info._end_samplenorm = time.time()
         self.runtime_info._start_protein_norm = time.time()
-        lfq_protein_estimation.estimate_protein_intensities(input_df_normed,min_nonan=1, num_samples_quadratic=10)
+        lfq_protein_estimation.estimate_protein_intensities(input_df_normed,min_nonan=1, num_samples_quadratic=10, num_cores=None)
         self.runtime_info._end_protein_norm = time.time()
         self.runtime_info.calculate_runtimes()
         return self

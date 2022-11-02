@@ -5,7 +5,9 @@ __all__ = ['get_samples_used_from_samplemap_file', 'get_samples_used_from_sample
            'get_condpairname', 'get_quality_score_column', 'make_dir_w_existcheck', 'get_results_plot_dir_condpair',
            'get_middle_elem', 'get_nonna_array', 'get_non_nas_from_pd_df', 'get_ionints_from_pd_df',
            'invert_dictionary', 'get_z_from_p_empirical', 'count_fraction_outliers_from_expected_fc',
-           'create_or_replace_folder', 'write_chunk_to_file', 'index_and_log_transform_input_df',
+           'create_or_replace_folder', 'add_columns_to_lfq_results_table', 'clean_input_filename_if_necessary',
+           'get_protein_column_input_table', 'get_standard_columns_for_input_type',
+           'filter_columns_to_existing_columns', 'show_diff', 'write_chunk_to_file', 'index_and_log_transform_input_df',
            'remove_allnan_rows_input_df', 'get_relevant_columns', 'get_relevant_columns_config_dict',
            'get_quant_ids_from_config_dict', 'get_sample_ids_from_config_dict', 'get_channel_ids_from_config_dict',
            'load_config', 'get_type2relevant_cols', 'filter_input', 'merge_protein_and_ion_cols',
@@ -169,6 +171,63 @@ def create_or_replace_folder(folder):
     if os.path.exists(folder):
         shutil.rmtree(folder)
     os.makedirs(folder)
+
+# Cell
+from distutils.command.config import config
+
+
+def add_columns_to_lfq_results_table(lfq_results_df, input_file, columns_to_add):
+    input_type, config_dict, _ = get_input_type_and_config_dict(input_file)
+
+    input_file = clean_input_filename_if_necessary(input_file)
+
+    protein_column_input_table = get_protein_column_input_table(config_dict)
+    standard_columns_for_input_type = get_standard_columns_for_input_type(input_type)
+
+    all_columns = columns_to_add + [protein_column_input_table] + standard_columns_for_input_type
+    all_columns = filter_columns_to_existing_columns(all_columns, input_file)
+
+    input_df = pd.read_csv(input_file, sep="\t", usecols=all_columns).drop_duplicates(subset=protein_column_input_table)
+    lfq_results_df = lfq_results_df[[x is not None for x in lfq_results_df['protein']]]
+
+    length_before = len(lfq_results_df.index)
+    lfq_results_df_appended = pd.merge(lfq_results_df, input_df, left_on='protein', right_on=protein_column_input_table, how='left')
+    length_after = len(lfq_results_df_appended.index)
+
+
+    assert length_before == length_after
+    return lfq_results_df_appended
+
+def clean_input_filename_if_necessary(input_file):
+    if "aq_reformat.tsv" in input_file:
+        input_file = get_original_file_from_aq_reformat(input_file)
+    return input_file
+
+def get_protein_column_input_table(config_dict):
+    return config_dict["protein_cols"][0]
+
+def get_standard_columns_for_input_type(input_type):
+
+    if 'maxquant' in input_type:
+        standard_cols =  ["Gene names"]
+    if 'diann' in input_type:
+        standard_cols =  ["Protein.Names", "Genes"]
+    if 'spectronaut' in input_type:
+        standard_cols =  ['PG.Genes']
+
+    return standard_cols
+
+def filter_columns_to_existing_columns(columns, input_file):
+    existing_columns =  pd.read_csv(input_file, sep='\t', nrows=1).columns
+    return [x for x in columns if x in existing_columns]
+
+
+
+#function that shows the differing rows between two dataframes
+def show_diff(df1, df2):
+    return df1.merge(df2, indicator=True, how='outer').loc[lambda x : x['_merge']!='both']
+
+
 
 # Cell
 def write_chunk_to_file(chunk, filepath ,write_header):
@@ -643,7 +702,7 @@ def import_data(input_file, input_type_to_use = None, samples_subset = None, res
     """
 
     samples_subset = add_ion_protein_headers_if_applicable(samples_subset)
-    if "aq_reformat" in input_file or "aq_reformat" in input_type_to_use:
+    if "aq_reformat" in input_file:
         file_to_read = input_file
     else:
         file_to_read = reformat_and_save_input_file(input_file=input_file, input_type_to_use=input_type_to_use)

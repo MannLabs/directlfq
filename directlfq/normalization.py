@@ -228,7 +228,8 @@ def normalize_ion_profiles(protein_profile_df):
 def drop_nas_if_possible(df):
     df_nonans = df.dropna(axis=1)
     fraction_nonans = calculate_fraction_with_no_NAs(df, df_nonans)
-    if fraction_nonans<0.05:
+    num_nonans = len(df_nonans.columns)
+    if num_nonans<1000 or fraction_nonans<0.001:
         print('to few values for normalization without missing values. Including missing values')
         return df
     else:
