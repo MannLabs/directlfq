@@ -13,7 +13,7 @@ __all__ = ['estimate_protein_intensities', 'get_list_of_tuple_w_protein_profiles
 import pandas as pd
 import numpy as np
 import directlfq.normalization as lfqnorm
-import multiprocessing
+import multiprocess
 import itertools
 
 def estimate_protein_intensities(normed_df, min_nonan, num_samples_quadratic, num_cores):
@@ -50,10 +50,10 @@ def get_list_with_multiprocessing(allprots, normed_df, num_samples_quadratic, mi
 
 
 def get_configured_multiprocessing_pool(num_cores):
-    multiprocessing.freeze_support()
+    multiprocess.freeze_support()
     if num_cores is None:
-        num_cores = multiprocessing.cpu_count() if multiprocessing.cpu_count() < 61 else 61 #windows upper thread limit
-    pool = multiprocessing.Pool(num_cores)
+        num_cores = multiprocess.cpu_count() if multiprocess.cpu_count() < 60 else 60 #windows upper thread limit
+    pool = multiprocess.Pool(num_cores)
     print(f"using {pool._processes} processes")
     return pool
 

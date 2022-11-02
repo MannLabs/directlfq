@@ -6,3 +6,5 @@ dask
 seaborn
 numba
 panel
+scipy
+multiprocess
