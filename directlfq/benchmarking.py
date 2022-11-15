@@ -384,7 +384,8 @@ class MultiOrganismIntensityFCPlotter():
         complete_table[self._mean_intensity_column] = np.log2(complete_table[self._mean_intensity_column])
         complete_table = self._remove_omitted_organisms_from_table(complete_table)
         color_palette = sns.color_palette(self._color_scheme.colorlist_hex, n_colors=len(self._organisms_to_plot))
-        sns.scatterplot(data= complete_table, x =self._mean_intensity_column, y= self._log2fc_column, hue=self._organism_column, alpha=0.15, ax=self.ax, hue_order=self._organisms_to_plot, palette=color_palette)
+        sns.scatterplot(data= complete_table, x =self._mean_intensity_column, y= self._log2fc_column, hue=self._organism_column, alpha=0.15, ax=self.ax,
+        hue_order=self._organisms_to_plot, palette=color_palette, size=0.2)
         self.ax.set_title(self._title)
 
     def _remove_omitted_organisms_from_table(self, complete_table):
@@ -415,10 +416,13 @@ import pandas as pd
 import directlfq.utils as lfq_utils
 
 class ResultsTableBiological():
-    def __init__(self, results_file, samplemap, name):
+    def __init__(self, results_file, samplemap, name, protein_id = "protein"):
         self._results_file = results_file
         self._samplemap = samplemap
+        self._protein_id = protein_id
+
         self.name = name
+
 
         self.results_df = None
         self.cond2samples = {}
@@ -428,6 +432,7 @@ class ResultsTableBiological():
 
     def _load_results_table(self):
         self.results_df = pd.read_csv(self._results_file, sep = "\t")
+        self.results_df = self.results_df[[not x.startswith("REV_") and not x.startswith("CON_") for x in self.results_df[self._protein_id].astype('str')]]
         self.results_df = self.results_df.replace(0, np.nan)
 
     def _load_cond2samples(self):

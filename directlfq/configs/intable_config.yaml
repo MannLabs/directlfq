@@ -25,6 +25,34 @@ maxquant_peptides:
   format: widetable
   quant_prefix: "Intensity "
   protein_cols:
+   - Protein IDs
+  ion_cols:
+   - Sequence
+  ion_hierarchy:
+    sequence_int:
+      order: [SEQ, MOD]
+      mapping:
+        SEQ: 
+          - Sequence
+        MOD:
+          - Mass
+  filters:
+    reverse:
+      param: Reverse
+      comparator: "!="
+      value: "+"
+    contaminant:
+      param: Potential contaminant
+      comparator: "!="
+      value: "+"
+  ml_level: SEQ
+  use_iontree: False
+
+
+maxquant_peptides_leading_razor_protein:
+  format: widetable
+  quant_prefix: "Intensity "
+  protein_cols:
    - Leading razor protein
   ion_cols:
    - Sequence
@@ -76,7 +104,7 @@ maxquant_peptides_benchmarking:
   use_iontree: False
 
 
-maxquant_evidence_organellar_benchmark:
+maxquant_evidence:
   format: longtable
   sample_ID: Experiment #Raw file
   quant_ID: Intensity
@@ -85,6 +113,20 @@ maxquant_evidence_organellar_benchmark:
   ion_cols:
    - Modified sequence
    - Charge
+
+  
+maxquant_evidence_leading_razor_protein:
+  format: longtable
+  sample_ID: Experiment #Raw file
+  quant_ID: Intensity
+  protein_cols:
+   - Leading razor protein
+  ion_cols:
+   - Modified sequence
+   - Charge
+
+
+
 
 maxquant_evidence_benchmark_iqnormed:
   format: longtable

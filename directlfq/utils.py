@@ -5,7 +5,9 @@ __all__ = ['get_samples_used_from_samplemap_file', 'get_samples_used_from_sample
            'get_condpairname', 'get_quality_score_column', 'make_dir_w_existcheck', 'get_results_plot_dir_condpair',
            'get_middle_elem', 'get_nonna_array', 'get_non_nas_from_pd_df', 'get_ionints_from_pd_df',
            'invert_dictionary', 'get_z_from_p_empirical', 'count_fraction_outliers_from_expected_fc',
-           'create_or_replace_folder', 'add_columns_to_lfq_results_table', 'clean_input_filename_if_necessary',
+           'create_or_replace_folder', 'add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file',
+           'create_id2protein_map', 'determine_id_column_from_input_file', 'annotate_and_save_mq_file',
+           'annotate_protein_id_to_mq_txt', 'add_columns_to_lfq_results_table', 'clean_input_filename_if_necessary',
            'get_protein_column_input_table', 'get_standard_columns_for_input_type',
            'filter_columns_to_existing_columns', 'show_diff', 'write_chunk_to_file', 'index_and_log_transform_input_df',
            'remove_allnan_rows_input_df', 'get_relevant_columns', 'get_relevant_columns_config_dict',
@@ -173,6 +175,51 @@ def create_or_replace_folder(folder):
     os.makedirs(folder)
 
 # Cell
+
+def add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, mq_protein_group_file):
+    input_type, _, _ = get_input_type_and_config_dict(input_file)
+    if ("maxquant_evidence" in input_type or "maxquant_peptides" in input_type) and ("aq_reformat" not in input_file):
+        if mq_protein_group_file is None:
+            print("You provided a MaxQuant peptide or evidence file as input. To have the identical ProteinGroups as in the MaxQuant analysis, please provide the ProteinGroups.txt file as well.")
+            return input_file
+        else:
+            id2protein_map = create_id2protein_map(mq_protein_group_file, input_file)
+            annotate_and_save_mq_file(input_file, id2protein_map)
+            return f"{input_file}.protgroup_annotated.tsv"
+    else:
+        return input_file
+
+def create_id2protein_map(protein_groups_file, input_file):
+    protein_groups_df = pd.read_csv(protein_groups_file, sep = "\t")
+    id_column = determine_id_column_from_input_file(input_file)
+    id2protein_map = {}
+    for protein_id, evidence_ids in zip(protein_groups_df["Protein IDs"], protein_groups_df[id_column]):
+        evidence_ids = evidence_ids.split(";")
+        for evidence_id in evidence_ids:
+            id2protein_map[evidence_id] = protein_id
+    return id2protein_map
+
+def determine_id_column_from_input_file(input_file):
+    input_file_columns = pd.read_csv(input_file, sep = "\t", nrows = 2).columns
+    num_cols_starting_w_intensity = sum([x.startswith("Intensity ") for x in input_file_columns])
+    if num_cols_starting_w_intensity>0:
+        return "Peptide IDs"
+    else:
+        return "Evidence IDs"
+
+
+def annotate_and_save_mq_file(mq_file, id2protein_map):
+    mq_df = pd.read_csv(mq_file, sep = "\t")
+    evidence_df_annotated = annotate_protein_id_to_mq_txt(mq_df, id2protein_map)
+    evidence_df_annotated.to_csv(f"{mq_file}.protgroup_annotated.tsv", sep = "\t", index = False)
+
+
+def annotate_protein_id_to_mq_txt(mq_df, id2protein_map):
+    mq_df["Protein IDs"] = mq_df["id"].astype("str").map(id2protein_map)
+    return mq_df
+
+
+# Cell
 from distutils.command.config import config
 
 
@@ -301,8 +348,8 @@ def get_channel_ids_from_config_dict(config_typedict):
 
 
 def load_config(config_yaml):
-    stream = open(config_yaml, 'r')
-    config_all = yaml.safe_load(stream)
+    with open(config_yaml, 'r') as stream:
+        config_all = yaml.safe_load(stream)
     return config_all
 
 def get_type2relevant_cols(config_all):

@@ -12,7 +12,8 @@ import warnings
 warnings.filterwarnings(action='once')
 
 
-def run_lfq(input_file = None, input_type_to_use = None, columns_to_add = [], min_nonan = 1, maximum_number_of_quadratic_ions_to_use_per_protein = 10, number_of_quadratic_samples = 50, num_cores = None):
+def run_lfq(input_file, input_type_to_use = None, columns_to_add = [], mq_protein_groups_txt = None, min_nonan = 1, maximum_number_of_quadratic_ions_to_use_per_protein = 10, number_of_quadratic_samples = 50, num_cores = None):
+    input_file = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, mq_protein_groups_txt)
     input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use)
     input_df = lfqutils.index_and_log_transform_input_df(input_df)
     input_df = lfqutils.remove_allnan_rows_input_df(input_df)
@@ -21,7 +22,7 @@ def run_lfq(input_file = None, input_type_to_use = None, columns_to_add = [], mi
     try:
         protein_df = lfqutils.add_columns_to_lfq_results_table(protein_df, input_file, columns_to_add)
     except:
-        print("Could not add additiona columns to protein table, printing without additional columns")
+        print("Could not add additional columns to protein table, printing without additional columns")
     save_protein_df(protein_df, input_file)
     save_ion_df(ion_df, input_file)
 
