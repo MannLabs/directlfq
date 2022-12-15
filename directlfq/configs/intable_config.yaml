@@ -434,6 +434,15 @@ diann_precursor:
   #     comparator: ">"
   #     value: 0.3
 
+diann_precursor_ms1:
+  format: longtable
+  sample_ID: Run
+  quant_ID: Precursor.Quantity
+  protein_cols:
+   - Protein.Group
+  ion_cols:
+   - Precursor.Id
+
 diann_precursor_filename_sampleid:
   format: longtable
   sample_ID: File.Name
