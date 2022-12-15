@@ -24,11 +24,13 @@ selected_proteins :list = None):
         protein_df = lfqutils.add_columns_to_lfq_results_table(protein_df, input_file, columns_to_add)
     except:
         print("Could not add additional columns to protein table, printing without additional columns")
-    save_protein_df(protein_df, input_file)
-    save_ion_df(ion_df, input_file)
+    save_protein_df(protein_df, input_file, input_type_to_use)
+    save_ion_df(ion_df, input_file, input_type_to_use)
 
-def save_protein_df(protein_df, input_file):
-    protein_df.to_csv(f"{input_file}.protein_intensities.tsv", sep = "\t")
+def save_protein_df(protein_df, input_file, input_type_to_use):
+    input_type_string = "." if input_type_to_use is None else f".{input_type_to_use}." #only add the input type to the name if the non-default is used
+    protein_df.to_csv(f"{input_file}{input_type_string}protein_intensities.tsv", sep = "\t")
 
-def save_ion_df(ion_df, input_file):
-    ion_df.to_csv(f"{input_file}.ion_intensities.tsv", sep = "\t")
+def save_ion_df(ion_df, input_file, input_type_to_use):
+    input_type_string = "." if input_type_to_use is None else f".{input_type_to_use}."
+    ion_df.to_csv(f"{input_file}{input_type_string}ion_intensities.tsv", sep = "\t")
