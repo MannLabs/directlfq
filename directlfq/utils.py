@@ -6,8 +6,9 @@ __all__ = ['get_samples_used_from_samplemap_file', 'get_samples_used_from_sample
            'get_middle_elem', 'get_nonna_array', 'get_non_nas_from_pd_df', 'get_ionints_from_pd_df',
            'invert_dictionary', 'get_z_from_p_empirical', 'count_fraction_outliers_from_expected_fc',
            'create_or_replace_folder', 'add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file',
-           'create_id2protein_map', 'determine_id_column_from_input_file', 'annotate_and_save_mq_file',
-           'annotate_protein_id_to_mq_txt', 'add_columns_to_lfq_results_table', 'clean_input_filename_if_necessary',
+           'load_input_file_and_de_duplicate_if_evidence', 'create_id_to_protein_df',
+           'determine_id_column_from_input_df', 'annotate_mq_df', 'remove_ids_not_occurring_in_mq_df',
+           'save_annotated_mq_df', 'add_columns_to_lfq_results_table', 'clean_input_filename_if_necessary',
            'get_protein_column_input_table', 'get_standard_columns_for_input_type',
            'filter_columns_to_existing_columns', 'show_diff', 'write_chunk_to_file', 'index_and_log_transform_input_df',
            'remove_allnan_rows_input_df', 'get_relevant_columns', 'get_relevant_columns_config_dict',
@@ -176,31 +177,55 @@ def create_or_replace_folder(folder):
 
 # Cell
 
-def add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, mq_protein_group_file):
-    input_type, _, _ = get_input_type_and_config_dict(input_file)
-    if ("maxquant_evidence" in input_type or "maxquant_peptides" in input_type) and ("aq_reformat" not in input_file):
+def add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(mq_file, input_type_to_use ,mq_protein_group_file, columns_to_add):
+    input_type = _get_input_type(mq_file, input_type_to_use)
+    if ("maxquant_evidence" in input_type or "maxquant_peptides" in input_type) and ("aq_reformat" not in mq_file):
         if mq_protein_group_file is None:
             print("You provided a MaxQuant peptide or evidence file as input. To have the identical ProteinGroups as in the MaxQuant analysis, please provide the ProteinGroups.txt file as well.")
-            return input_file
+            return mq_file
         else:
-            id2protein_map = create_id2protein_map(mq_protein_group_file, input_file)
-            annotate_and_save_mq_file(input_file, id2protein_map)
-            return f"{input_file}.protgroup_annotated.tsv"
+            mq_df = load_input_file_and_de_duplicate_if_evidence(mq_file, input_type, columns_to_add)
+            id_column = determine_id_column_from_input_df(mq_df)
+            id2protein_df = create_id_to_protein_df(mq_protein_group_file, id_column)
+            annotated_mq_df = annotate_mq_df(mq_df, id2protein_df, id_column)
+            annotated_mq_filename = f"{mq_file}.protgroup_annotated.tsv"
+            save_annotated_mq_df(annotated_mq_df, annotated_mq_filename)
+            return annotated_mq_filename
     else:
-        return input_file
+        return mq_file
 
-def create_id2protein_map(protein_groups_file, input_file):
-    protein_groups_df = pd.read_csv(protein_groups_file, sep = "\t")
-    id_column = determine_id_column_from_input_file(input_file)
-    id2protein_map = {}
-    for protein_id, evidence_ids in zip(protein_groups_df["Protein IDs"], protein_groups_df[id_column]):
-        evidence_ids = evidence_ids.split(";")
-        for evidence_id in evidence_ids:
-            id2protein_map[evidence_id] = protein_id
-    return id2protein_map
+def _get_input_type(mq_file ,input_type_to_use):
+    if input_type_to_use is not None:
+        return input_type_to_use
+    else:
+        return get_input_type_and_config_dict(mq_file)[0]
 
-def determine_id_column_from_input_file(input_file):
-    input_file_columns = pd.read_csv(input_file, sep = "\t", nrows = 2).columns
+
+def load_input_file_and_de_duplicate_if_evidence(input_file, input_type, columns_to_add):
+    input_df = pd.read_csv(input_file, sep = "\t")
+    if "maxquant_evidence" in input_type:
+        subset_columns = ['id','Sequence','Modified sequence', 'Experiment','Charge', 'Raw file', 'Gene names', 'Intensity'] + columns_to_add
+        columns_to_group_by = ['Sequence','Modified sequence', 'Experiment','Charge', 'Raw file']
+        input_df = input_df[subset_columns].set_index(columns_to_group_by)
+        input_df_grouped = input_df.groupby(columns_to_group_by).Intensity.max()
+        input_df_no_intensities = input_df.drop(columns=["Intensity"])
+
+        input_df = input_df_no_intensities.merge(input_df_grouped, how= 'right', left_index=True, right_index=True).reset_index()
+        input_df = input_df.drop_duplicates(subset=columns_to_group_by)
+
+    return input_df
+
+def create_id_to_protein_df(mq_protein_group_file, id_column):
+    id_mapping_df = pd.read_csv(mq_protein_group_file, sep = "\t", usecols=["Protein IDs", id_column])
+    #apply lambda function to id column to split it into a list of ids
+    id_mapping_df[id_column] = id_mapping_df[id_column].apply(lambda x: x.split(";"))
+    #explode the id column
+    id_mapping_df = id_mapping_df.explode(id_column) #https://stackoverflow.com/questions/12680754/split-explode-pandas-dataframe-string-entry-to-separate-rows
+    return id_mapping_df
+
+
+def determine_id_column_from_input_df(input_df):
+    input_file_columns = input_df.columns
     num_cols_starting_w_intensity = sum([x.startswith("Intensity ") for x in input_file_columns])
     if num_cols_starting_w_intensity>0:
         return "Peptide IDs"
@@ -208,15 +233,21 @@ def determine_id_column_from_input_file(input_file):
         return "Evidence IDs"
 
 
-def annotate_and_save_mq_file(mq_file, id2protein_map):
-    mq_df = pd.read_csv(mq_file, sep = "\t")
-    evidence_df_annotated = annotate_protein_id_to_mq_txt(mq_df, id2protein_map)
-    evidence_df_annotated.to_csv(f"{mq_file}.protgroup_annotated.tsv", sep = "\t", index = False)
+def annotate_mq_df(mq_df, id2protein_df, id_column):
+    #set dtype of id to string
+    mq_df["id"] = mq_df["id"].astype(str)
+    id2protein_df = remove_ids_not_occurring_in_mq_df(id2protein_df, mq_df, id_column)
+    return mq_df.merge(id2protein_df, how = "right",  left_on = "id", right_on = id_column, suffixes=('', '_y'))
+
+def remove_ids_not_occurring_in_mq_df(id2protein_df, mq_df, id_column):
+    mq_df_ids = set(mq_df["id"])
+    id2protein_df = id2protein_df[id2protein_df[id_column].isin(mq_df_ids)]
+    return id2protein_df
+
+def save_annotated_mq_df(annotated_mq_df, annotated_mq_file):
+    annotated_mq_df.to_csv(annotated_mq_file, sep = "\t", index = False)
 
 
-def annotate_protein_id_to_mq_txt(mq_df, id2protein_map):
-    mq_df["Protein IDs"] = mq_df["id"].astype("str").map(id2protein_map)
-    return mq_df
 
 
 # Cell
@@ -241,6 +272,8 @@ def add_columns_to_lfq_results_table(lfq_results_df, input_file, columns_to_add)
     lfq_results_df_appended = pd.merge(lfq_results_df, input_df, left_on='protein', right_on=protein_column_input_table, how='left')
     length_after = len(lfq_results_df_appended.index)
 
+    lfq_results_df_appended = lfq_results_df_appended.set_index('protein')
+
 
     assert length_before == length_after
     return lfq_results_df_appended
@@ -256,13 +289,13 @@ def get_protein_column_input_table(config_dict):
 def get_standard_columns_for_input_type(input_type):
 
     if 'maxquant' in input_type:
-        standard_cols =  ["Gene names"]
-    if 'diann' in input_type:
-        standard_cols =  ["Protein.Names", "Genes"]
-    if 'spectronaut' in input_type:
-        standard_cols =  ['PG.Genes']
-
-    return standard_cols
+        return ["Gene names"]
+    elif 'diann' in input_type:
+        return ["Protein.Names", "Genes"]
+    elif 'spectronaut' in input_type:
+        return ['PG.Genes']
+    else:
+        return []
 
 def filter_columns_to_existing_columns(columns, input_file):
     existing_columns =  pd.read_csv(input_file, sep='\t', nrows=1).columns
@@ -718,7 +751,7 @@ def reformat_and_write_wideformat_table(peptides_tsv, outfile_name, config_dict)
         input_df = input_df[headers]
         input_df = input_df.rename(columns = lambda x : x.replace(quant_prefix, ""))
 
-    input_df = input_df.reset_index()
+    #input_df = input_df.reset_index()
 
     input_df.to_csv(outfile_name, sep = '\t', index = None)
 

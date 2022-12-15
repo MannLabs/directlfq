@@ -927,3 +927,41 @@ diann_fragion_isotopes_gene_level:
          - Precursor.Charge
   use_iontree: True
   ml_level: CHARGE
+
+
+hms_peptides:
+  format: widetable
+  quant_prefix: "Intensity "
+  protein_cols:
+   - ProteinId
+  ion_cols:
+   - PeptideSequence
+   - Charge
+  ion_hierarchy:
+    precursor_intensity:
+      order: [SEQ, CHARGE]
+      mapping:
+        SEQ: 
+         - PeptideSequence
+        CHARGE: 
+         - Charge
+  use_iontree: False
+
+hms_sitequant:
+  format: widetable
+  quant_prefix: "Intensity "
+  protein_cols:
+   - protein_id
+   - site_position
+  ion_cols:
+   - sequence
+   - ms2_charge
+  ion_hierarchy:
+    precursor_intensity:
+      order: [SEQ, CHARGE]
+      mapping:
+        SEQ: 
+         - sequence
+        CHARGE: 
+         - ms2_charge
+  use_iontree: False

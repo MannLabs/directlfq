@@ -4,10 +4,11 @@ __all__ = ['estimate_protein_intensities', 'get_list_of_tuple_w_protein_profiles
            'get_list_with_sequential_processing', 'get_list_with_multiprocessing',
            'get_configured_multiprocessing_pool',
            'get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan', 'get_normed_dfs',
-           'get_ion_intensity_dataframe_from_list_of_shifted_peptides',
-           'get_protein_dataframe_from_list_of_protein_profiles', 'calculate_peptide_and_protein_intensities',
-           'get_protein_profile_from_shifted_peptides', 'get_list_with_protein_value_for_each_sample', 'ProtvalCutter',
-           'OrphanIonRemover', 'OrphanIonsForDeletionSelector', 'IonCheckedForOrphan']
+           'get_ion_intensity_dataframe_from_list_of_shifted_peptides', 'add_protein_names_to_ion_ints',
+           'add_protein_name_to_ion_df', 'get_protein_dataframe_from_list_of_protein_profiles',
+           'calculate_peptide_and_protein_intensities', 'get_protein_profile_from_shifted_peptides',
+           'get_list_with_protein_value_for_each_sample', 'ProtvalCutter', 'OrphanIonRemover',
+           'OrphanIonsForDeletionSelector', 'IonCheckedForOrphan']
 
 # Cell
 import pandas as pd
@@ -24,7 +25,7 @@ def estimate_protein_intensities(normed_df, min_nonan, num_samples_quadratic, nu
 
     list_of_tuple_w_protein_profiles_and_shifted_peptides = get_list_of_tuple_w_protein_profiles_and_shifted_peptides(allprots, normed_df, num_samples_quadratic, min_nonan, num_cores)
     protein_df = get_protein_dataframe_from_list_of_protein_profiles(allprots=allprots, list_of_tuple_w_protein_profiles_and_shifted_peptides=list_of_tuple_w_protein_profiles_and_shifted_peptides, normed_df= normed_df)
-    ion_df = get_ion_intensity_dataframe_from_list_of_shifted_peptides(list_of_tuple_w_protein_profiles_and_shifted_peptides)
+    ion_df = get_ion_intensity_dataframe_from_list_of_shifted_peptides(list_of_tuple_w_protein_profiles_and_shifted_peptides, allprots)
 
     return protein_df, ion_df
 
@@ -77,11 +78,20 @@ def get_normed_dfs(normed_df, allprots):
     return list_of_normed_dfs
 
 
-def get_ion_intensity_dataframe_from_list_of_shifted_peptides(list_of_tuple_w_protein_profiles_and_shifted_peptides):
+def get_ion_intensity_dataframe_from_list_of_shifted_peptides(list_of_tuple_w_protein_profiles_and_shifted_peptides, allprots):
     ion_ints = [x[1] for x in list_of_tuple_w_protein_profiles_and_shifted_peptides]
+    ion_ints = add_protein_names_to_ion_ints(ion_ints, allprots)
     ion_df = 2**pd.concat(ion_ints)
     ion_df = ion_df.replace(np.nan, 0)
-    ion_df = ion_df.reset_index()
+    return ion_df
+
+def add_protein_names_to_ion_ints(ion_ints, allprots):
+    ion_ints = [add_protein_name_to_ion_df(ion_ints[idx], allprots[idx]) for idx in range(len(ion_ints))]
+    return ion_ints
+
+def add_protein_name_to_ion_df(ion_df, protein):
+    ion_df["protein"] = protein
+    ion_df = ion_df.reset_index().set_index(["protein", "ion"])
     return ion_df
 
 
