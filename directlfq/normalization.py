@@ -241,6 +241,7 @@ def calculate_fraction_with_no_NAs(df, df_nonnans):
 
 
 # Cell
+import logging
 
 class NormalizationManager():
     def __init__(self, complete_dataframe, num_samples_quadratic = 100):
@@ -303,11 +304,13 @@ class NormalizationManagerSamples(NormalizationManager):
         self.complete_dataframe = complete_dataframe.T
 
 class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
-    def __init__(self, complete_dataframe, num_samples_quadratic, selected_proteins = None):
+    def __init__(self, complete_dataframe, num_samples_quadratic, selected_proteins_file = None):
         complete_dataframe = complete_dataframe.T #the samples to shift are in each row, therefore the df needs to be transposed
         super().__init__(complete_dataframe, num_samples_quadratic)
         self.normalization_function = self._normalization_function
-        self._selected_proteins = selected_proteins
+        self._selected_proteins_file = selected_proteins_file
+        self._selected_protein_groups = None
+        self._adapt_selected_proteins_to_protein_groups()
         self._run_normalization()
         self.complete_dataframe = complete_dataframe.T
 
@@ -318,9 +321,22 @@ class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
         quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows]
         self.complete_dataframe.loc[self._quadratic_subset_rows,:] = self.normalization_function(quadratic_subset_dataframe)
 
+    def _adapt_selected_proteins_to_protein_groups(self):
+        if self._selected_proteins_file is not None:
+            logging.info('Normalizing only selected proteins')
+            selected_proteins = pd.read_csv(self._selected_proteins_file, header=None, sep='\t')[0].to_list()
+            protein2proteingroup_mapping = self._get_protein2proteingroup_mapping()
+            existing_selected_proteins = [protein for protein in selected_proteins if protein in protein2proteingroup_mapping.keys()]
+            self._selected_protein_groups = [protein2proteingroup_mapping[protein] for protein in existing_selected_proteins]
+
+    def _get_protein2proteingroup_mapping(self):
+        protein_groups = self.complete_dataframe.columns.get_level_values(0).to_list()
+        protein2proteingroup_mapping = {protein : protein_group for protein_group in protein_groups for protein in protein_group.split(';')}
+        return protein2proteingroup_mapping
+
     def _normalization_function(self, ion_dataframe):
-        if self._selected_proteins is not None:
-            ion_dataframe_selected = ion_dataframe.loc[:,self._selected_proteins]
+        if self._selected_protein_groups is not None:
+            ion_dataframe_selected = ion_dataframe.loc[:,self._selected_protein_groups]
         else:
             ion_dataframe_selected = ion_dataframe
         sample2shift = get_normfacts(drop_nas_if_possible(ion_dataframe_selected).to_numpy())

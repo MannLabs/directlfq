@@ -82,9 +82,11 @@ class IonTraceCompararisonPlotter():
 
     def _define_protein_df_before_norm(self):
         self._protein_df_before_norm = pd.DataFrame(self._proteome_df.loc[self._selected_protein])
+        self._protein_df_before_norm = self._protein_df_before_norm.dropna(axis='columns', how='all')
 
     def _define_protein_df_after_norm(self):
         self._protein_df_after_norm = lfq_norm.NormalizationManagerProtein(self._protein_df_before_norm.copy(), num_samples_quadratic = 10).complete_dataframe
+        self._protein_df_after_norm = self._protein_df_after_norm.dropna(axis='columns', how='all')
 
     def _plot_before_norm(self):
         IonTraceVisualizer(self._protein_df_before_norm,ax= self.axis_unnormed)
@@ -96,13 +98,23 @@ class IonTraceCompararisonPlotter():
 
 
 class IonTraceCompararisonPlotterNoDirectLFQTrace(IonTraceCompararisonPlotter):
+    def __init__(self, proteome_df, selected_protein, ax):
+        self._proteome_df = proteome_df
+        self._selected_protein = selected_protein
+        self._protein_df_before_norm = None
+        self._protein_df_after_norm = None
+
+        self.axis_normed = ax
+
+        self._prepare_data_and_plot_ion_traces_before_and_after_normalization()
+
 
     def _prepare_data_and_plot_ion_traces_before_and_after_normalization(self):
         self._define_protein_dataframes()
         self._plot_after_norm()
 
     def _plot_after_norm(self):
-        visualizer = IonTraceVisualizer(self._protein_df_after_norm, ax=self.axis_normed)
+        visualizer = IonTraceVisualizer(self._protein_df_before_norm, ax=self.axis_normed)
 
 
 
