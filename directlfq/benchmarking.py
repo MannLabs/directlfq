@@ -207,9 +207,9 @@ class ResultsTableMaxQuant(ResultsTable):
         self._add_mean_intensity_column()
 
     def _load_maxquant_output(self):
-        columns_to_use = self._samples_c1 + self._samples_c2 + ["id"]
+        columns_to_use = self._samples_c1 + self._samples_c2 + ["Protein IDs"]
         self.formated_dataframe = pd.read_csv(self._input_file, sep = "\t", usecols=columns_to_use)
-        self.formated_dataframe = self.formated_dataframe.rename({'id':self.protein_column},axis=1)
+        self.formated_dataframe = self.formated_dataframe.rename({'Protein IDs':self.protein_column},axis=1)
 
 
 
