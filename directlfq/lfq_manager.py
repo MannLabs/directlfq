@@ -39,6 +39,8 @@ def run_lfq(input_file,  columns_to_add = [], selected_proteins_file :str = None
     save_protein_df(protein_df, input_file, input_type_to_use)
     save_ion_df(ion_df, input_file, input_type_to_use)
 
+    print("Analysis finished!")
+
 def save_protein_df(protein_df, input_file, input_type_to_use):
     input_type_string = "." if input_type_to_use is None else f".{input_type_to_use}." #only add the input type to the name if the non-default is used
     protein_df.to_csv(f"{input_file}{input_type_string}protein_intensities.tsv", sep = "\t")

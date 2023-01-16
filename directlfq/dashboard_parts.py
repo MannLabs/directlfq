@@ -136,23 +136,47 @@ class RunPipeline(BaseWidget):
         # DATA FILES
         self.path_analysis_file = pn.widgets.TextInput(
             name='Specify an analysis file:',
-            placeholder='Enter the whole path to the MQ | Spectronaut | DIA-NN output file',
+            placeholder='Enter the whole path to the AP | MQ | Spectronaut | DIA-NN output file',
             width=900,
             sizing_mode='stretch_width',
             margin=(5, 15, 0, 15)
         )
 
-        self.dropdown_menu_for_input_type = pn.widgets.Select(name = "Type of input table", options = ['MaxQuant evidence.txt', 'MaxQuant peptides.txt',
-        'Spectronaut fragment level', 'Spectronaut precursor level', 'DIANN fragment level', 'DIANN precursor level'])
-        
-        # self.path_output_folder = pn.widgets.TextInput(
-        #     name='(optional) Specify a path to the output folder:',
-        #     placeholder='(optional) Enter the whole path to the output folder',
-        #     width=900,
-        #     sizing_mode='stretch_width',
-        #     margin=(15, 15, 0, 15)
-        # )
-        
+       
+
+        self.path_protein_groups_file = pn.widgets.TextInput(
+            name='(optional) Specify a MaxQuant proteinGroups.txt file here, in case you are working with MaxQuant output. This helps in the protein group mapping',
+            placeholder='(optional) Enter the whole path to the protein groups file',
+            width=900,
+            sizing_mode='stretch_width',
+            margin=(15, 15, 0, 15)
+        )
+
+
+
+        self.additional_headers = pn.widgets.TextInput(
+            name='(optional) Add the header names of columns that you want to keep in the directLFQ output file, separated by semicolons.',
+            placeholder='(optional) Enter the header names of columns that you want to keep',
+            width=900,
+            sizing_mode='stretch_width',
+            margin=(15, 15, 0, 15)
+        )
+
+        self.protein_subset_for_normalization_file = pn.widgets.TextInput(
+            name='(optional) Specify a list of proteins that you want to use for normalization.',
+            placeholder='(optional) Enter the whole path to the protein list file',
+            width=900,
+            sizing_mode='stretch_width',
+            margin=(15, 15, 0, 15)
+        )
+
+        self.dropdown_menu_for_input_type = pn.widgets.Select(name = "(optional) Type of input table", options = {'detect automatically' : None, 'Alphapept peptides.csv' : 'alphapept_peptides', 'MaxQuant evidence.txt' : "maxquant_evidence", 'MaxQuant peptides.txt' : 'maxquant_peptides',
+        'Spectronaut fragment level' :'spectronaut_fragion_isotopes', 'Spectronaut precursor level' : 'spectronaut_precursor', 'DIANN fragment level': 'diann_fragion_isotopes', 'DIANN precursor level' : 'diann_precursor'})
+ 
+        self.num_nonan_vals = pn.widgets.IntInput(name='number non-nan values', value=1, step=1, start=0, end=1000)
+
+
+
         # RUN PIPELINE
         self.run_pipeline_button = pn.widgets.Button(
             name='Run pipeline',
@@ -169,14 +193,6 @@ class RunPipeline(BaseWidget):
             align='center',
             margin=(-10, 0, 20, 0)
         )
-        # self.visualize_data_button = pn.widgets.Button(
-        #     name='Visualize data',
-        #     button_type='primary',
-        #     height=31,
-        #     width=250,
-        #     align='center',
-        #     margin=(40, 0, 0, 0)
-        # )
         self.run_pipeline_error = pn.pane.Alert(
             width=600,
             alert_type="danger",
@@ -190,9 +206,19 @@ class RunPipeline(BaseWidget):
             pn.Row(
                 pn.Column(
                     self.path_analysis_file,
-                    self.dropdown_menu_for_input_type,
-                    self.run_pipeline_error,
+                    self.path_protein_groups_file,
+
+                    #self.run_pipeline_error,
                     #self.path_output_folder,
+                    pn.Card(
+                        pn.Row(
+                            pn.Column(
+                            self.additional_headers,
+                            self.dropdown_menu_for_input_type,
+                            self.protein_subset_for_normalization_file,
+                            self.num_nonan_vals,
+                            ), ), ),
+
 
                     gui_textfields.Descriptions.project_instruction,
                     gui_textfields.Cards.spectronaut,
@@ -251,22 +277,18 @@ class RunPipeline(BaseWidget):
     def run_pipeline(self, *args):
         self.run_pipeline_progress.active = True
         input_file = self.path_analysis_file.value
-        input_type_to_use = self.get_intable_config_id_from_selected_input_type()
+        input_type_to_use = self.dropdown_menu_for_input_type.value
+        mq_protein_groups_txt = self.path_protein_groups_file.value
+        additional_headers = self.additional_headers.value
+        min_nonan = self.num_nonan_vals.value
+        file_of_proteins_for_normalization = self.protein_subset_for_normalization_file.value
 
-        lfq_manager.run_lfq(input_file = input_file, input_type_to_use = input_type_to_use, min_nonan = 1, maximum_number_of_quadratic_ions_to_use_per_protein = 10, number_of_quadratic_samples = 50)
+
+        lfq_manager.run_lfq(input_file = input_file, input_type_to_use = input_type_to_use, maximum_number_of_quadratic_ions_to_use_per_protein = 10,
+         number_of_quadratic_samples = 50, mq_protein_groups_txt= mq_protein_groups_txt, columns_to_add= additional_headers, selected_proteins_file= file_of_proteins_for_normalization, min_nonan = min_nonan)
 
         self.trigger_dependancy()
         self.run_pipeline_progress.active = False
-
-    def get_intable_config_id_from_selected_input_type(self):
-        input_list = ['MaxQuant evidence.txt', 'MaxQuant peptides.txt',
-        'Spectronaut fragment level', 'Spectronaut precursor level', 'DIANN fragment level', 'DIANN precursor level']
-        intable_ids = ['maxquant_evidence_proteins_column', 'maxquant_peptides', 'spectronaut_fragion_isotopes', 'spectronaut_precursor','diann_fragion_isotopes',
-        'diann_precursor']
-        mapping =  dict(zip(input_list, intable_ids))
-        selected_value_by_user = self.dropdown_menu_for_input_type.value
-        return mapping.get(selected_value_by_user)
- 
 
 
     def visualize_data(self, *args):

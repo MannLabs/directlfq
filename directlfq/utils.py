@@ -26,7 +26,7 @@ __all__ = ['get_samples_used_from_samplemap_file', 'get_samples_used_from_sample
            'get_original_file_from_aq_reformat', 'import_config_dict', 'load_samplemap', 'prepare_loaded_tables',
            'LongTableReformater', 'AcquisitionTableHandler', 'AcquisitionTableInfo', 'AcquisitionTableHeaders',
            'AcquisitionTableOutputPaths', 'AcquisitionTableReformater', 'AcquisitionTableHeaderFilter',
-           'merge_acquisition_df_parameter_df', 'plot_withincond_fcs']
+           'merge_acquisition_df_parameter_df', 'plot_withincond_fcs', 'plot_relative_to_median_fcs']
 
 # Cell
 import os
@@ -178,21 +178,25 @@ def create_or_replace_folder(folder):
 # Cell
 
 def add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(mq_file, input_type_to_use ,mq_protein_group_file, columns_to_add):
-    input_type = _get_input_type(mq_file, input_type_to_use)
-    if ("maxquant_evidence" in input_type or "maxquant_peptides" in input_type) and ("aq_reformat" not in mq_file):
-        if mq_protein_group_file is None:
-            print("You provided a MaxQuant peptide or evidence file as input. To have the identical ProteinGroups as in the MaxQuant analysis, please provide the ProteinGroups.txt file as well.")
-            return mq_file
+    try:
+        input_type = _get_input_type(mq_file, input_type_to_use)
+        if ("maxquant_evidence" in input_type or "maxquant_peptides" in input_type) and ("aq_reformat" not in mq_file):
+            if mq_protein_group_file is None:
+                print("You provided a MaxQuant peptide or evidence file as input. To have the identical ProteinGroups as in the MaxQuant analysis, please provide the ProteinGroups.txt file as well.")
+                return mq_file
+            else:
+                mq_df = load_input_file_and_de_duplicate_if_evidence(mq_file, input_type, columns_to_add)
+                id_column = determine_id_column_from_input_df(mq_df)
+                id2protein_df = create_id_to_protein_df(mq_protein_group_file, id_column)
+                annotated_mq_df = annotate_mq_df(mq_df, id2protein_df, id_column)
+                annotated_mq_filename = f"{mq_file}.protgroup_annotated.tsv"
+                save_annotated_mq_df(annotated_mq_df, annotated_mq_filename)
+                return annotated_mq_filename
         else:
-            mq_df = load_input_file_and_de_duplicate_if_evidence(mq_file, input_type, columns_to_add)
-            id_column = determine_id_column_from_input_df(mq_df)
-            id2protein_df = create_id_to_protein_df(mq_protein_group_file, id_column)
-            annotated_mq_df = annotate_mq_df(mq_df, id2protein_df, id_column)
-            annotated_mq_filename = f"{mq_file}.protgroup_annotated.tsv"
-            save_annotated_mq_df(annotated_mq_df, annotated_mq_filename)
-            return annotated_mq_filename
-    else:
+            return mq_file
+    except:
         return mq_file
+
 
 def _get_input_type(mq_file ,input_type_to_use):
     if input_type_to_use is not None:
@@ -1229,4 +1233,22 @@ def plot_withincond_fcs(normed_intensity_df, cut_extremes = True):
         plt.hist(diff_fcs,80,density=True, histtype='step',range=range) #set the cutoffs to focus the visualization
         plt.xlabel("log2 peptide fcs")
 
+    plt.show()
+
+# Cell
+import matplotlib.pyplot as plt
+from scipy import stats
+import itertools
+
+def plot_relative_to_median_fcs(normed_intensity_df):
+
+    median_intensities = normed_intensity_df.median(axis=1)
+    median_intensities = median_intensities.to_numpy()
+
+    diff_fcs = []
+    for col in normed_intensity_df.columns:
+        median_fcs = normed_intensity_df[col].to_numpy() - median_intensities
+        diff_fcs.append(np.nanmedian(median_fcs))
+    plt.hist(diff_fcs,80,density=True, histtype='step')
+    plt.xlabel("log2 peptide fcs")
     plt.show()

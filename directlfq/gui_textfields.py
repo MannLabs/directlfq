@@ -8,6 +8,7 @@ import pathlib
 class Paths():
     CONFIGS_PATH = os.path.join(pathlib.Path(__file__).parent.absolute(), "configs")
     spectronaut_fragion_path = os.path.join(CONFIGS_PATH, "spectronaut_tableconfig_fragion.rs")
+    spectronaut_precursor_path = os.path.join(CONFIGS_PATH, "spectronaut_tableconfig_precursor.rs")
     
 class ButtonConfiguration():
     width = 530
@@ -19,9 +20,12 @@ class Descriptions():
     project_instruction = panel.pane.Markdown("""
         #### How to use directLFQ:
         1. Provide the filepath to your proteomic datasets analyzed by
-        Spectronaut, DIA-NN or MaxQuant (see instructions below!).
-        2. Select the type of the input table you have specified from the dropdown menu
-        3. Click on the _RUN PIPELINE_ button, you can follow the progress on the terminal window
+        Alphapept, MaxQuant, Spectronaut or DIA-NN (see instructions below!).
+        2. (optional) If you are using MaxQuant evidence.txt or peptides.txt files, you can add the link to the corresponding proteinGroups.txt file. Adding the proteinGroups.txt will improve peptide mapping.
+        3. (optional) You can add the names of specific columns in your input table that you want to retain in the output table. This is useful if you want to add additional information to the output table, for example the organism name a protein
+         belongs to. Note that some basic additional columns such as gene names are always added to the output table by default. WARNING: Take care that columns you add are not ambigous. For example, adding the peptide sequence column will not work, because there are multiple peptide sequences per protein.
+        4. (optional) If necessary, specfiy the type of the input table you want to use from the dropdown menu. Applies only if you want to use non-default settings, for example if you want to use summarized precursor intensities instead of fragment ion intensities for DIA data.
+        3. Click on the _RUN PIPELINE_ button, you can follow the progress on the terminal window.
         """,
         width=ButtonConfiguration.width,
         align='start',
@@ -47,13 +51,18 @@ class Descriptions():
 
     spectronaut = pn.pane.Markdown(
         """
-        To get the most out of the Spectronaut data, AlphaQuant utilizes more than 30 different columns.
-        These can be obtained by downloading the export scheme "spectronaut_tableconfig_fragion.rs", 
-        which can then simply be loaded into Spectronaut as follows: 
+        directLFQ takes a Spectronaut .tsv table as input. When exporting from Spectronaut, the correct columns need to be selected. 
+        These can be obtained by downloading one of the export schemes available below. We provide one export scheme for 
+        sprecursor quantification
+        and one export scheme for fragment ion quantification. Fragment ion quantification shows slightly more accuracy, but the files are around 10 times larger.
+        
+        An export scheme can then simply be loaded into Spectronaut as follows:
         
         Go to the "Report" perspective in Spectronaut, click "Import Schema" and provide the file.
 
-        The data needs to be exported in the **normal long** format as .tsv or .csv file. 
+        The data needs to be exported in the **normal long** format as .tsv or .csv file.
+
+
 
         """,
         width=ButtonConfiguration.width,
@@ -72,7 +81,7 @@ class Descriptions():
 
     maxquant = pn.pane.Markdown(
             """
-            Provide the path to the MaxQuant peptides.txt output table.
+            Provide the path to the MaxQuant peptides.txt output table or the MaxQuant evidence.txt output table. Additionally and if possible, provide the path to the corresponding proteinGroups.txt file.
             """,
             width=ButtonConfiguration.width,
             align='start',
@@ -84,9 +93,16 @@ class Descriptions():
 
 class DownloadSchemes():
 
-    spectronaut = pn.widgets.FileDownload(
+    spectronaut_fragion = pn.widgets.FileDownload(
     file=Paths.spectronaut_fragion_path,
     filename="spectronaut_tableconfig_fragion.rs",
+    button_type='default',
+    auto=True,
+    css_classes=['button_options'],
+)
+    spectronaut_precursor = pn.widgets.FileDownload(
+    file=Paths.spectronaut_precursor_path,
+    filename="spectronaut_tableconfig_precursor.rs",
     button_type='default',
     auto=True,
     css_classes=['button_options'],
@@ -109,7 +125,8 @@ class Cards():
 
     spectronaut = pn.Card(
         Descriptions.spectronaut,
-        DownloadSchemes.spectronaut,
+        DownloadSchemes.spectronaut_fragion,
+        DownloadSchemes.spectronaut_precursor,
         header='Spectronaut instructions',
         collapsed=True,
         width=ButtonConfiguration.width,
