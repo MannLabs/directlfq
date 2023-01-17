@@ -208,7 +208,7 @@ def _get_input_type(mq_file ,input_type_to_use):
 def load_input_file_and_de_duplicate_if_evidence(input_file, input_type, columns_to_add):
     input_df = pd.read_csv(input_file, sep = "\t")
     if "maxquant_evidence" in input_type:
-        subset_columns = ['id','Sequence','Modified sequence', 'Experiment','Charge', 'Raw file', 'Gene names', 'Intensity'] + columns_to_add
+        subset_columns = ['id','Sequence','Modified sequence', 'Experiment','Charge', 'Raw file', 'Gene names', 'Intensity', 'Reverse', 'Potential contaminant'] + columns_to_add
         columns_to_group_by = ['Sequence','Modified sequence', 'Experiment','Charge', 'Raw file']
         input_df = input_df[subset_columns].set_index(columns_to_group_by)
         input_df_grouped = input_df.groupby(columns_to_group_by).Intensity.max()

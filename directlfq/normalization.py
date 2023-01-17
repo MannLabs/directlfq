@@ -314,13 +314,6 @@ class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
         self._run_normalization()
         self.complete_dataframe = complete_dataframe.T
 
-    def _normalize_complete_input_quadratic(self):
-        self.complete_dataframe =  self.normalization_function(self.complete_dataframe)
-
-    def _normalize_quadratic_selection(self):
-        quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows]
-        self.complete_dataframe.loc[self._quadratic_subset_rows,:] = self.normalization_function(quadratic_subset_dataframe)
-
     def _adapt_selected_proteins_to_protein_groups(self):
         if self._selected_proteins_file is not None:
             logging.info('Normalizing only selected proteins')
@@ -337,11 +330,23 @@ class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
     def _normalization_function(self, ion_dataframe):
         if self._selected_protein_groups is not None:
             ion_dataframe_selected = ion_dataframe.loc[:,self._selected_protein_groups]
+            sample2shift = get_normfacts(ion_dataframe_selected.to_numpy())
         else:
             ion_dataframe_selected = ion_dataframe
-        sample2shift = get_normfacts(drop_nas_if_possible(ion_dataframe_selected).to_numpy())
+            sample2shift = get_normfacts(drop_nas_if_possible(ion_dataframe_selected).to_numpy())
+
         df_c_normed = pd.DataFrame(apply_sampleshifts(ion_dataframe.to_numpy(), sample2shift), index = ion_dataframe.index, columns = ion_dataframe.columns)
         return df_c_normed
+
+    def _create_reference_sample(self):
+        quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows, self._selected_protein_groups]
+        self._merged_reference_sample = quadratic_subset_dataframe.median(axis=0)
+
+    def _shift_remaining_dataframe_to_reference_sample(self):
+        linear_subset_dataframe = self.complete_dataframe.loc[self._linear_subset_rows]
+        linear_shifted_dataframe = SampleShifterLinear(linear_subset_dataframe, self._merged_reference_sample, protein_subset = self._selected_protein_groups).ion_dataframe
+        self.complete_dataframe.loc[ self._linear_subset_rows, :] = linear_shifted_dataframe
+
 
 class NormalizationManagerProtein(NormalizationManager):
     def __init__(self, complete_dataframe, num_samples_quadratic):
@@ -366,12 +371,20 @@ class SampleShifterLinearToMedian():
 
 # Cell
 class SampleShifterLinear():
-    def __init__(self, ion_dataframe, reference_column):
+    def __init__(self, ion_dataframe, reference_intensities, protein_subset = None):
         self.ion_dataframe = ion_dataframe
-        self._ion_dataframe_values = ion_dataframe.to_numpy()
-        self._reference_column = reference_column.to_numpy()
+        self._protein_subset = protein_subset
+        self._ion_dataframe_values = None
+        self._reference_intensities = reference_intensities.to_numpy()
+        self._define_ion_dataframe_values()
         self._shift_columns_to_reference_sample()
-        self._update_ion_dataframe()
+        #self._update_ion_dataframe()
+
+    def _define_ion_dataframe_values(self):
+        if self._protein_subset is not None:
+            self._ion_dataframe_values = self.ion_dataframe.loc[: , self._protein_subset].to_numpy()
+        else:
+            self._ion_dataframe_values = self.ion_dataframe.to_numpy()
 
     def _shift_columns_to_reference_sample(self):
         num_rows = self._ion_dataframe_values.shape[0]
@@ -379,8 +392,9 @@ class SampleShifterLinear():
             self._shift_to_reference_sample(row_idx)
 
     def _shift_to_reference_sample(self, row_idx):
-        distance_to_reference = calc_distance(metric='median', samples_1=self._reference_column, samples_2=self._ion_dataframe_values[row_idx,:]) #reference-sample = distance
-        self._ion_dataframe_values[row_idx, :] += distance_to_reference
+        distance_to_reference = calc_distance(metric='median', samples_1=self._reference_intensities, samples_2=self._ion_dataframe_values[row_idx,:]) #reference-sample = distance
+        self.ion_dataframe.iloc[row_idx, :] += distance_to_reference
+        #self._ion_dataframe_values[row_idx, :] += distance_to_reference
 
     def _update_ion_dataframe(self):
         self.ion_dataframe.loc[:,:] = self._ion_dataframe_values

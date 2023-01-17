@@ -129,6 +129,7 @@ class MainWidget(object):
         return LAYOUT
 
 
+
 class RunPipeline(BaseWidget):
 
     def __init__(self):
@@ -146,34 +147,42 @@ class RunPipeline(BaseWidget):
 
         self.path_protein_groups_file = pn.widgets.TextInput(
             name='(optional) Specify a MaxQuant proteinGroups.txt file here, in case you are working with MaxQuant output. This helps in the protein group mapping',
-            placeholder='(optional) Enter the whole path to the protein groups file',
+            placeholder='(optional) Enter the whole path to the MaxQuant proteinGroups.txt file',
+            default = None,
             width=900,
             sizing_mode='stretch_width',
             margin=(15, 15, 0, 15)
         )
 
+        ## optional files
 
-
+        self.additional_headers_title = pn.pane.Markdown('* Add the names of columns that you want to keep in the directLFQ output file, separated by semicolons. Note that some basic additional columns such as gene names are always added to the output table by default.\nWARNING: Take care that columns you add are not ambigous. For example, adding the peptide sequence column will not work, because there are multiple peptide sequences per protein:')
         self.additional_headers = pn.widgets.TextInput(
-            name='(optional) Add the header names of columns that you want to keep in the directLFQ output file, separated by semicolons.',
-            placeholder='(optional) Enter the header names of columns that you want to keep',
-            width=900,
-            sizing_mode='stretch_width',
-            margin=(15, 15, 0, 15)
+            name='',
+            placeholder='(optional) Enter the names of columns that you want to keep',
+            default = None,
+            #width=900,
+            #sizing_mode='stretch_width',
+            #margin=(15, 15, 0, 15)
         )
 
+        self.protein_subset_for_normalization_title = pn.pane.Markdown('* Specify a list of proteins (no header, seperated by linebreaks) that you want to use for normalization. This could for example be a list of housekeeping proteins:')
         self.protein_subset_for_normalization_file = pn.widgets.TextInput(
-            name='(optional) Specify a list of proteins that you want to use for normalization.',
+            name='',
+            default = None,
             placeholder='(optional) Enter the whole path to the protein list file',
             width=900,
             sizing_mode='stretch_width',
             margin=(15, 15, 0, 15)
         )
 
-        self.dropdown_menu_for_input_type = pn.widgets.Select(name = "(optional) Type of input table", options = {'detect automatically' : None, 'Alphapept peptides.csv' : 'alphapept_peptides', 'MaxQuant evidence.txt' : "maxquant_evidence", 'MaxQuant peptides.txt' : 'maxquant_peptides',
+        self.dropdown_menu_for_input_type_title = pn.pane.Markdown('* Specify the type of the input table you want to use from the dropdown menu. Applies only if you want to use non-default settings, for example if you want to use summarized precursor intensities instead of fragment ion intensities for DIA data:')
+        self.dropdown_menu_for_input_type = pn.widgets.Select(name = "",
+        options = {'detect automatically' : None, 'Alphapept peptides.csv' : 'alphapept_peptides', 'MaxQuant evidence.txt' : "maxquant_evidence", 'MaxQuant peptides.txt' : 'maxquant_peptides',
         'Spectronaut fragment level' :'spectronaut_fragion_isotopes', 'Spectronaut precursor level' : 'spectronaut_precursor', 'DIANN fragment level': 'diann_fragion_isotopes', 'DIANN precursor level' : 'diann_precursor'})
- 
-        self.num_nonan_vals = pn.widgets.IntInput(name='number non-nan values', value=1, step=1, start=0, end=1000)
+
+        self.num_nonan_vals_title = pn.pane.Markdown('* Specify the minimum number of non-nan ion intensities required to derive a protein intensity. The higher this number, the more reliable the protein quantification at the cost of more missing values:')
+        self.num_nonan_vals = pn.widgets.IntInput(name='', value=1, step=1, start=0, end=1000)
 
 
 
@@ -213,11 +222,26 @@ class RunPipeline(BaseWidget):
                     pn.Card(
                         pn.Row(
                             pn.Column(
+                            self.additional_headers_title,
                             self.additional_headers,
+                            self.dropdown_menu_for_input_type_title,
                             self.dropdown_menu_for_input_type,
+                            self.protein_subset_for_normalization_title,
                             self.protein_subset_for_normalization_file,
+                            self.num_nonan_vals_title,
                             self.num_nonan_vals,
-                            ), ), ),
+                            ), ), 
+                            header='optional configurations',
+                            collapsed=True,
+                            header_background='#eaeaea',
+                            header_color='#333',
+                            align='center',
+                           # sizing_mode='stretch_width',
+                            #height=1000,
+                            #margin=(5, 8, 10, 8),
+                           # css_classes=['background']
+                            
+                            ),
 
 
                     gui_textfields.Descriptions.project_instruction,
@@ -278,10 +302,10 @@ class RunPipeline(BaseWidget):
         self.run_pipeline_progress.active = True
         input_file = self.path_analysis_file.value
         input_type_to_use = self.dropdown_menu_for_input_type.value
-        mq_protein_groups_txt = self.path_protein_groups_file.value
-        additional_headers = self.additional_headers.value
+        mq_protein_groups_txt = None if self.path_protein_groups_file.value == '' else self.path_protein_groups_file.value
+        additional_headers = [] if self.additional_headers.value == '' else self.additional_headers.value
         min_nonan = self.num_nonan_vals.value
-        file_of_proteins_for_normalization = self.protein_subset_for_normalization_file.value
+        file_of_proteins_for_normalization = None if self.protein_subset_for_normalization_file.value == '' else self.protein_subset_for_normalization_file.value
 
 
         lfq_manager.run_lfq(input_file = input_file, input_type_to_use = input_type_to_use, maximum_number_of_quadratic_ions_to_use_per_protein = 10,

@@ -22,23 +22,14 @@ class Descriptions():
         1. Provide the filepath to your proteomic datasets analyzed by
         Alphapept, MaxQuant, Spectronaut or DIA-NN (see instructions below!).
         2. (optional) If you are using MaxQuant evidence.txt or peptides.txt files, you can add the link to the corresponding proteinGroups.txt file. Adding the proteinGroups.txt will improve peptide mapping.
-        3. (optional) You can add the names of specific columns in your input table that you want to retain in the output table. This is useful if you want to add additional information to the output table, for example the organism name a protein
-         belongs to. Note that some basic additional columns such as gene names are always added to the output table by default. WARNING: Take care that columns you add are not ambigous. For example, adding the peptide sequence column will not work, because there are multiple peptide sequences per protein.
-        4. (optional) If necessary, specfiy the type of the input table you want to use from the dropdown menu. Applies only if you want to use non-default settings, for example if you want to use summarized precursor intensities instead of fragment ion intensities for DIA data.
-        3. Click on the _RUN PIPELINE_ button, you can follow the progress on the terminal window.
+        3. (optional) You can configure your run with some of the optional parameters accessible in the "optional configurations" section.
+        4. Click on the _RUN PIPELINE_ button, you can follow the progress on the terminal window.
         """,
         width=ButtonConfiguration.width,
         align='start',
         margin=(0, 80, 0, 10))
 
-    single_comparison_instruction = panel.pane.Markdown("""
-        Here you can visualize comparisons of two conditions as a volcano plot. You can click or search proteins of interest and detail plots of the quantification will be shown. 
-        The displayed data is stored as text files in the output folder you specified.
-        """,
-        width=830,
-        align='start',
-        margin=(0, 80, 0, 10))
-
+        
     alphapept = pn.pane.Markdown(
         """
         Provide the path to the AlphaPept results_peptides.csv output table.

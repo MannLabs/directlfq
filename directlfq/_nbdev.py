@@ -3,8 +3,10 @@
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
 index = {"run_lfq": "01_lfq_manager.ipynb",
+         "get_outfile_basename": "01_lfq_manager.ipynb",
          "save_protein_df": "01_lfq_manager.ipynb",
          "save_ion_df": "01_lfq_manager.ipynb",
+         "number_of_quadratic_samples": "01_lfq_manager.ipynb",
          "get_normfacts": "02_normalization.ipynb",
          "set_samples_with_only_single_intensity_to_nan": "02_normalization.ipynb",
          "apply_sampleshifts": "02_normalization.ipynb",

@@ -21,6 +21,28 @@ alphapept_peptides:
          
   use_iontree: False
 
+
+fragpipe_precursors:
+  format: longtable
+  sample_ID: Run
+  quant_ID:
+    precursor_intensity: Intensity
+  protein_cols:
+   - protein_group
+  ion_hierarchy:
+    precursor_intensity:
+      order: [SEQ, MOD, CHARGE]
+      mapping:
+        SEQ: 
+         - Peptide Sequence
+        MOD:
+         - Modified Sequence
+        CHARGE: 
+         - Charge
+         
+  use_iontree: False
+
+
 maxquant_peptides:
   format: widetable
   quant_prefix: "Intensity "
@@ -45,6 +67,10 @@ maxquant_peptides:
       param: Potential contaminant
       comparator: "!="
       value: "+"
+    amino_acid:
+      param: Amino acid before
+      comparator: "!="
+      value: "XYZ"
   ml_level: SEQ
   use_iontree: False
 
@@ -73,6 +99,10 @@ maxquant_peptides_leading_razor_protein:
       param: Potential contaminant
       comparator: "!="
       value: "+"
+    amino_acid:
+      param: Amino acid before
+      comparator: "!="
+      value: "XYZ"
   ml_level: SEQ
   use_iontree: False
 
@@ -100,6 +130,10 @@ maxquant_peptides_benchmarking:
       param: Potential contaminant
       comparator: "!="
       value: "+"
+    amino_acid:
+      param: Amino acid before
+      comparator: "!="
+      value: "XYZ"
   ml_level: SEQ
   use_iontree: False
 
@@ -113,6 +147,15 @@ maxquant_evidence:
   ion_cols:
    - Modified sequence
    - Charge
+  filters:
+    reverse:
+      param: Reverse
+      comparator: "!="
+      value: "+"
+    contaminant:
+      param: Potential contaminant
+      comparator: "!="
+      value: "+"
 
   
 maxquant_evidence_leading_razor_protein:
