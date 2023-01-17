@@ -5,7 +5,7 @@
 import click
 
 # local
-import alphatemplate
+import directlfq
 
 
 @click.group(
@@ -15,9 +15,9 @@ import alphatemplate
     invoke_without_command=True
 )
 @click.pass_context
-@click.version_option(alphatemplate.__version__, "-v", "--version")
+@click.version_option(directlfq.__version__, "-v", "--version")
 def run(ctx, **kwargs):
-    name = f"AlphaTemplate {alphatemplate.__version__}"
+    name = f"directLFQ {directlfq.__version__}"
     click.echo("*" * (len(name) + 4))
     click.echo(f"* {name} *")
     click.echo("*" * (len(name) + 4))
@@ -27,5 +27,5 @@ def run(ctx, **kwargs):
 
 @run.command("gui", help="Start graphical user interface.")
 def gui():
-    import alphatemplate.gui
-    alphatemplate.gui.run()
+    import directlfq.gui
+    directlfq.gui.run()
