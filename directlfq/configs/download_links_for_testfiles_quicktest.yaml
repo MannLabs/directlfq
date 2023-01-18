@@ -1,10 +1,3 @@
 #the files that are used for the system tests are stored on a MPI datashared and the download links as well as the directory and file names are stored here
 system_tests:
-  sensitivity_tests:
-    MaxQuant:
-      peptides.txt : https://datashare.biochem.mpg.de/s/ocOp7c6DMMxjpZy
-      samplemap.tsv : https://datashare.biochem.mpg.de/s/fSsqb7zgrXrQKKO
-      prot2organism.tsv : https://datashare.biochem.mpg.de/s/hbYebY0utGk7COq
-    empires_comparison:
-      normed_intensities_c1_vs_c2.tsv : https://datashare.biochem.mpg.de/s/i49YV6YhPP3B3EG
-      reference_c1_vs_c2 : https://datashare.biochem.mpg.de/s/pkY8QuUTsEdfigi
+  quicktests: https://datashare.biochem.mpg.de/s/UbF6TdVGAsYuNrR
