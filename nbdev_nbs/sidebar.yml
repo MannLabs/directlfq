@@ -1,0 +1,10 @@
+website:
+  sidebar:
+    contents:
+      - 01_lfq_manager.ipynb
+      - 02_normalization.ipynb
+      - 03_protein_intensity_estimation.ipynb
+      - 04_utils.ipynb
+      - 05_visualizations.ipynb
+      - 06_benchmarking.ipynb
+      - 07_testfile_handling.ipynb

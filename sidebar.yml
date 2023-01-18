@@ -1,0 +1,175 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - 01_lfq_manager.ipynb
+      - 02_normalization.ipynb
+      - 03_protein_intensity_estimation.ipynb
+      - 04_utils.ipynb
+      - 05_visualizations.ipynb
+      - 06_benchmarking.ipynb
+      - 07_testfile_handling.ipynb
+      - section: plotting_examples
+        contents:
+          - plotting_examples/example_outline.ipynb
+      - section: release
+        contents:
+          - section: one_click_macos_gui
+            contents:
+              - section: Resources
+                contents:
+                  - release/one_click_macos_gui/Resources/conclusion.html
+      - section: release
+        contents:
+          - section: one_click_macos_gui
+            contents:
+              - section: Resources
+                contents:
+                  - release/one_click_macos_gui/Resources/welcome.html
+      - section: test_data
+        contents:
+          - section: system_tests
+            contents:
+              - section: quicktests
+                contents:
+                  - test_data/system_tests/quicktests/create_quicktest_tables.ipynb
+      - section: tests
+        contents:
+          - section: example_plots
+            contents:
+              - tests/example_plots/ion_trace_shifting.ipynb
+      - section: tests
+        contents:
+          - section: example_plots
+            contents:
+              - tests/example_plots/ion_trace_shifting_v2.ipynb
+      - section: tests
+        contents:
+          - section: learning_tests
+            contents:
+              - tests/learning_tests/runtimes_numba_numpy.ipynb
+      - section: tests
+        contents:
+          - section: normalization_tests
+            contents:
+              - tests/normalization_tests/check_between_tissue_normalization.ipynb
+      - section: tests
+        contents:
+          - section: normalization_tests
+            contents:
+              - tests/normalization_tests/test_normalization_on_large_datatsets.ipynb
+      - section: tests
+        contents:
+          - section: organellar_maps
+            contents:
+              - tests/organellar_maps/create_aq_reformatted_input_df_for_organellar_maps.ipynb
+      - section: tests
+        contents:
+          - section: organellar_maps
+            contents:
+              - tests/organellar_maps/plot_example_protein_ion_traces.ipynb
+      - section: tests
+        contents:
+          - section: organellar_maps
+            contents:
+              - tests/organellar_maps/run_organellar_maps_data.ipynb
+      - section: tests
+        contents:
+          - section: organellar_maps
+            contents:
+              - tests/organellar_maps/run_organellar_maps_new.ipynb
+      - section: tests
+        contents:
+          - section: quicktests
+            contents:
+              - tests/quicktests/run_pipeline_w_different_input_formats.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/comapare_charite_cohort_diann.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_andre_yeast_interactome.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_iq_DIA_set.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_iq_to_biognosys_dia.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_kuster200.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_kuster200_evidence.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_largefc_diann_iq.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_largefc_spectronaut_iq.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_largefc_spectronaut_precursor_vs_fragment.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_to_biognosys_dia.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_w_lfqbench_diann.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_w_lfqbench_spectronaut.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_w_maxquant.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_w_maxquant_evidence.ipynb
+      - section: tests
+        contents:
+          - section: ratio_tests
+            contents:
+              - tests/ratio_tests/compare_yeast_screen_diann.ipynb
+      - section: tests
+        contents:
+          - section: runtime_tests
+            contents:
+              - tests/runtime_tests/local_iq_scaling.ipynb
+      - section: tests
+        contents:
+          - section: runtime_tests
+            contents:
+              - tests/runtime_tests/runtime_test_scale_up.ipynb
+      - section: tests
+        contents:
+          - section: table_reformatting
+            contents:
+              - tests/table_reformatting/test_protgroup_annotation_evidence_table.ipynb

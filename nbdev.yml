@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "directlfq"
+  site-url: "https://ammarcsj.github.io/directlfq/"
+  description: "sensitive quantification for proteomics"
+  repo-branch: master
+  repo-url: "https://github.com/ammarcsj/directlfq/tree/master/"
