@@ -10,7 +10,7 @@ import subprocess
 import sys
 import os
 import tarfile
-import wget
+
 
 
 
@@ -19,7 +19,7 @@ class TestFileDownloader():
     def __init__(self, test_folder, links_yaml):
         self._test_folder = test_folder
         self._path2link = DownloadLinkConverter(links_yaml).get_path2link_from_yaml_file()
-        self.__install_wget_if_missing__()
+        self.__install_and_load_wget_if_missing__()
 
     def download_missing_files(self):
         missing_paths = self.__get_missing_paths__()
@@ -79,8 +79,9 @@ class TestFileDownloader():
         return {x.replace(base_dir, ".") for x in list_of_absolute_paths}
     
     @staticmethod
-    def __install_wget_if_missing__():
+    def __install_and_load_wget_if_missing__():
         subprocess.check_call([sys.executable, "-m", "pip", "install", "wget"])
+        import wget
 
     
 
