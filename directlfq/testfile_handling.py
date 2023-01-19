@@ -35,6 +35,7 @@ class TestFileDownloader():
         return all_paths - existing_paths
 
     def __download_file__(self, path):
+        import wget
         download_link = self.__get_download_link_from_path__(path)
         absolute_path = self.__convert_relative_to_absolute_path__(path)
         self.__prepare_download_directory__(absolute_path)
@@ -81,7 +82,6 @@ class TestFileDownloader():
     @staticmethod
     def __install_and_load_wget_if_missing__():
         subprocess.check_call([sys.executable, "-m", "pip", "install", "wget"])
-        import wget
 
     
 
