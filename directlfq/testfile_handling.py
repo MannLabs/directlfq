@@ -9,6 +9,9 @@ import glob
 import subprocess
 import sys
 import os
+import tarfile
+import wget
+
 
 
 
@@ -24,6 +27,7 @@ class TestFileDownloader():
         for missing_path in missing_paths:
             print(os.path.abspath(missing_path))
             self.__download_file__(missing_path)
+            self.__untar_file_if_tar__(missing_path)
 
     def __get_missing_paths__(self):
         all_paths = set(self._path2link.keys())
@@ -31,11 +35,16 @@ class TestFileDownloader():
         return all_paths - existing_paths
 
     def __download_file__(self, path):
-        import wget
         download_link = self.__get_download_link_from_path__(path)
         absolute_path = self.__convert_relative_to_absolute_path__(path)
         self.__prepare_download_directory__(absolute_path)
         wget.download(download_link, absolute_path)
+
+    def __untar_file_if_tar__(self, path):
+        if path.endswith(".tar"):
+            tar = tarfile.open(path)
+            tar.extractall()
+            tar.close()
 
     def __get_existing_paths__(self):
         all_elements = self.__get_all_elements_in_all_subdirs__(self._test_folder)
