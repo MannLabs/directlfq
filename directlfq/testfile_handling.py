@@ -11,6 +11,8 @@ import sys
 import os
 import wget
 import tarfile
+from zipfile import ZipFile
+
 
 
 
@@ -25,21 +27,25 @@ class TestFolderDownloader():
         print(missing_paths)
         for missing_path in missing_paths:
             print(missing_path)
-            self.__download_tarfile__(missing_path)
+            self.__download_and_extract_compressed_file__(missing_path)
 
     def __get_missing_paths__(self):
         all_paths = set(self._path2link.keys())
         existing_paths = self.__get_existing_paths__()
         return all_paths - existing_paths
 
-    def __download_tarfile__(self, path):
+    def __download_and_extract_compressed_file__(self, path):
         download_link = self.__get_download_link_from_path__(path)
         absolute_path = self.__convert_relative_to_absolute_path__(path)
         self.__prepare_download_directory__(absolute_path)
+        #download a file from a web server
         wget.download(download_link, absolute_path)
-    
-    def __untar_file__(self, path):
-        tarfile.open(path).extractall(path=os.path.dirname(path))
+
+        with ZipFile(absolute_path, 'r') as zipObj:
+        # Extract all the contents of zip file in current directory
+            zipObj.extractall(path=os.path.dirname(absolute_path))
+
+            
 
     def __get_existing_paths__(self):
         all_elements = self.__get_all_elements_in_all_subdirs__(self._test_folder)

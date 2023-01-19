@@ -181,6 +181,8 @@ test_data/unit_tests/input_table_formats/combined_ion.tsv
 test_data/unit_tests/protein_ptm_normalization/toy_data
 tests/outliers
 
+tests/download_testfiles.ipynb
+
 #bash scripts
 misc/bumpversion.sh
 #figures

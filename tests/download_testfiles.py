@@ -18,5 +18,5 @@ if __name__ == '__main__':
     except:
         raise ValueError("specify if \'quicktest\' or \'all_tests\' on command line")
 
-    testfieldownloader = directlfq.testfile_handling.TestFileDownloader(test_folder=test_folder, links_yaml=links_yaml)
+    testfieldownloader = directlfq.testfile_handling.TestFolderDownloader(test_folder=test_folder, links_yaml=links_yaml)
     testfieldownloader.download_missing_files()
