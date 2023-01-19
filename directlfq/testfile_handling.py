@@ -22,7 +22,7 @@ class TestFileDownloader():
         missing_paths = self.__get_missing_paths__()
         print(missing_paths)
         for missing_path in missing_paths:
-            print(missing_path)
+            print(os.path.abspath(missing_path))
             self.__download_file__(missing_path)
 
     def __get_missing_paths__(self):
