@@ -180,6 +180,7 @@ test_data/unit_tests/input_table_formats/combined_ion.tsv
 
 test_data/unit_tests/protein_ptm_normalization/toy_data
 tests/outliers
+tests/quicktests/run_pipeline_w_different_input_formats.nbconvert.ipynb
 
 tests/download_testfiles.ipynb
 
