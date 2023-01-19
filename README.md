@@ -7,35 +7,33 @@
 -->
 
 
-# directlfq
-directlfq is an open-source Python package for sensitive proteomics quantification. You can process MS data analyzed by Spectronaut, DIANN, [AlphaPept](https://github.com/MannLabs/alphapept) or MaxQuant using a Graphical User Interface (GUI) or the python package. The current focus is on the comparison of two biological conditions (i.e. "making volcano plots"), with multi-condition functionality to be added soon.
+# directLFQ
+directLFQ is an open-source Python package for deriving protein intensities from Mass Spectrometry-based proteomics data. It demonstrates high accuracy as compared to state-of-the-art tools and allows fast processing of very large sample cohorts, as runtime increases linearly with sample number. 
+
+You can process DIA and DDA data analyzed by Spectronaut, DIANN, [AlphaPept](https://github.com/MannLabs/alphapept), MaxQuant or FragPipe using a Graphical User Interface (GUI) or the python package.
 
 It is part of the AlphaPept ecosystem from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/). To enable all hyperlinks in this document, please view it at [GitHub](https://github.com/MannLabs/directlfq).
 
-* [**About**](#about)
-* [**License**](#license)
-* [**Installation**](#installation)
-  * [**One-click GUI**](#one-click-gui)
-<!---  * [**Pip installer**](#pip) -->
-  * [**Developer installer**](#developer)
-* [**Usage**](#usage)
-  * [**GUI**](#gui)
-<!---  * [**CLI**](#cli) -->
-  * [**Python and jupyter notebooks**](#python-and-jupyter-notebooks)
-* [**Troubleshooting**](#troubleshooting)
-* [**Citations**](#citations)
-* [**How to contribute**](#how-to-contribute)
-* [**Changelog**](#changelog)
+
+- [directLFQ](#directlfq)
+  - [About](#about)
+  - [Installation](#installation)
+    - [One-click GUI](#one-click-gui)
+    - [Developer](#developer)
+  - [Usage](#usage)
+    - [GUI](#gui)
+    - [Python and Jupyter notebooks](#python-and-jupyter-notebooks)
+  - [Troubleshooting](#troubleshooting)
+  - [Citations](#citations)
+  - [How to contribute](#how-to-contribute)
+  - [License](#license)
 
 ---
 ## About
-The standard approach for proteomics quantification is the calculation of point estimates that reflect the abundance of a particular protein. This approach usually neglects a large part of the quantitative information that is available, including the type, quality and reliability of the underlying, quantified peptides. directlfq introduces a collection of novel Bioinformatics algorithms for increased accuracy and sensitivity of proteomics quantification. It is built on the foundation of the [MS-EmpiRe](https://doi.org/10.1074/mcp.RA119.001509) algorithm. 
-directlfq is an open-source Python package of the AlphaPept ecosystem from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/).
+Generating protein intensities from Mass Spectrometry proteomics data comes with a variety of challenges. Differing peptides that belong to the same protein can have strongly differing intensities, for example due to differing ionization efficiencies. Missing values (i.e. peptides that have been detected in one run but not in the other) make simple summarization of peptide intensities to protein intensities problematic. Differences in sample loading can introduce systematic biases into the analysis.
+With directLFQ, we provide a novel algorithm for addressing these challenges in an efficient and accurate manner. directLFQ retains peptide ratios and uses them to infer protein ratios and uses the concept of *intensity traces* for it's main processing steps. For futher details on the algorithm, please refer to the [publication](https://www.biorxiv.org/content/10.1101/2020.12.21.424003v1).
 
----
-## License
-
-directlfq was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/) and is freely available with an [Apache License](LICENSE.txt). External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
+![](./release/images/methods_figure.png)
 
 ---
 ## Installation
@@ -174,14 +172,18 @@ In case of issues, check out the following:
 ---
 ## Citations
 
-Manuscript in preparation.
+In the case that directLFQ is useful to you, please consider supporting us by citing the following paper:
 
 ---
 ## How to contribute
 
 If you like this software, you can give us a [star](https://github.com/MannLabs/directlfq/stargazers) to boost our visibility! All direct contributions are also welcome. Feel free to post a new [issue](https://github.com/MannLabs/directlfq/issues) or clone the repository and create a [pull request](https://github.com/MannLabs/directlfq/pulls) with a new branch. For an even more interactive participation, check out the [discussions](https://github.com/MannLabs/directlfq/discussions) and the [the Contributors License Agreement](misc/CLA.md).
 
----
-## Changelog
 
-See the [HISTORY.md](HISTORY.md) for a full overview of the changes made in each version.
+---
+
+## License
+
+directlfq was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/) and is freely available with an [Apache License](LICENSE.txt). External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
+
+
