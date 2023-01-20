@@ -336,7 +336,10 @@ class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
         return df_c_normed
     
     def _create_reference_sample(self):
-        quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows, self._selected_protein_groups]
+        if self._selected_protein_groups is not None:
+            quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows, self._selected_protein_groups]
+        else:
+            quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows, :]
         self._merged_reference_sample = quadratic_subset_dataframe.median(axis=0)
     
     def _shift_remaining_dataframe_to_reference_sample(self):
