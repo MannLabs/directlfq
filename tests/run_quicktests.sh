@@ -1,5 +1,6 @@
 conda activate directlfq
 pip install wget
+pip install papermill
 python download_testfiles.py quicktest
 cd quicktests
 echo "Script executed from: ${PWD}"
