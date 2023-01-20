@@ -28,10 +28,6 @@ jobs:
           . ./loose_pip_install.sh
 
       - uses: yaananth/run-notebook@v2
-        env:
-          RUNNER: ${{ toJson(runner) }}
-          SECRETS: ${{ toJson(secrets) }}
-          GITHUB: ${{ toJson(github) }}
         with:
           notebook: "tests/quicktests/run_pipeline_w_different_input_formats.ipynb"
           isReport: False
