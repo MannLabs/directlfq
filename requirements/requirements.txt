@@ -8,3 +8,5 @@ numba
 panel
 scipy
 multiprocess
+matplotlib_venn
+wget

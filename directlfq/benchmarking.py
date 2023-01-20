@@ -509,7 +509,7 @@ class HistPlotConfig():
         self.density = density
         self.bins = bins
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 23
+# %% ../nbdev_nbs/06_benchmarking.ipynb 22
 import pandas as pd
 import directlfq.lfq_manager as lfqmgr
 import directlfq.normalization as lfqnorm
@@ -642,7 +642,7 @@ class ScaledDFCreatorIQFormat():
         return new_sample_list
     
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 27
+# %% ../nbdev_nbs/06_benchmarking.ipynb 26
 import pandas as pd
 import directlfq.utils as lfq_utils
 
@@ -665,7 +665,7 @@ class LFQTimer():
             formatted_df = ScaledDFCreatorDirectLFQFormat(self._template_df, desired_number_of_samples=samplenumber).scaled_df
             self.timed_lfq_runs.append(TimedLFQRun(formatted_df,self._name).run_from_formatted_df())
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 28
+# %% ../nbdev_nbs/06_benchmarking.ipynb 27
 class TimedLFQRun():
     def __init__(self, formatted_df, name):
         self.name = name
