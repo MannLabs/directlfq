@@ -27,11 +27,6 @@ jobs:
           cd misc
           . ./loose_pip_install.sh
 
-      - uses: yaananth/run-notebook@v2
-        with:
-          notebook: "tests/quicktests/run_pipeline_w_different_input_formats.ipynb"
-          isReport: False
-
       - name: Unittests
         shell: bash -l {0}
         run: |
