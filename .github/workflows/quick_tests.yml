@@ -1,6 +1,6 @@
 on: 
-  #  push:
-  #  pull_request:
+   push:
+   pull_request:
    workflow_dispatch:
 
 name: Quick tests based on default installation
@@ -29,7 +29,7 @@ jobs:
 
       - uses: yaananth/run-notebook@v2
         env:
-          RUNNER: ${{ toJson(runner) }}
+          RUNNER: ${{ matrix.os }}
           SECRETS: ${{ toJson(secrets) }}
           GITHUB: ${{ toJson(github) }}
         with:
@@ -37,13 +37,13 @@ jobs:
           params: "PATHTOPARAMS.json"
           isReport: False
           poll: True
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: output
-          path: ${{ RUNNER.temp }}/nb-runner
-        env:
-          RUNNER: ${{ toJson(runner) }}
+      # - uses: actions/upload-artifact@v3
+      #   if: always()
+      #   with:
+      #     name: output
+      #     path: ${{ RUNNER.temp }}/nb-runner
+      #   env:
+      #     RUNNER: ${{ toJson(runner) }}
   
       # - name: Unittests
       #   shell: bash -l {0}
