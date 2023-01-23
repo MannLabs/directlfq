@@ -27,24 +27,6 @@ jobs:
           cd misc
           . ./loose_pip_install.sh
 
-      # - uses: yaananth/run-notebook@v2
-      #   env:
-      #     RUNNER: ${{ toJson(runner) }}
-      #     SECRETS: ${{ toJson(secrets) }}
-      #     GITHUB: ${{ toJson(github) }}
-      #   with:
-      #     notebook: "tests/quicktests/run_pipeline_w_different_input_formats.ipynb"
-      #     params: "PATHTOPARAMS.json"
-      #     isReport: False
-      #     poll: True
-      # - uses: actions/upload-artifact@v3
-      #   if: always()
-      #   with:
-      #     name: output
-      #     path: ${{ RUNNER.temp }}/nb-runner
-      #   env:
-      #     RUNNER: ${{ toJson(runner) }}
-  
       - name: Unittests
         shell: bash -l {0}
         run: |
