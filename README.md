@@ -10,7 +10,7 @@
 
 
 # directLFQ
-directLFQ is an open-source Python package for deriving protein intensities from Mass Spectrometry-based proteomics data. It preserves peptide ratios, has a robust normalization approach and allows fast processing also of very large sample cohorts, as runtime increases linearly with sample number. It is part of the AlphaPept ecosystem from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/).
+directLFQ is an open-source Python package for quantifying protein intensities based on peptide or fragment-ion intensities measured with from Mass Spectrometry-based proteomics. It preserves peptide ratios, shows very accurate quantification and has a robust normalization approach. Furthermore, it allows fast processing also of very large sample cohorts, as runtime increases linearly with sample number. It is part of the AlphaPept ecosystem from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/).
 
 You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/MannLabs/alphapept), MaxQuant, FragPipe, Spectronaut and DIANN, using a Graphical User Interface (GUI) or the python package.
 
@@ -20,7 +20,7 @@ You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/Mann
   - [Installation](#installation)
     - [One-click GUI](#one-click-gui)
     - [Developer](#developer)
-  - [Usage](#usage)
+  - [Running directLFQ](#running-directlfq)
     - [GUI](#gui)
     - [CLI](#cli)
     - [Python and Jupyter notebooks](#python-and-jupyter-notebooks)
@@ -28,11 +28,12 @@ You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/Mann
   - [Citations](#citations)
   - [How to contribute](#how-to-contribute)
   - [License](#license)
+  - [Manual](#manual)
 
 ---
 ## About
 Generating protein intensities from Mass Spectrometry proteomics data comes with a variety of challenges. Differing peptides that belong to the same protein can have strongly differing intensities, for example due to differing ionization efficiencies. Missing values (i.e. peptides that have been detected in one run but not in the other) make simple summarization of peptide intensities to protein intensities problematic. Differences in sample loading can introduce systematic biases into the analysis.
-With directLFQ, we provide a novel algorithm for addressing these challenges in an efficient and accurate manner. directLFQ retains peptide ratios and uses them to infer protein ratios and uses the concept of *intensity traces* for it's main processing steps. For futher details on the algorithm, please refer to the [publication](https://www.biorxiv.org/content/10.1101/2020.12.21.424003v1).
+With directLFQ, we provide a novel algorithm for addressing these challenges in an efficient and accurate manner. directLFQ retains peptide ratios and uses them to infer protein ratios and uses the concept of *intensity traces* for it's main processing steps. For futher details on the algorithm, please refer to the [publication](#citations).
 
 ![](./release/images/methods_figure.png)
 
@@ -116,7 +117,7 @@ By default this installs loose dependancies (no explicit versioning), although i
 ***By using the editable flag `-e`, all modifications to the [directlfq source code folder](directlfq) are directly reflected when running directlfq. Note that the directlfq folder cannot be moved and/or renamed if an editable version is installed. In case of confusion, you can always retrieve the location of any Python module with e.g. the command `import module` followed by `module.__file__`.***
 
 ---
-## Usage
+## Running directLFQ
 
 There are three ways to use directlfq:
 
@@ -127,6 +128,7 @@ There are three ways to use directlfq:
 NOTE: The first time you use a fresh installation of directlfq, it is often quite slow because some functions might still need compilation on your local operating system and architecture. Subsequent use should be a lot faster.
 
 ### GUI
+If you have installed directlfq with the one-click GUI installer, you can run the GUI simply by clicking the directLFQ icon on your desktop/applications folder.
 
 If the GUI was not installed through a one-click GUI installer, it can be activate with the following `bash` command:
 
@@ -136,7 +138,7 @@ directlfq gui
 
 Note that this needs to be prepended with a `!` when you want to run this from within a Jupyter notebook. When the command is run directly from the command-line, make sure you use the right environment (activate it with e.g. `conda activate directlfq` or set an alias to the binary executable (can be obtained with `where directlfq` or `which directlfq`)).
 
--
+
 ### CLI
 
 The CLI can be run with the following command (after activating the `conda` environment with `conda activate directlfq` or if an alias was set to the directlfq executable):
@@ -150,17 +152,17 @@ It is possible to get help about each function and their (required) parameters b
 
 ### Python and Jupyter notebooks
 
-directlfq can be imported as a Python package into any Python script or notebook with the command `import directlfq`.
+directLFQ can be imported as a Python package into any Python script or notebook with the command `import directlfq`.
 Running the standard analysis (with plots) can be done via the command:
 ```bash
-import directlfq.diff_analysis_manager as diffmgr
+import directlfq.lfq_manager as lfq_manager
 
-diffmgr.run_pipeline(input_file=input_file, samplemap_file=samplemap_file, results_dir=results_dir, runtime_plots=True)
+example_input_file_diann = "/path/to/example_input_file_diann.tsv"
+
+lfq_manager.run_lfq(example_input_file_diann)
 ```
 
-<!---
-A brief [Jupyter notebook tutorial](nbs/tutorial.ipynb) on how to use the API is also present in the [nbs folder](nbs).
--->
+Several use cases for applying directLFQ can be found as Jupyter Notebooks in the tests folder. See for example the [quicktests notebook](tests/quicktests/run_pipeline_w_different_input_formats.ipynb).
 
 ---
 ## Troubleshooting
@@ -173,7 +175,7 @@ In case of issues, check out the following:
 ---
 ## Citations
 
-In the case that directLFQ is useful to you, please consider supporting us by citing the following paper:
+In the case that directLFQ is useful to you, please consider supporting us by citing (in preparation)
 
 ---
 ## How to contribute
@@ -185,6 +187,8 @@ If you like this software, you can give us a [star](https://github.com/MannLabs/
 
 ## License
 
-directlfq was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/) and is freely available with an [Apache License](LICENSE.txt). External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
+directLFQ was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/) and is freely available with an [Apache License](LICENSE.txt). External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
 
+
+## Manual
 
