@@ -463,7 +463,7 @@ diann_fragion:
   use_iontree: True
   ml_level: CHARGE
 
-diann_precursor:
+diann_precursors:
   format: longtable
   sample_ID: Run
   quant_ID: Precursor.Quantity

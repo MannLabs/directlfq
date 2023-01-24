@@ -1,0 +1,20 @@
+{
+    "input_file": {
+      "short_name": "i",
+      "help": "The input file containing the ion intensities. Usually the output of a search engine.",
+      "default": "",
+      "type": {
+        "name": "path",
+        "exists": false,
+        "file_okay": true,
+        "dir_okay": true
+      },
+      "required": true
+    },
+    "columns_to_add": {
+      "short_name": "c",
+      "help": "Additional columns to add to the LFQ intensity output table. They are extraced from the input file. Note that default columns such as 'Gene names' are always added.",
+      "default": [],
+      "required": false
+    }
+}

@@ -10,11 +10,9 @@
 
 
 # directLFQ
-directLFQ is an open-source Python package for deriving protein intensities from Mass Spectrometry-based proteomics data. It demonstrates high accuracy as compared to state-of-the-art tools and allows fast processing of very large sample cohorts, as runtime increases linearly with sample number. 
+directLFQ is an open-source Python package for deriving protein intensities from Mass Spectrometry-based proteomics data. It preserves peptide ratios, has a robust normalization approach and allows fast processing also of very large sample cohorts, as runtime increases linearly with sample number. It is part of the AlphaPept ecosystem from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/).
 
-You can process DIA and DDA data analyzed by Spectronaut, DIANN, [AlphaPept](https://github.com/MannLabs/alphapept), MaxQuant or FragPipe using a Graphical User Interface (GUI) or the python package.
-
-It is part of the AlphaPept ecosystem from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/). To enable all hyperlinks in this document, please view it at [GitHub](https://github.com/MannLabs/directlfq).
+You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/MannLabs/alphapept), MaxQuant, FragPipe, Spectronaut and DIANN, using a Graphical User Interface (GUI) or the python package.
 
 
 - [directLFQ](#directlfq)
@@ -24,6 +22,7 @@ It is part of the AlphaPept ecosystem from the [Mann Labs at the Max Planck Inst
     - [Developer](#developer)
   - [Usage](#usage)
     - [GUI](#gui)
+    - [CLI](#cli)
     - [Python and Jupyter notebooks](#python-and-jupyter-notebooks)
   - [Troubleshooting](#troubleshooting)
   - [Citations](#citations)
@@ -119,10 +118,10 @@ By default this installs loose dependancies (no explicit versioning), although i
 ---
 ## Usage
 
-There are two ways to use directlfq:
+There are three ways to use directlfq:
 
 * [**GUI**](#gui)
-<!---* [**CLI**](#cli)-->
+* [**CLI**](#cli)
 * [**Python**](#python-and-jupyter-notebooks)
 
 NOTE: The first time you use a fresh installation of directlfq, it is often quite slow because some functions might still need compilation on your local operating system and architecture. Subsequent use should be a lot faster.
@@ -137,7 +136,7 @@ directlfq gui
 
 Note that this needs to be prepended with a `!` when you want to run this from within a Jupyter notebook. When the command is run directly from the command-line, make sure you use the right environment (activate it with e.g. `conda activate directlfq` or set an alias to the binary executable (can be obtained with `where directlfq` or `which directlfq`)).
 
-<!---
+-
 ### CLI
 
 The CLI can be run with the following command (after activating the `conda` environment with `conda activate directlfq` or if an alias was set to the directlfq executable):
@@ -147,7 +146,7 @@ directlfq -h
 ```
 
 It is possible to get help about each function and their (required) parameters by using the `-h` flag.
--->
+
 
 ### Python and Jupyter notebooks
 
@@ -156,7 +155,7 @@ Running the standard analysis (with plots) can be done via the command:
 ```bash
 import directlfq.diff_analysis_manager as diffmgr
 
-diffmgr.run_pipeline(input_file=input_file, samplemap_file=samplemap_file, results_dir=results_dir, runtime_plots=True))
+diffmgr.run_pipeline(input_file=input_file, samplemap_file=samplemap_file, results_dir=results_dir, runtime_plots=True)
 ```
 
 <!---

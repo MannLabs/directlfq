@@ -20,14 +20,26 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
 
     Args:
         input_file (_type_): the input file containing the ion intensities. Usually the output of a search engine.
+
         columns_to_add (list, optional): additional columns to add to the LFQ intensity output table. They are extraced from the input file. Defaults to [].
+
         selected_proteins_file (str, optional): if you want to perform normalization only on a subset of proteins, you can pass a .txt file containing the protein IDs, separeted by line breaks. No header expected. Defaults to None.
+
         mq_protein_groups_txt (_type_, optional): In the case of using MaxQuant data, the proteinGroups.txt table is needed in order to map IDs analogous to MaxQuant. Adding this table improves protein mapping, but is not necessary. Defaults to None.
+
         min_nonan (int, optional): Min number of ion intensities necessary in order to derive a protein intensity. Increasing the number results in more reliable protein quantification at the cost of losing IDs. Defaults to 1.
+
         input_type_to_use (_type_, optional): If you want to parse data from the input file in a differing way than specified in the defaults (e.g. extracting MS1 intensities only from a DIANN file), you can name the parsing protocol to be used. The parsing protocols are defined in directlfq/configs/intable_configs.yaml Defaults to None.
+
         maximum_number_of_quadratic_ions_to_use_per_protein (int, optional): How many ions are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime. Defaults to 10.
+
         number_of_quadratic_samples (int, optional): How many samples are are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime. Defaults to 50.
+
         num_cores (_type_, optional): Num cores to use. Maximum feasible number utilized if set to None. Defaults to None.
+
+        filename_suffix (str, optional): A suffix to be added to the output file name. Defaults to "".
+        
+        deactivate_normalization (bool, optional): If set to True, no normalization is performed. Defaults to False.
     """
     input_file = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, input_type_to_use,mq_protein_groups_txt, columns_to_add)
     input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use)
