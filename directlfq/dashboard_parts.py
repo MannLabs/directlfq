@@ -156,7 +156,7 @@ class RunPipeline(BaseWidget):
 
         ## optional files
 
-        self.additional_headers_title = pn.pane.Markdown('* Add the names of columns that you want to keep in the directLFQ output file, separated by semicolons. Note that some basic additional columns such as gene names are always added to the output table by default.\nWARNING: Take care that columns you add are not ambigous. For example, adding the peptide sequence column will not work, because there are multiple peptide sequences per protein:')
+        self.additional_headers_title = pn.pane.Markdown('* Add the names of columns that you want to keep in the directLFQ output file, separated by semicolons. Note that some basic additional columns such as gene names are always added to the output table by default.\nWARNING: Take care that columns you add are not ambigous. For example, adding the peptide sequence column will not work, because there are multiple peptide sequences per protein.')
         self.additional_headers = pn.widgets.TextInput(
             name='',
             placeholder='(optional) Enter the names of columns that you want to keep',
