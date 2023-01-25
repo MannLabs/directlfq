@@ -10,10 +10,10 @@ import contextlib
 
 # local
 import directlfq
+import directlfq.utils
 
 
-
-with open("./configs/interface_parameters.json") as in_file:
+with open(f"{directlfq.utils.CONFIG_PATH}/interface_parameters.json") as in_file:
     INTERFACE_PARAMETERS = json.load(in_file)
 
 

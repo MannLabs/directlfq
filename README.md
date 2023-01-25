@@ -10,9 +10,9 @@
 
 
 # directLFQ
-directLFQ is an open-source Python package for quantifying protein intensities based on peptide or fragment-ion intensities measured with from Mass Spectrometry-based proteomics. It preserves peptide ratios, shows very accurate quantification and has a robust normalization approach. Furthermore, it allows fast processing also of very large sample cohorts, as runtime increases linearly with sample number. It is part of the AlphaPept ecosystem from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/).
+directLFQ is an open-source Python package for quantifying protein intensities based on peptide intensities or fragment-ion intensities measured with from Mass Spectrometry-based proteomics. It preserves peptide ratios, shows very accurate quantification and has a robust normalization approach. Furthermore, it allows fast processing also of very large sample cohorts, as runtime increases linearly with sample number. It is part of the AlphaPept ecosystem from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/).
 
-You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/MannLabs/alphapept), MaxQuant, FragPipe, Spectronaut and DIANN, using a Graphical User Interface (GUI) or the python package.
+You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/MannLabs/alphapept), MaxQuant, FragPipe, Spectronaut and DIANN as well as [generic formats](#generic-input-format), using a Graphical User Interface (GUI) or the python package.
 
 
 - [directLFQ](#directlfq)
@@ -28,7 +28,8 @@ You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/Mann
   - [Citations](#citations)
   - [How to contribute](#how-to-contribute)
   - [License](#license)
-  - [Manual](#manual)
+  - [directLFQ commands](#directlfq-commands)
+  - [generic input format](#generic-input-format)
 
 ---
 ## About
@@ -128,6 +129,7 @@ There are three ways to use directlfq:
 NOTE: The first time you use a fresh installation of directlfq, it is often quite slow because some functions might still need compilation on your local operating system and architecture. Subsequent use should be a lot faster.
 
 ### GUI
+![](./release/images/gui_screenshot.png)
 If you have installed directlfq with the one-click GUI installer, you can run the GUI simply by clicking the directLFQ icon on your desktop/applications folder.
 
 If the GUI was not installed through a one-click GUI installer, it can be activate with the following `bash` command:
@@ -140,6 +142,8 @@ Note that this needs to be prepended with a `!` when you want to run this from w
 
 
 ### CLI
+<img src="./release/images/cli_screenshot.png" width="600" />
+
 
 The CLI can be run with the following command (after activating the `conda` environment with `conda activate directlfq` or if an alias was set to the directlfq executable):
 
@@ -189,6 +193,26 @@ If you like this software, you can give us a [star](https://github.com/MannLabs/
 
 directLFQ was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/) and is freely available with an [Apache License](LICENSE.txt). External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
 
+---
 
-## Manual
+## directLFQ commands
+directLFQ is started internally via the directlfq.lfq_manager.run_lfq() command. In principle and for most use cases, you only need to provide the path to the AlphaPept/MaxQuant/DIA-NN etc. file of interest. However, there are several other options that can be used to customize the analysis. The following commands are available:
+
+- **input_file**: The input file containing the ion intensities. Usually the output of a search engine.
+- **columns_to_add**: Add the names of columns that are present in the output table and that you want to keep in the directLFQ output file. Separated by semicolons. Note that some basic additional columns such as gene names are always added to the output table by default. WARNING: Take care that columns you add are not ambigous. For example, adding the peptide sequence column will not work, because there are multiple peptide sequences per protein.
+- **selected_proteins_file**: If you want to perform normalization only on a subset of proteins, you can pass a .txt file containing the protein IDs, separeted by line breaks. No header expected.
+- **mq_protein_groups_txt**: In the case of using MaxQuant data, the proteinGroups.txt table is needed in order to map IDs analogous to MaxQuant. Adding this table improves protein mapping, but is not necessary.
+- **min_nonan**: Min number of ion intensities necessary in order to derive a protein intensity. Increasing the number results in more reliable protein quantification at the cost of losing IDs.
+- **input_type_to_use**: The type of input file to use. This is used to determine the column names of the input file. Only change this if you want to use non-default settings.
+- **maximum_number_of_quadratic_ions_to_use_per_protein**: How many ions are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime.
+- **number_of_quadratic_samples**: How many samples are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime
+
+---
+
+## generic input format
+
+In the case that you working with a search engine that is not supported by directLFQ, you can use the generic input format. This format is a tab-separated quantity matrix file with the following columns: "protein", "ion", "run_id1", "run_id2", ..,"run_idN". 
+Each row contains therefore all the ion intensities that were measured for an ion in each run (see examples below). The ion identifier only needs to be unique for each ion and can be on the level you want (peptide, charged peptide, or fragment ion). After reformatting your file into this format, save the file with the ending ".aq_reformat.tsv". Then you can simply give this file as input to directLFQ and it will automatically detect the generic input format.
+<img src="./release/images/example_input_format_mq.png"/>
+<img src="./release/images/example_input_format_sn.png"/>
 
