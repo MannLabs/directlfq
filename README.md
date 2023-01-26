@@ -225,9 +225,6 @@ Go to the “Report” perspective in Spectronaut, click “Import Schema” and
 
 The data needs to be exported in the normal long format as .tsv file
 
-[Download Spectronaut export scheme for precursor quantification](directlfq/configs/spectronaut_tableconfig_precursor.rs)
-
-[Dowload Spectronaut export scheme for fragment ion quantification](directlfq/configs/spectronaut_tableconfig_fragion.rs)
 
 ### DIA-NN
 Provide the path to the DIANN "report.tsv" output table.
