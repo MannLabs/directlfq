@@ -31,6 +31,10 @@ You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/Mann
   - [directLFQ commands](#directlfq-commands)
   - [preparing input files](#preparing-input-files)
     - [Spectronaut](#spectronaut)
+    - [DIA-NN](#dia-nn)
+    - [MaxQuant](#maxquant)
+    - [FragPipe](#fragpipe)
+    - [generic input format](#generic-input-format)
 
 ---
 ## About
@@ -218,4 +222,26 @@ directLFQ takes a Spectronaut .tsv table as input. When exporting from Spectrona
 An export scheme can then simply be loaded into Spectronaut as follows:
 
 Go to the “Report” perspective in Spectronaut, click “Import Schema” and provide the file.
+
+The data needs to be exported in the normal long format as .tsv file
+
+[Download Spectronaut export scheme for precursor quantification](directlfq/configs/spectronaut_tableconfig_precursor.rs)
+
+[Dowload Spectronaut export scheme for fragment ion quantification](directlfq/configs/spectronaut_tableconfig_fragion.rs)
+
+### DIA-NN
+Provide the path to the DIANN "report.tsv" output table.
+
+### MaxQuant
+Provide the path to the MaxQuant "peptides.txt" output table or the MaxQuant evidence.txt output table. Additionally and if possible, provide the path to the corresponding "proteinGroups.txt" file.
+
+### FragPipe
+Provide the path to the "combined_ion.tsv" output table.
+
+
+### generic input format
+In the case that you working with a search engine that is not supported by directLFQ, you can use the generic input format. This format is a tab-separated quantity matrix file with the following columns: "protein", "ion", "run_id1", "run_id2", ..,"run_idN". 
+Each row contains therefore all the ion intensities that were measured for an ion in each run (see examples below). The ion identifier only needs to be unique for each ion and can be on the level you want (peptide, charged peptide, or fragment ion). After reformatting your file into this format, save the file with the ending ".aq_reformat.tsv". Then you can simply give this file as input to directLFQ and it will automatically detect the generic input format.
+<img src="./release/images/example_input_format_mq.png" width="700" />
+<img src="./release/images/example_input_format_sn.png" width="700" />
 
