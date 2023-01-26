@@ -490,8 +490,8 @@ def get_quantitative_columns(input_df, hierarchy_type, config_dict, ion_headers_
 
     if config_dict.get("format") == 'widetable':
         quantcolumn_candidates = [x for x in input_df.columns if x not in naming_columns]
-        if "quant_prefix" in config_dict.keys():
-            return [x for x in quantcolumn_candidates if x.startswith(config_dict.get("quant_prefix"))] # in the case that the quantitative columns have a prefix (like "Intensity " in MQ peptides.txt), only columns with the prefix are filtered
+        if "quant_pre_or_suffix" in config_dict.keys():
+            return [x for x in quantcolumn_candidates if x.startswith(config_dict.get("quant_pre_or_suffix")) or x.endswith(config_dict.get("quant_pre_or_suffix"))] # in the case that the quantitative columns have a prefix (like "Intensity " in MQ peptides.txt), only columns with the prefix are filtered
         else:
             return quantcolumn_candidates #in this case, we assume that all non-ionname/proteinname columns are quantitative columns
 
@@ -740,11 +740,11 @@ def reformat_and_write_wideformat_table(peptides_tsv, outfile_name, config_dict)
     input_df = filter_input(filter_dict, input_df)
     #input_df = merge_protein_and_ion_cols(input_df, config_dict)
     input_df = merge_protein_cols_and_ion_dict(input_df, config_dict)
-    if 'quant_prefix' in config_dict.keys():
-        quant_prefix = config_dict.get('quant_prefix')
-        headers = ['protein', 'ion'] + list(filter(lambda x: x.startswith(quant_prefix), input_df.columns))
+    if 'quant_pre_or_suffix' in config_dict.keys():
+        quant_pre_or_suffix = config_dict.get('quant_pre_or_suffix')
+        headers = ['protein', 'ion'] + list(filter(lambda x: x.startswith(quant_pre_or_suffix) or x.endswith(quant_pre_or_suffix), input_df.columns))
         input_df = input_df[headers]
-        input_df = input_df.rename(columns = lambda x : x.replace(quant_prefix, ""))
+        input_df = input_df.rename(columns = lambda x : x.replace(quant_pre_or_suffix, ""))
 
     #input_df = input_df.reset_index()
     

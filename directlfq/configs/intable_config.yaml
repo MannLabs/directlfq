@@ -22,30 +22,9 @@ alphapept_peptides:
   use_iontree: False
 
 
-fragpipe_precursors:
-  format: longtable
-  sample_ID: Run
-  quant_ID:
-    precursor_intensity: Intensity
-  protein_cols:
-   - protein_group
-  ion_hierarchy:
-    precursor_intensity:
-      order: [SEQ, MOD, CHARGE]
-      mapping:
-        SEQ: 
-         - Peptide Sequence
-        MOD:
-         - Modified Sequence
-        CHARGE: 
-         - Charge
-         
-  use_iontree: False
-
-
 maxquant_peptides:
   format: widetable
-  quant_prefix: "Intensity "
+  quant_pre_or_suffix: "Intensity "
   protein_cols:
    - Protein IDs
   ion_cols:
@@ -77,7 +56,7 @@ maxquant_peptides:
 
 maxquant_peptides_leading_razor_protein:
   format: widetable
-  quant_prefix: "Intensity "
+  quant_pre_or_suffix: "Intensity "
   protein_cols:
    - Leading razor protein
   ion_cols:
@@ -108,7 +87,7 @@ maxquant_peptides_leading_razor_protein:
 
 maxquant_peptides_benchmarking:
   format: widetable
-  quant_prefix: "Intensity "
+  quant_pre_or_suffix: "Intensity "
   protein_cols:
    - Protein group IDs
   ion_cols:
@@ -215,6 +194,21 @@ maxquant_evidence_proteins_column:
    - Modifications
    - Charge
 
+
+fragpipe_precursors:
+  format: widetable
+  quant_pre_or_suffix: " Intensity"
+  protein_cols:
+   - Protein
+  ion_cols:
+   - Modified Sequence
+  ion_hierarchy:
+    sequence_int:
+      order: [MOD]
+      mapping:
+        MOD: 
+          - Modified Sequence
+  use_iontree: False
 
 diann_fragion_isotopes_plexDIA_raw:
   format: longtable
@@ -983,7 +977,7 @@ diann_fragion_isotopes_gene_level:
 
 hms_peptides:
   format: widetable
-  quant_prefix: "Intensity "
+  quant_pre_or_suffix: "Intensity "
   protein_cols:
    - ProteinId
   ion_cols:
@@ -1001,7 +995,7 @@ hms_peptides:
 
 hms_sitequant:
   format: widetable
-  quant_prefix: "Intensity "
+  quant_pre_or_suffix: "Intensity "
   protein_cols:
    - protein_id
    - site_position
