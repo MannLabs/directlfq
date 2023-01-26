@@ -29,6 +29,8 @@ You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/Mann
   - [How to contribute](#how-to-contribute)
   - [License](#license)
   - [directLFQ commands](#directlfq-commands)
+  - [preparing input files](#preparing-input-files)
+    - [Spectronaut](#spectronaut)
     - [DIA-NN](#dia-nn)
     - [MaxQuant](#maxquant)
     - [FragPipe](#fragpipe)
@@ -210,6 +212,18 @@ directLFQ is started internally via the directlfq.lfq_manager.run_lfq() command.
 - **maximum_number_of_quadratic_ions_to_use_per_protein**: How many ions are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime.
 - **number_of_quadratic_samples**: How many samples are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime
 
+---
+
+## preparing input files
+
+### Spectronaut
+directLFQ takes a Spectronaut .tsv table as input. When exporting from Spectronaut, the correct columns need to be selected. These can be obtained by downloading one of the export schemes available below. We provide one export scheme for sprecursor quantification and one export scheme for fragment ion quantification. Fragment ion quantification shows slightly more accuracy, but the files are around 10 times larger.
+
+An export scheme can then simply be loaded into Spectronaut as follows:
+
+Go to the "Report" perspective in Spectronaut, click "Import Schema" and provide the file.
+
+The data needs to be exported in the normal long format as .tsv file
 
 [Download Spectronaut export scheme for precursor quantification](directlfq/configs/spectronaut_tableconfig_precursor.rs)
 
