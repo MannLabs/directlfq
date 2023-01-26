@@ -44,7 +44,7 @@ jobs:
 
   Create_Windows_Release:
     runs-on: windows-latest
-    needs: Create_Draft_On_GitHub
+    #needs: Create_Draft_On_GitHub
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
