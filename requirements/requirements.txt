@@ -10,3 +10,5 @@ scipy
 multiprocess
 matplotlib_venn
 wget
+jinja2==3.0
+pyyaml
