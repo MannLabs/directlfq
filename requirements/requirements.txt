@@ -10,3 +10,4 @@ scipy
 multiprocess
 matplotlib_venn
 wget
+pyyaml
