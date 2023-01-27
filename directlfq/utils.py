@@ -1193,7 +1193,6 @@ def merge_acquisition_df_parameter_df(acquisition_df, parameter_df, groupby_merg
 
 # %% ../nbdev_nbs/04_utils.ipynb 54
 import matplotlib.pyplot as plt
-from scipy import stats
 import itertools
 
 def plot_withincond_fcs(normed_intensity_df, cut_extremes = True):
@@ -1218,7 +1217,6 @@ def plot_withincond_fcs(normed_intensity_df, cut_extremes = True):
 
 # %% ../nbdev_nbs/04_utils.ipynb 55
 import matplotlib.pyplot as plt
-from scipy import stats
 import itertools
 
 def plot_relative_to_median_fcs(normed_intensity_df):
