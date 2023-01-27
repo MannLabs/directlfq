@@ -18,6 +18,7 @@ python setup.py sdist bdist_wheel
 cd release/one_click_windows_gui
 # Make sure you include the required extra packages and always use the stable or very-stable options!
 pip install "../../dist/directlfq-0.2.0-py3-none-any.whl[stable]"
+pip install jinja2==3.0
 
 # Creating the stand-alone pyinstaller folder
 pip install pyinstaller==4.10
