@@ -229,7 +229,7 @@ The data needs to be exported in the normal long format as .tsv file
 
 <a href="https://github.com/MannLabs/directlfq/releases/download/untagged-6a4e2bca0ad918c00f9e/spectronaut_tableconfig_precursor.rs" download>Download Spectronaut export scheme for precursor quantification</a>
 
-<a href="https://github.com/MannLabs/directlfq/releases/download/untagged-6a4e2bca0ad918c00f9e/spectronaut_tableconfig_fragion.rs" download>Dowload Spectronaut export scheme for fragment ion quantification</a>
+<a href="https://github.com/MannLabs/directlfq/releases/download/untagged-6a4e2bca0ad918c00f9e/spectronaut_tableconfig_fragion.rs" download>Download Spectronaut export scheme for fragment ion quantification</a>
 
 
 
