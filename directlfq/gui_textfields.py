@@ -20,7 +20,7 @@ class Descriptions():
     project_instruction = panel.pane.Markdown("""
         #### How to use directLFQ:
         1. Provide the filepath to your proteomic datasets analyzed by
-        Alphapept, MaxQuant, Spectronaut or DIA-NN (see instructions below!).
+        Alphapept, MaxQuant, Spectronaut, DIA-NN or FragPipe (see instructions below!).
         2. (optional) If you are using MaxQuant evidence.txt or peptides.txt files, you can add the link to the corresponding proteinGroups.txt file. Adding the proteinGroups.txt will improve peptide mapping.
         3. (optional) You can configure your run with some of the optional parameters accessible in the "optional configurations" section.
         4. Click on the _RUN PIPELINE_ button, you can follow the progress on the terminal window.
@@ -78,6 +78,17 @@ class Descriptions():
             align='start',
             margin=(0, 80, 0, 20)
         )
+
+    fragpipe = pn.pane.Markdown(
+           """
+        Provide the path to the "combined_ion.tsv" output table.
+
+        """
+        ,
+        width=ButtonConfiguration.width,
+        align='start',
+        margin=(0, 80, 0, 20)
+    )
 
 
 
@@ -138,6 +149,16 @@ class Cards():
     maxquant = pn.Card(
         Descriptions.maxquant,
         header='MaxQuant instructions',
+        collapsed=True,
+        width=ButtonConfiguration.width,
+        align='start',
+        margin=(20, 0, 20, 0),
+        css_classes=['spectronaut_instr']
+    )
+
+    fragpipe = pn.Card(
+        Descriptions.fragpipe,
+        header='FragPipe instructions',
         collapsed=True,
         width=ButtonConfiguration.width,
         align='start',

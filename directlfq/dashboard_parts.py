@@ -249,6 +249,7 @@ class RunPipeline(BaseWidget):
                     gui_textfields.Cards.diann,
                     gui_textfields.Cards.alphapept,
                     gui_textfields.Cards.maxquant,
+                    gui_textfields.Cards.fragpipe,
                     self.run_pipeline_button,
                     self.run_pipeline_progress,
                    # self.visualize_data_button,
