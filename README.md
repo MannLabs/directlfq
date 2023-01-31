@@ -35,6 +35,7 @@ You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/Mann
     - [MaxQuant](#maxquant)
     - [FragPipe](#fragpipe)
     - [generic input format](#generic-input-format)
+  - [reproducing data analyses from the paper](#reproducing-data-analyses-from-the-paper)
 
 ---
 ## About
@@ -46,7 +47,7 @@ With directLFQ, we provide a novel algorithm for addressing these challenges in 
 ---
 ## Installation
 
-directlfq can be installed and used on all major operating systems (Windows, macOS and Linux).
+directLFQ can be installed and used on all major operating systems (Windows, macOS and Linux).
 There are currently two different types of installation possible:
 
 * [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the GUI and/or keep things as simple as possible.
@@ -225,9 +226,12 @@ Go to the "Report" perspective in Spectronaut, click "Import Schema" and provide
 
 The data needs to be exported in the normal long format as .tsv file
 
-[Download Spectronaut export scheme for precursor quantification](directlfq/configs/spectronaut_tableconfig_precursor.rs)
+<!-- [Download Spectronaut export scheme for precursor quantification](directlfq/configs/spectronaut_tableconfig_precursor.rs) -->
+<a href="directlfq/configs/spectronaut_tableconfig_precursor.rs" download>Download Spectronaut export scheme for precursor quantification</a>
 
-[Dowload Spectronaut export scheme for fragment ion quantification](directlfq/configs/spectronaut_tableconfig_fragion.rs)
+<a href="directlfq/configs/spectronaut_tableconfig_fragion.rs" download>Dowload Spectronaut export scheme for fragment ion quantification</a>
+
+
 
 ### DIA-NN
 Provide the path to the DIANN "report.tsv" output table.
@@ -245,3 +249,11 @@ Each row contains therefore all the ion intensities that were measured for an io
 <img src="./release/images/example_input_format_mq.png" width="700" />
 <img src="./release/images/example_input_format_sn.png" width="700" />
 
+---
+
+## reproducing data analyses from the paper
+If you want to reproduce data analyses presented in the [manuscript](#citations), you can first download the data by executing
+```bash
+python tests/download_testfiles.py all_tests
+```
+This will download the underlying datasets into the appropriate location. The notebooks carrying out the analyses themselves are located in the tests directory in the respective subfolders ratio_tests, normalization_tests, runtime_tests and organellar_maps.
