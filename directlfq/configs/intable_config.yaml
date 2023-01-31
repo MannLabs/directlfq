@@ -7,7 +7,7 @@ alphapept_peptides:
   format: longtable
   sample_ID: shortname
   quant_ID:
-    precursor_intensity: int_sum
+    precursor_intensity: ms1_int_sum
   protein_cols:
    - protein_group
   ion_hierarchy:
@@ -15,9 +15,14 @@ alphapept_peptides:
       order: [SEQ, CHARGE]
       mapping:
         SEQ: 
-         - naked_sequence
+         - sequence
         CHARGE: 
          - charge
+  filters:
+    decoy:
+      param: decoy
+      comparator: "=="
+      value: False
          
   use_iontree: False
 
