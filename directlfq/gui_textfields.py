@@ -20,7 +20,7 @@ class Descriptions():
     project_instruction = panel.pane.Markdown("""
         #### How to use directLFQ:
         1. Provide the filepath to your proteomic datasets analyzed by
-        Alphapept, MaxQuant, Spectronaut, DIA-NN or FragPipe (see instructions below!).
+        Alphapept, MaxQuant, Spectronaut, DIA-NN or FragPipe (see specifications below!).
         2. (optional) If you are using MaxQuant evidence.txt or peptides.txt files, you can add the link to the corresponding proteinGroups.txt file. Adding the proteinGroups.txt will improve peptide mapping.
         3. (optional) You can configure your run with some of the optional parameters accessible in the "optional configurations" section.
         4. Click on the _RUN PIPELINE_ button, you can follow the progress on the terminal window.
@@ -43,8 +43,7 @@ class Descriptions():
     spectronaut = pn.pane.Markdown(
         """
         directLFQ takes a Spectronaut .tsv table as input. When exporting from Spectronaut, the correct columns need to be selected. 
-        These can be obtained by downloading one of the export schemes available below. We provide one export scheme for 
-        sprecursor quantification
+        These can be obtained by downloading one of the export schemes available below. We provide one export scheme for precursor quantification
         and one export scheme for fragment ion quantification. Fragment ion quantification shows slightly more accuracy, but the files are around 10 times larger.
         
         An export scheme can then simply be loaded into Spectronaut as follows:
@@ -116,7 +115,7 @@ class Cards():
 
     alphapept = pn.Card(
         Descriptions.alphapept,
-        header='AlphaPept instructions',
+        header='AlphaPept input specifications',
         collapsed=True,
         width=ButtonConfiguration.width,
         align='start',
@@ -129,7 +128,7 @@ class Cards():
         Descriptions.spectronaut,
         DownloadSchemes.spectronaut_fragion,
         DownloadSchemes.spectronaut_precursor,
-        header='Spectronaut instructions',
+        header='Spectronaut input specifications',
         collapsed=True,
         width=ButtonConfiguration.width,
         align='start',
@@ -138,7 +137,7 @@ class Cards():
     )
     diann = pn.Card(
         Descriptions.diann,
-        header='DIANN instructions',
+        header='DIANN input specifications',
         collapsed=True,
         width=ButtonConfiguration.width,
         align='start',
@@ -148,7 +147,7 @@ class Cards():
 
     maxquant = pn.Card(
         Descriptions.maxquant,
-        header='MaxQuant instructions',
+        header='MaxQuant input specifications',
         collapsed=True,
         width=ButtonConfiguration.width,
         align='start',
@@ -158,7 +157,7 @@ class Cards():
 
     fragpipe = pn.Card(
         Descriptions.fragpipe,
-        header='FragPipe instructions',
+        header='FragPipe input specifications',
         collapsed=True,
         width=ButtonConfiguration.width,
         align='start',

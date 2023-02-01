@@ -136,8 +136,8 @@ class RunPipeline(BaseWidget):
         super().__init__(name="Data")
         # DATA FILES
         self.path_analysis_file = pn.widgets.TextInput(
-            name='Specify an analysis file:',
-            placeholder='Enter the whole path to the AP | MQ | Spectronaut | DIA-NN output file',
+            name='Specify an analysis file (see detailed specifications below!):',
+            placeholder='Enter the whole path to the AP | MQ | Spectronaut | DIA-NN | Fragpipe outputs according to the specifications below',
             width=900,
             sizing_mode='stretch_width',
             margin=(5, 15, 0, 15)
@@ -146,7 +146,7 @@ class RunPipeline(BaseWidget):
        
 
         self.path_protein_groups_file = pn.widgets.TextInput(
-            name='(optional) Specify a MaxQuant proteinGroups.txt file here, in case you are working with MaxQuant output. This helps in the protein group mapping',
+            name='(optional) If you are using MaxQuant evidence.txt or peptides.txt files, you can add the link to the corresponding proteinGroups.txt file (will improve peptide-to-protein mapping)',
             placeholder='(optional) Enter the whole path to the MaxQuant proteinGroups.txt file',
             default = None,
             width=900,
