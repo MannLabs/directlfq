@@ -30,6 +30,7 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
         number_of_quadratic_samples (int, optional): How many samples are are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime. Defaults to 50.
         num_cores (_type_, optional): Num cores to use. Maximum feasible number utilized if set to None. Defaults to None.
     """
+    print("Starting directLFQ analysis")
     input_file = prepare_input_filename(input_file)
     input_file = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, input_type_to_use,mq_protein_groups_txt, columns_to_add)
     input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use)

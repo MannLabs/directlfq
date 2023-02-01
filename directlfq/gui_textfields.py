@@ -23,7 +23,7 @@ class Descriptions():
         Alphapept, MaxQuant, Spectronaut, DIA-NN or FragPipe (see specifications below!).
         2. (optional) If you are using MaxQuant evidence.txt or peptides.txt files, you can add the link to the corresponding proteinGroups.txt file. Adding the proteinGroups.txt will improve peptide mapping.
         3. (optional) You can configure your run with some of the optional parameters accessible in the "optional configurations" section.
-        4. Click on the _RUN PIPELINE_ button, you can follow the progress on the terminal window.
+        4. Click on the _RUN PIPELINE_ button, **check the progress on the terminal window (this window opens together with this GUI) and ensure that 'Starting directLFQ analysis' message has appeared.**
         """,
         width=ButtonConfiguration.width,
         align='start',
