@@ -389,9 +389,19 @@ class SampleShifterLinear():
             self._shift_to_reference_sample(row_idx)
     
     def _shift_to_reference_sample(self, row_idx):
-        distance_to_reference = calc_distance(metric='median', samples_1=self._reference_intensities, samples_2=self._ion_dataframe_values[row_idx,:]) #reference-sample = distance
+        distance_to_reference = self._calc_distance(samples_1=self._reference_intensities, samples_2=self._ion_dataframe_values[row_idx,:]) #reference-sample = distance
         self.ion_dataframe.iloc[row_idx, :] += distance_to_reference
         #self._ion_dataframe_values[row_idx, :] += distance_to_reference
+
+    @staticmethod
+    def _calc_distance(samples_1, samples_2):
+        distrib = get_fcdistrib(samples_1, samples_2)
+        distance = np.nanmedian(distrib)
+        if np.isnan(distance):
+            return 0
+        else:
+            return distance
+        
     
     def _update_ion_dataframe(self):
         self.ion_dataframe.loc[:,:] = self._ion_dataframe_values
