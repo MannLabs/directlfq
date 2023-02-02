@@ -52,13 +52,12 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
 
 def prepare_input_filename(input_file):
     input_file = fr"{input_file}".replace("\ ", " ").rstrip() #replace escaped spaces with normal spaces and remove trailing whitespace
-    input_file = bytes(input_file, "utf-8").decode("unicode_escape")
     return input_file
 
 def get_outfile_basename(input_file, input_type_to_use, selected_proteins_file, filename_suffix):
     outfile_basename = input_file
     outfile_basename += "" if input_type_to_use is None else f".{input_type_to_use}."
-    outfile_basename += ".selected_proteins." if selected_proteins_file is not None else ""
+    outfile_basename += ".selected_proteins" if selected_proteins_file is not None else ""
     outfile_basename += filename_suffix
     return outfile_basename
 
