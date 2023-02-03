@@ -44,7 +44,7 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
     except:
         print("Could not add additional columns to protein table, printing without additional columns")
     
-    outfile_basename = get_outfile_basename(input_file, input_type_to_use, selected_proteins_file, filename_suffix)
+    outfile_basename = get_outfile_basename(input_file, input_type_to_use, selected_proteins_file, deactivate_normalization,filename_suffix)
     save_protein_df(protein_df,outfile_basename)
     save_ion_df(ion_df,outfile_basename)
     
@@ -52,13 +52,13 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
 
 def prepare_input_filename(input_file):
     input_file = fr"{input_file}".replace("\ ", " ").rstrip() #replace escaped spaces with normal spaces and remove trailing whitespace
-    input_file = bytes(input_file, "utf-8").decode("unicode_escape")
     return input_file
 
-def get_outfile_basename(input_file, input_type_to_use, selected_proteins_file, filename_suffix):
+def get_outfile_basename(input_file, input_type_to_use, selected_proteins_file, deactivate_normalization,filename_suffix):
     outfile_basename = input_file
     outfile_basename += "" if input_type_to_use is None else f".{input_type_to_use}."
-    outfile_basename += "selected_proteins." if selected_proteins_file is not None else ""
+    outfile_basename += ".selected_proteins" if selected_proteins_file is not None else ""
+    outfile_basename += ".no_norm" if deactivate_normalization else ""
     outfile_basename += filename_suffix
     return outfile_basename
 

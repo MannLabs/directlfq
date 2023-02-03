@@ -152,17 +152,17 @@ def cli_option(
 @click.version_option(directlfq.__version__, "-v", "--version")
 def run(ctx, **kwargs):
 
-    
+
     name = f"directLFQ {directlfq.__version__}"
-    ascii_art_name = """     
-     _ _               _   _     ______ _____ 
+    ascii_art_name = """
+     _ _               _   _     ______ _____
     | (_)             | | | |    |  ___|  _  |
   __| |_ _ __ ___  ___| |_| |    | |_  | | | |
  / _` | | '__/ _ \/ __| __| |    |  _| | | | |
 | (_| | | | |  __/ (__| |_| |____| |   \ \/' /
  \__,_|_|_|  \___|\___|\__\_____/\_|    \_/\_\
-                                
-                                              
+
+
 """
     width = 47
     centered_name = " "*13 +f"* {name} *"
@@ -183,12 +183,12 @@ def gui():
 
 list_of_format_names = ["alphapept_peptides","fragpipe_precursors","maxquant_evidence","maxquant_peptides","diann_fragion_isotopes","diann_precursors","spectronaut_fragion_isotopes","spectronaut_precursor"]
 
-@run.command("lfq", help="Run directLFQ normalization on proteomics input table.")
+@run.command("lfq", help="Run directLFQ normalization on proteomics input table.", no_args_is_help=True)
 @click.option("--input_file", "-i", type=click.Path(exists=True), required=True, help="The input file containing the ion intensities. Usually the output of a search engine.")
 @click.option("--columns_to_add", "-ca", type=list, default=[], multiple=True, help="Additional columns to add to the LFQ intensity output table. They are extraced from the input file.")
-@click.option("--selected_proteins_file", "-sp", type=click.Path(exists=True), 
+@click.option("--selected_proteins_file", "-sp", type=click.Path(exists=True),
 default=None, help="If you want to perform normalization only on a subset of proteins, you can pass a .txt file containing the protein IDs, separeted by line breaks. No header expected.")
-@click.option("--mq_protein_groups_txt", "-mp", type=click.Path(exists=True), default=None, 
+@click.option("--mq_protein_groups_txt", "-mp", type=click.Path(exists=True), default=None,
 help="In the case of using MaxQuant data, the proteinGroups.txt table is needed in order to map IDs analogous to MaxQuant. Adding this table improves protein mapping, but is not necessary.")
 @click.option("--min_nonan", "-mn", type=int, default=1, help="Min number of ion intensities necessary in order to derive a protein intensity. Increasing the number results in more reliable protein quantification at the cost of losing IDs.")
 @click.option("--input_type_to_use", "-it", type=click.Choice(list_of_format_names), default=None, help="The type of input file to use. This is used to determine the column names of the input file. Only change this if you want to use non-default settings.")
@@ -200,4 +200,3 @@ def run_directlfq(**kwargs):
     print("starting directLFQ")
     import directlfq.lfq_manager
     directlfq.lfq_manager.run_lfq(**kwargs)
-
