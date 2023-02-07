@@ -8,5 +8,5 @@ jobs:
       - name: install with dependencies
         shell: bash -l {0}
         run: |
-          pip install -e ./directlfq[development]
+          pip install -e '../.[stable,development-stable]'
       - uses: fastai/workflows/nbdev-ci@master
