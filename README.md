@@ -29,6 +29,7 @@ You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/Mann
   - [How to contribute](#how-to-contribute)
   - [License](#license)
   - [directLFQ commands](#directlfq-commands)
+  - [directLFQ output](#directlfq-output)
   - [preparing input files](#preparing-input-files)
     - [Spectronaut](#spectronaut)
     - [DIA-NN](#dia-nn)
@@ -214,6 +215,12 @@ directLFQ is started internally via the directlfq.lfq_manager.run_lfq() command.
 - **number_of_quadratic_samples**: How many samples are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime
 
 ---
+
+## directLFQ output
+directLFQ writes three output files into the directory of the input file:
+1.  The main output file ends with .protein_intensities.tsv and contains the estimated LFQ protein intensities. 
+2.  The second output file ends with .ion_intensities.tsv and contains the aligned intensity traces of all ions. This allows to compare profiles of different ions to each other. In particular, if you run directLFQ with peptide-level quantification, you can use this file to compare the intensity traces of different peptides of the same protein.
+3.  The third output file ends with .aq_reformat.tsv and contains the reformatted input data in matrix format (ions are rows, samples are columns). The values are identical to the values of the original input file, just the format is different.
 
 ## preparing input files
 
