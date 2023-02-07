@@ -222,6 +222,8 @@ directLFQ writes three output files into the directory of the input file:
 2.  The second output file ends with .ion_intensities.tsv and contains the aligned intensity traces of all ions. This allows to compare profiles of different ions to each other. In particular, if you run directLFQ with peptide-level quantification, you can use this file to compare the intensity traces of different peptides of the same protein.
 3.  The third output file ends with .aq_reformat.tsv and contains the reformatted input data in matrix format (ions are rows, samples are columns). The values are identical to the values of the original input file, just the format is different.
 
+---
+
 ## preparing input files
 
 ### Spectronaut
