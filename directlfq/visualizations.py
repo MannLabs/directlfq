@@ -26,18 +26,7 @@ class AlphaPeptColorMap():
         self.colormap_discrete = matplotlib.colors.LinearSegmentedColormap.from_list("alphapept",self.colorlist, N=5)
         self.seaborn_mapname_linear = None
         self.seaborn_mapname_linear_cut = None
-        self._define_linear_seaborn_palettes()
     
-    def _define_linear_seaborn_palettes(self):
-        cmap_registrator = CmapRegistrator()
-
-        self.seaborn_mapname_linear = "alphapept_linear"
-        cmap_registrator.register_colormap(self.seaborn_mapname_linear, self.colorlist)
-
-        self.seaborn_mapname_linear_cut = "alphapept_linear_cut"
-        cmap_registrator.register_colormap(self.seaborn_mapname_linear_cut, self.colorlist[:2])
-        
-
 
 class CmapRegistrator():
     def __init__(self):
@@ -120,6 +109,7 @@ class IonTraceCompararisonPlotterNoDirectLFQTrace(IonTraceCompararisonPlotter):
 # %% ../nbdev_nbs/05_visualizations.ipynb 4
 import seaborn as sns
 import matplotlib.cm
+import numpy as np
 
 class IonTraceVisualizer():
     def __init__(self, protein_df, ax):
@@ -138,20 +128,22 @@ class IonTraceVisualizer():
         self._num_samples = len(self._protein_df.columns)
 
     def _plot_ion_traces(self):
-        sns.lineplot(data = self._plot_df, ax=self._ax, legend=None)
-        for line in self._ax.lines:
-            self._ax.scatter(line.get_xdata(), line.get_ydata(), color='grey', marker = 'o', s = 15)
-        #set color of line
-        for line in self._ax.lines:
-            line.set_color('grey')
-
+        plot_values = self._plot_df.values #row contains intensity trace
+        for idx in range(plot_values.shape[0]):
+            x_values = np.array(range(plot_values.shape[1]))
+            y_values = plot_values[idx]
+            nan_mask = np.isfinite(y_values)
+            self._ax.plot(x_values[nan_mask], y_values[nan_mask],color='grey', alpha=0.5)
+            self._ax.scatter(x_values[nan_mask], y_values[nan_mask], color='grey', marker = 'o', s = 11)
         self._ax.set_xticks(range(self._num_samples))
         self._annotate_x_ticks(sample_names=self._protein_df.columns)
 
     def _define_prepared_dataframe(self):
+        #drop all rows that contain less than 1 non nan value
         self._plot_df = self._protein_df.copy()
+        self._plot_df = self._plot_df.dropna(axis='rows', thresh=1)
         self._plot_df.columns = range(self._num_samples)
-        self._plot_df = self._plot_df.T
+        #self._plot_df = self._plot_df.T
 
     def add_median_trace(self, list_of_median_values):
         sns.lineplot(x = range(len(list_of_median_values)), y = list_of_median_values, ax=self._ax,color='black', linewidth=3)
