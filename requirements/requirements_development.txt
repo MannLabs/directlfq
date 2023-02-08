@@ -13,3 +13,4 @@ matplotlib_venn==0.11.7
 wget==3.2
 seaborn==0.12.2
 matplotlib==3.6.3
+nbdev==2.3.9
