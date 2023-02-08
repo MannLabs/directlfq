@@ -1,7 +1,11 @@
-on: 
-   workflow_dispatch:
+on:
+  push:
+    branches: [ main, development ]
+  pull_request:
+    branches: [ main, development ]
+  workflow_dispatch:
 
-name: Quick tests based on default installation
+name: Quick tests based on default installation, ubuntu stable
 
 jobs:
   loose_installation:
@@ -23,7 +27,7 @@ jobs:
         shell: bash -l {0}
         run: |
           cd misc
-          . ./loose_pip_install.sh
+          . ./stable_pip_install.sh
 
       - name: Unittests
         shell: bash -l {0}
