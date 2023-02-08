@@ -5,4 +5,4 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: mannlabs/directlfq/workflows/nbdev-ci
+      - uses: fastai/workflows/nbdev-ci@master
