@@ -1,3 +1,10 @@
+on:
+  #  push:
+  #    branches: [ master, Development ]
+  #  pull_request:
+  #    branches: [ master, Development ]
+   workflow_dispatch:
+   
 name: 'nbdev-ci'
 description: 'Test with nbdev'
 inputs:
