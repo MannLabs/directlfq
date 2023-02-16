@@ -11,7 +11,7 @@ __all__ = ['estimate_protein_intensities', 'get_list_of_tuple_w_protein_profiles
            'get_list_with_protein_value_for_each_sample', 'ProtvalCutter', 'OrphanIonRemover',
            'OrphanIonsForDeletionSelector', 'IonCheckedForOrphan']
 
-# %% ../nbdev_nbs/03_protein_intensity_estimation.ipynb 2
+# %% ../nbdev_nbs/03_protein_intensity_estimation.ipynb 3
 import pandas as pd
 import numpy as np
 import directlfq.normalization as lfqnorm
@@ -130,7 +130,6 @@ def calculate_peptide_and_protein_intensities(idx,peptide_intensity_df , num_sam
     return protein_profile, shifted_peptides
 
 
-# %% ../nbdev_nbs/03_protein_intensity_estimation.ipynb 3
 def get_protein_profile_from_shifted_peptides(normalized_peptide_profile_df, summed_pepints, min_nonan):
     intens_vec = get_list_with_protein_value_for_each_sample(normalized_peptide_profile_df, min_nonan)
     intens_vec = np.array(intens_vec)
@@ -152,7 +151,8 @@ def get_list_with_protein_value_for_each_sample(normalized_peptide_profile_df, m
             intens_vec.append(np.nan)
     return intens_vec
 
-# %% ../nbdev_nbs/03_protein_intensity_estimation.ipynb 4
+
+# %% ../nbdev_nbs/03_protein_intensity_estimation.ipynb 5
 import pandas as pd
 from numba import njit
 
@@ -191,7 +191,7 @@ class ProtvalCutter():
         return self._protvals_df.loc[shortened_index]
 
 
-# %% ../nbdev_nbs/03_protein_intensity_estimation.ipynb 5
+# %% ../nbdev_nbs/03_protein_intensity_estimation.ipynb 6
 import numpy as np
 import pandas as pd
 
