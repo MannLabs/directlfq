@@ -1,6 +1,6 @@
 
 <!-- ![Pip installation](https://github.com/MannLabs/directlfq/workflows/Default%20installation%20and%20tests/badge.svg) -->
-![Unit tests](https://github.com/MannLabs/directlfq/actions/workflows/nbdev_tests.yaml/badge.svg)
+![Unit tests](https://github.com/MannLabs/directlfq/actions/workflows/nbdev_tests.yml/badge.svg)
 ![System tests](https://github.com/MannLabs/directlfq/actions/workflows/quick_tests.yml/badge.svg)
 
 <!-- [![Downloads](https://pepy.tech/badge/directlfq)](https://pepy.tech/project/directlfq)
