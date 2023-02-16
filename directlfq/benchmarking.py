@@ -339,7 +339,7 @@ class PlotConfig():
 class MultiOrganismIntensityFCPlotter():
     def __init__(self, ax, resultstable_w_ratios, organisms_to_plot = None, fcs_to_expect = None, title = ""):
         self.ax = ax
-        self._color_scheme = lfq_viz.AlphaPeptColorMap()
+        self._color_list_hex = ['#ffd479', '#325e7a', '#bad566']
         self._resultstable_w_ratios = resultstable_w_ratios
         self._organism_column = resultstable_w_ratios.organism_column
         self._log2fc_column = resultstable_w_ratios.log2fc_column
@@ -379,7 +379,7 @@ class MultiOrganismIntensityFCPlotter():
         complete_table = self._resultstable_w_ratios.formated_dataframe.copy()
         complete_table[self._mean_intensity_column] = np.log2(complete_table[self._mean_intensity_column])
         complete_table = self._remove_omitted_organisms_from_table(complete_table)
-        color_palette = sns.color_palette(self._color_scheme.colorlist_hex, n_colors=len(self._organisms_to_plot))
+        color_palette = sns.color_palette(self._color_list_hex, n_colors=len(self._organisms_to_plot))
         sns.scatterplot(data= complete_table, x =self._mean_intensity_column, y= self._log2fc_column, hue=self._organism_column, alpha=0.15, ax=self.ax, 
         hue_order=self._organisms_to_plot, palette=color_palette, size=0.2)
         self.ax.set_title(self._title)
@@ -391,7 +391,7 @@ class MultiOrganismIntensityFCPlotter():
     def _add_expected_lines(self):
         if self._fcs_to_expect is not None:
             for idx, fc in enumerate(self._fcs_to_expect):
-                color = self._color_scheme.colorlist[idx]
+                color = self._color_list_hex[idx]
                 self.ax.axhline(fc, color = color)
 
     def _get_organism_subtable(self, organism):
