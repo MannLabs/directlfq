@@ -160,7 +160,7 @@ import seaborn as sns
 class MultiOrganismMultiMethodBoxPlot():
     def __init__(self, method_ratio_results_table, ax, organisms_to_plot, fcs_to_expect):
         self._method_ratio_results_table = method_ratio_results_table
-        self._color_scheme = AlphaPeptColorMap()
+        self._colorlist_hex =['#bad566', '#325e7a', '#ffd479'] + AlphaPeptColorMap().colorlist_hex
         self._fcs_to_expect = fcs_to_expect
         self._organisms_to_plot = organisms_to_plot
         
@@ -170,13 +170,13 @@ class MultiOrganismMultiMethodBoxPlot():
         self._add_expected_fold_changes()
 
     def plot_boxplot(self):
-        color_palette = sns.color_palette(self._color_scheme.colorlist_hex, n_colors=len(self._fcs_to_expect))
+        color_palette = sns.color_palette(self._colorlist_hex, n_colors=len(self._fcs_to_expect))
         sns.violinplot(data=self._method_ratio_results_table, x="method", y = "log2fc", hue= "organism", palette=color_palette, hue_order=self._organisms_to_plot, ax=self.ax)
     
     def _add_expected_fold_changes(self):
         if self._fcs_to_expect is not None:
             for idx, fc in enumerate(self._fcs_to_expect):
-                color = self._color_scheme.colorlist[idx]
+                color = self._colorlist_hex[idx]
                 self.ax.axhline(fc, color = color)
     
     

@@ -339,7 +339,7 @@ class PlotConfig():
 class MultiOrganismIntensityFCPlotter():
     def __init__(self, ax, resultstable_w_ratios, organisms_to_plot = None, fcs_to_expect = None, title = ""):
         self.ax = ax
-        self._color_list_hex = ['#ffd479', '#325e7a', '#bad566']
+        self._color_list_hex = ['#bad566', '#325e7a', '#ffd479']
         self._resultstable_w_ratios = resultstable_w_ratios
         self._organism_column = resultstable_w_ratios.organism_column
         self._log2fc_column = resultstable_w_ratios.log2fc_column
