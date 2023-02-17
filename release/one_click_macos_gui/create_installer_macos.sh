@@ -20,7 +20,7 @@ python setup.py sdist bdist_wheel
 
 # Setting up the local package
 cd release/one_click_macos_gui
-pip install "../../dist/directlfq-0.2.4-py3-none-any.whl[stable]"
+pip install "../../dist/directlfq-0.2.4-py3-none-any.whl[stable, gui]"
 
 # Creating the stand-alone pyinstaller folder
 pip install pyinstaller==4.10
