@@ -175,6 +175,8 @@ lfq_manager.run_lfq(example_input_file_diann)
 
 Several use cases for applying directLFQ can be found as Jupyter Notebooks in the tests folder. See for example the [quicktests notebook](tests/quicktests/run_pipeline_w_different_input_formats.ipynb).
 
+Note that the nbdev_nbs folder contains the source code as Jupyter notebooks. These notebooks are automatically converted to Python scripts using the nbdev package and stored in the directlfq folder. The notebooks contain additional documentation and comments as well as unit tests that can be executed directly from the notebooks themselves.
+
 ---
 ## Troubleshooting
 

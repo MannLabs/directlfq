@@ -30,20 +30,26 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
         number_of_quadratic_samples (int, optional): How many samples are are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime. Defaults to 50.
         num_cores (_type_, optional): Num cores to use. Maximum feasible number utilized if set to None. Defaults to None.
     """
-    print("Starting directLFQ analysis")
+    print("Starting directLFQ analysis.")
     input_file = prepare_input_filename(input_file)
+    print("reformatting input file, for large files this might take a while.")
     input_file = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, input_type_to_use,mq_protein_groups_txt, columns_to_add)
     input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use)
     input_df = lfqutils.index_and_log_transform_input_df(input_df)
     input_df = lfqutils.remove_allnan_rows_input_df(input_df)
+    
     if not deactivate_normalization:
+        print("Performing sample normalization.")
         input_df = lfqnorm.NormalizationManagerSamplesOnSelectedProteins(input_df, num_samples_quadratic=number_of_quadratic_samples, selected_proteins_file=selected_proteins_file).complete_dataframe
+    
+    print("Estimating lfq intensities.")
     protein_df, ion_df = lfqprot_estimation.estimate_protein_intensities(input_df,min_nonan=min_nonan,num_samples_quadratic=maximum_number_of_quadratic_ions_to_use_per_protein, num_cores = num_cores)
     try:
         protein_df = lfqutils.add_columns_to_lfq_results_table(protein_df, input_file, columns_to_add)
     except:
-        print("Could not add additional columns to protein table, printing without additional columns")
+        print("Could not add additional columns to protein table, printing without additional columns.")
     
+    print("Writing results files.")
     outfile_basename = get_outfile_basename(input_file, input_type_to_use, selected_proteins_file, deactivate_normalization,filename_suffix)
     save_protein_df(protein_df,outfile_basename)
     save_ion_df(ion_df,outfile_basename)
