@@ -179,7 +179,7 @@ class RunPipeline(BaseWidget):
         self.dropdown_menu_for_input_type_title = pn.pane.Markdown('* Specify the type of the input table you want to use from the dropdown menu. Applies only if you want to use non-default settings, for example if you want to use summarized precursor intensities instead of fragment ion intensities for DIA data:')
         self.dropdown_menu_for_input_type = pn.widgets.Select(name = "",
         options = {'detect automatically' : None, 'Alphapept peptides.csv' : 'alphapept_peptides', 'MaxQuant evidence.txt' : "maxquant_evidence", 'MaxQuant peptides.txt' : 'maxquant_peptides',
-        'Spectronaut fragment level' :'spectronaut_fragion_isotopes', 'Spectronaut precursor level' : 'spectronaut_precursor', 'DIANN fragment level': 'diann_fragion_isotopes', 'DIANN precursor level' : 'diann_precursor'})
+        'Spectronaut fragment level' :'spectronaut_fragion_isotopes', 'Spectronaut precursor level' : 'spectronaut_precursor', 'DIANN fragment level': 'diann_fragion_isotopes', 'DIANN precursor level' : 'diann_precursors'})
 
         self.num_nonan_vals_title = pn.pane.Markdown('* Specify the minimum number of non-nan ion intensities required to derive a protein intensity. The higher this number, the more reliable the protein quantification at the cost of more missing values:')
         self.num_nonan_vals = pn.widgets.IntInput(name='', value=1, step=1, start=0, end=1000)
