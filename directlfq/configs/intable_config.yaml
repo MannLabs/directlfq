@@ -480,10 +480,10 @@ diann_fragion:
 
 
 
-diann_precursor_ms1:
+diann_precursors_ms1:
   format: longtable
   sample_ID: Run
-  quant_ID: Precursor.Quantity
+  quant_ID: Ms1.Area
   protein_cols:
    - Protein.Group
   ion_cols:
