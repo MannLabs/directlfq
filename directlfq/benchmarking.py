@@ -370,6 +370,7 @@ class MultiOrganismIntensityFCPlotter():
             print(self._get_stats_of_organism(organism, subtable_organism))
 
     def _generate_title(self):
+        title = ""
         for organism in self._organisms_to_plot:
             subtable_organism = self._get_organism_subtable(organism)
             title += self._get_stats_of_organism(organism, subtable_organism)
