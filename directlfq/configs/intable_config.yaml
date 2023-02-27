@@ -454,6 +454,76 @@ diann_fragion_isotopes:
   ml_level: CHARGE
 
 
+diann_fragion_isotopes_topn:
+  format: longtable
+  sample_ID: Run
+  quant_ID:
+    fragion: Fragment.Quant.Corrected.topN
+    ms1iso: Ms1.Area
+  protein_cols:
+   - Protein.Group
+  split_cols:
+    Fragment.Quant.Corrected.topN: ";"
+  ion_hierarchy:
+    fragion:
+      order: [SEQ, MOD, CHARGE, FRGION]
+      mapping:
+        SEQ: 
+         - Stripped.Sequence
+        MOD: 
+         - Modified.Sequence
+        CHARGE: 
+         - Precursor.Charge
+        FRGION: 
+         - Fragment.Quant.Corrected.topN
+    ms1iso:
+      order: [SEQ, MOD, CHARGE, MS1ISOTOPES]
+      mapping:
+        SEQ: 
+         - Stripped.Sequence
+        MOD: 
+         - Modified.Sequence
+        CHARGE: 
+         - Precursor.Charge
+        MS1ISOTOPES:
+         - Precursor.Charge
+  use_iontree: True
+  ml_level: CHARGE
+
+diann_precursor_ms1_and_ms2:
+  format: longtable
+  sample_ID: Run
+  quant_ID:
+    precursor: Precursor.Quantity
+    ms1iso: Ms1.Area
+  protein_cols:
+   - Protein.Group
+  ion_hierarchy:
+    precursor:
+      order: [SEQ, MOD, CHARGE]
+      mapping:
+        SEQ: 
+         - Stripped.Sequence
+        MOD: 
+         - Modified.Sequence
+        CHARGE: 
+         - Precursor.Charge
+    ms1iso:
+      order: [SEQ, MOD, CHARGE, MS1ISOTOPES]
+      mapping:
+        SEQ: 
+         - Stripped.Sequence
+        MOD: 
+         - Modified.Sequence
+        CHARGE: 
+         - Precursor.Charge
+        MS1ISOTOPES:
+         - Precursor.Charge
+  use_iontree: True
+  ml_level: CHARGE
+
+
+
 diann_fragion:
   format: longtable
   sample_ID: Run
