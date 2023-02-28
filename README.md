@@ -117,7 +117,7 @@ conda activate directlfq
 Finally, directlfq and all its [dependencies](requirements) need to be installed. To take advantage of all features and allow development (with the `-e` flag), this is best done by also installing the [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
 
 ```bash
-pip install -e "./directlfq[development]"
+pip install -e "./directlfq[development,gui]"
 ```
 
 By default this installs loose dependencies (no explicit versioning), although it is also possible to use stable dependencies (e.g. `pip install -e "./directlfq[stable,development-stable]"`).
