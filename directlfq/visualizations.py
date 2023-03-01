@@ -2,7 +2,8 @@
 
 # %% auto 0
 __all__ = ['a4_dims', 'a4_width_no_margin', 'AlphaPeptColorMap', 'CmapRegistrator', 'IonTraceCompararisonPlotter',
-           'IonTraceCompararisonPlotterNoDirectLFQTrace', 'IonTraceVisualizer', 'MultiOrganismMultiMethodBoxPlot']
+           'IonTraceCompararisonPlotterNoDirectLFQTrace', 'IonTraceVisualizer', 'MultiOrganismMultiMethodBoxPlot',
+           'plot_withincond_fcs', 'plot_relative_to_median_fcs']
 
 # %% ../nbdev_nbs/05_visualizations.ipynb 1
 a4_dims = (11.7, 8.27)
@@ -180,3 +181,44 @@ class MultiOrganismMultiMethodBoxPlot():
                 self.ax.axhline(fc, color = color)
     
     
+
+# %% ../nbdev_nbs/05_visualizations.ipynb 6
+import matplotlib.pyplot as plt
+import itertools
+
+def plot_withincond_fcs(normed_intensity_df, cut_extremes = True):
+    """takes a normalized intensity dataframe and plots the fold change distribution between all samples. Column = sample, row = ion"""
+
+    samplecombs = list(itertools.combinations(normed_intensity_df.columns, 2))
+
+    for spair in samplecombs:#compare all pairs of samples
+        s1 = spair[0]
+        s2 = spair[1]
+        diff_fcs = normed_intensity_df[s1].to_numpy() - normed_intensity_df[s2].to_numpy() #calculate fold changes by subtracting log2 intensities of both samples
+
+        if cut_extremes:
+            cutoff = max(abs(np.nanquantile(diff_fcs,0.025)), abs(np.nanquantile(diff_fcs, 0.975))) #determine 2.5% - 97.5% interval, i.e. remove extremes
+            range = (-cutoff, cutoff)
+        else:
+            range = None
+        plt.hist(diff_fcs,80,density=True, histtype='step',range=range) #set the cutoffs to focus the visualization
+        plt.xlabel("log2 peptide fcs")
+
+    plt.show()
+
+# %% ../nbdev_nbs/05_visualizations.ipynb 7
+import matplotlib.pyplot as plt
+import itertools
+
+def plot_relative_to_median_fcs(normed_intensity_df):
+
+    median_intensities = normed_intensity_df.median(axis=1)
+    median_intensities = median_intensities.to_numpy()
+    
+    diff_fcs = []
+    for col in normed_intensity_df.columns:
+        median_fcs = normed_intensity_df[col].to_numpy() - median_intensities
+        diff_fcs.append(np.nanmedian(median_fcs))
+    plt.hist(diff_fcs,80,density=True, histtype='step')
+    plt.xlabel("log2 peptide fcs")
+    plt.show()

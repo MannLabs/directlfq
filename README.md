@@ -19,6 +19,7 @@ You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/Mann
   - [About](#about)
   - [Installation](#installation)
     - [One-click GUI](#one-click-gui)
+    - [Pip](#pip)
     - [Developer](#developer)
   - [Running directLFQ](#running-directlfq)
     - [GUI](#gui)
@@ -67,16 +68,22 @@ The GUI of directlfq is a completely stand-alone tool that requires no knowledge
 
 Older releases remain available on the [release page](https://github.com/MannLabs/directlfq/releases), but no backwards compatibility is guaranteed.
 
-<!---
+-
 ### Pip
 
-directlfq can be installed in an existing Python 3.8 environment with a single `bash` command. *This `bash` command can also be run directly from within a Jupyter notebook by prepending it with a `!`*:
+directLFQ can be installed in an existing Python 3.8 environment with a single `bash` command.
 
 ```bash
 pip install directlfq
 ```
 
-Installing directlfq like this avoids conflicts when integrating it in other tools, as this does not enforce strict versioning of dependencies. However, if new versions of dependencies are released, they are not guaranteed to be fully compatible with directlfq. While this should only occur in rare cases where dependencies are not backwards compatible, you can always force directlfq to use dependancy versions which are known to be compatible with:
+This installs the core directLFQ without graphical user interface (GUI). If you want to install with additional dependencies for GUI support, you can do this with:
+
+```bash
+pip install "directlfq[gui]"
+```
+
+For installation with stable dependencies, use:
 
 ```bash
 pip install "directlfq[stable]"
@@ -89,7 +96,7 @@ For those who are really adventurous, it is also possible to directly install an
 ```bash
 pip install "git+https://github.com/MannLabs/directlfq.git@development#egg=directlfq[stable,development-stable]"
 ```
--->
+
 ### Developer
 
 directlfq can also be installed in editable (i.e. developer) mode with a few `bash` commands. This allows to fully customize the software and even modify the source code to your specific needs. When an editable Python package is installed, its source code is stored in a transparent location of your choice. While optional, it is advised to first (create and) navigate to e.g. a general software folder:
