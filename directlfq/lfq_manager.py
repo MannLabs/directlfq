@@ -83,7 +83,6 @@ def save_run_config(outfile_basename, kwargs):
         df_configs = pd.DataFrame.from_dict(kwargs, orient='index', columns=['value'])
         #add row with directlfq version
         df_configs.loc["directlfq_version"] = directlfq.__version__
-        display(df_configs)
         df_configs.to_csv(f"{outfile_basename}.run_config.tsv", sep = "\t")
     except:
         print("Could not save run config.")
