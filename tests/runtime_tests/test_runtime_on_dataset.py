@@ -7,8 +7,9 @@ args = sys.argv[1:]
 template_file = args[0]
 number_of_samples = int(args[1])
 
-timedrun = lfq_benchmark.LFQTimer(template_file, list_of_samplenumbers_to_check=[number_of_samples], name="check_dataset")
+lfq_timer = lfq_benchmark.LFQTimer(template_file, list_of_samplenumbers_to_check=[number_of_samples], name="check_dataset")
 
+timedrun = lfq_timer.timed_lfq_runs[0]
 
 
 df_run = pd.Series({'time_normalization' : timedrun.runtime_info.runtime_samplenorm, 

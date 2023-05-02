@@ -177,7 +177,7 @@ def create_or_replace_folder(folder):
 def add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(mq_file, input_type_to_use ,mq_protein_group_file, columns_to_add):
     try:
         input_type = _get_input_type(mq_file, input_type_to_use)
-        if ("maxquant_evidence" in input_type or "maxquant_peptides" in input_type) and ("aq_reformat" not in mq_file):
+        if ("maxquant_evidence" in input_type or "maxquant_peptides" in input_type) and ("aq_reformat" not in mq_file) and ("directlfq" not in input_type_to_use) and (input_type_to_use != "directlfq"):
             if mq_protein_group_file is None:
                 print("You provided a MaxQuant peptide or evidence file as input. To have the identical ProteinGroups as in the MaxQuant analysis, please provide the ProteinGroups.txt file as well.")
                 return mq_file
@@ -777,7 +777,7 @@ def import_data(input_file, input_type_to_use = None, samples_subset = None, res
     """
 
     samples_subset = add_ion_protein_headers_if_applicable(samples_subset)
-    if "aq_reformat" in input_file:
+    if ("aq_reformat" in input_file) | (input_type_to_use == "directlfq"):
         file_to_read = input_file
     else:
         file_to_read = reformat_and_save_input_file(input_file=input_file, input_type_to_use=input_type_to_use)
