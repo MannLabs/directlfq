@@ -609,6 +609,37 @@ diann_gene:
    - Genes
 
 
+diann_peptide_based_on_precursor_ms1_and_ms2:
+  format: longtable
+  sample_ID: Run
+  quant_ID:
+    precursor: Precursor.Quantity
+    ms1iso: Ms1.Area
+  protein_cols:
+   - Protein.Group
+   - Stripped.Sequence
+  ion_hierarchy:
+    precursor:
+      order: [ MOD, CHARGE]
+      mapping:
+        MOD: 
+         - Modified.Sequence
+        CHARGE: 
+         - Precursor.Charge
+    ms1iso:
+      order: [MOD, CHARGE, MS1ISOTOPES]
+      mapping:
+        MOD: 
+         - Modified.Sequence
+        CHARGE: 
+         - Precursor.Charge
+        MS1ISOTOPES:
+         - Precursor.Charge
+  use_iontree: True
+  ml_level: CHARGE
+
+
+
 spectronaut_ptm_fragion_isotopes:
   format: longtable
   sample_ID: R.Label
