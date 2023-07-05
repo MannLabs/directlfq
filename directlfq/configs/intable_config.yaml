@@ -2,8 +2,31 @@
 #this file determines the parameters used to convert long format tables as e.g. produced by Spectronaut or DIA-NN into a wide table format
 
 
-
 alphapept_peptides:
+  format: longtable
+  sample_ID: shortname
+  quant_ID:
+    precursor_intensity: ms1_int_sum_area
+  protein_cols:
+   - protein_group
+  ion_hierarchy:
+    precursor_intensity:
+      order: [SEQ, CHARGE]
+      mapping:
+        SEQ: 
+         - sequence
+        CHARGE: 
+         - charge
+  filters:
+    decoy:
+      param: decoy
+      comparator: "=="
+      value: False
+         
+  use_iontree: False
+
+
+alphapept_peptides_legacy:
   format: longtable
   sample_ID: shortname
   quant_ID:
