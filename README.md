@@ -226,6 +226,9 @@ directLFQ is started internally via the directlfq.lfq_manager.run_lfq() command.
 - **input_type_to_use**: The type of input file to use. This is used to determine the column names of the input file. Only change this if you want to use non-default settings.
 - **maximum_number_of_quadratic_ions_to_use_per_protein**: How many ions are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime.
 - **number_of_quadratic_samples**: How many samples are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime
+-  **num_cores**: The number of cores to use (default is to use multiprocessing).
+-  **filename_suffix**: Suffix to append to the output files.
+-  **deactivate_normalization**: Set to true, if no between-sample normalization should be performed before processing.
 
 ---
 
