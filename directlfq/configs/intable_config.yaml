@@ -347,6 +347,7 @@ diann_precursors_plexDIA:
   use_iontree: True
   ml_level: CHARGE
 
+
 diann_precursors:
   format: longtable
   sample_ID: Run
@@ -355,6 +356,12 @@ diann_precursors:
    - Protein.Group
   ion_cols:
    - Precursor.Id
+  filters:
+    protein_qval:
+      param: Lib.PG.Q.Value
+      comparator: "<="
+      value: 0.01
+  
   # filters:
   #   shape_quality:
   #     param: Quantity.Quality
@@ -397,6 +404,11 @@ diann_fragion_isotopes_raw:
          - Precursor.Charge
         MS1ISOTOPES:
          - Precursor.Charge
+  filters:
+    protein_qval:
+      param: Lib.PG.Q.Value
+      comparator: "<="
+      value: 0.01
   use_iontree: True
   ml_level: CHARGE
 
@@ -435,6 +447,11 @@ diann_fragion_isotopes_raw_charite_dataset:
          - Precursor.Charge
         MS1ISOTOPES:
          - Precursor.Charge
+  filters:
+    protein_qval:
+      param: Lib.PG.Q.Value
+      comparator: "<="
+      value: 0.01
   use_iontree: True
   ml_level: CHARGE
 
@@ -473,6 +490,11 @@ diann_fragion_isotopes:
          - Precursor.Charge
         MS1ISOTOPES:
          - Precursor.Charge
+  filters:
+    protein_qval:
+      param: Lib.PG.Q.Value
+      comparator: "<="
+      value: 0.01
   use_iontree: True
   ml_level: CHARGE
 
@@ -510,6 +532,11 @@ diann_fragion_isotopes_topn:
          - Precursor.Charge
         MS1ISOTOPES:
          - Precursor.Charge
+  filters:
+    protein_qval:
+      param: Lib.PG.Q.Value
+      comparator: "<="
+      value: 0.01
   use_iontree: True
   ml_level: CHARGE
 
@@ -542,6 +569,11 @@ diann_precursor_ms1_and_ms2:
          - Precursor.Charge
         MS1ISOTOPES:
          - Precursor.Charge
+  filters:
+    protein_qval:
+      param: Lib.PG.Q.Value
+      comparator: "<="
+      value: 0.01
   use_iontree: True
   ml_level: CHARGE
 
@@ -568,6 +600,11 @@ diann_fragion:
          - Precursor.Charge
         FRGION: 
          - Fragment.Quant.Corrected
+  filters:
+    protein_qval:
+      param: Lib.PG.Q.Value
+      comparator: "<="
+      value: 0.01
   use_iontree: True
   ml_level: CHARGE
 
@@ -581,6 +618,11 @@ diann_precursors_ms1:
    - Protein.Group
   ion_cols:
    - Precursor.Id
+  filters:
+    protein_qval:
+      param: Lib.PG.Q.Value
+      comparator: "<="
+      value: 0.01
 
 diann_precursor_filename_sampleid:
   format: longtable
@@ -590,6 +632,11 @@ diann_precursor_filename_sampleid:
    - Genes
   ion_cols:
    - Precursor.Id
+  filters:
+    protein_qval:
+      param: Lib.PG.Q.Value
+      comparator: "<="
+      value: 0.01
   # filters:
   #   shape_quality:
   #     param: Quantity.Quality
@@ -606,10 +653,10 @@ diann_sequence:
   ion_cols:
    - Stripped.Sequence
   filters:
-    shape_quality:
-      param: Quantity.Quality
-      comparator: ">"
-      value: 0.3
+    protein_qval:
+      param: Lib.PG.Q.Value
+      comparator: "<="
+      value: 0.01
 
 
 diann_protein:
@@ -658,6 +705,11 @@ diann_peptide_based_on_precursor_ms1_and_ms2:
          - Precursor.Charge
         MS1ISOTOPES:
          - Precursor.Charge
+  filters:
+    protein_qval:
+      param: Lib.PG.Q.Value
+      comparator: "<="
+      value: 0.01
   use_iontree: True
   ml_level: CHARGE
 
