@@ -197,6 +197,8 @@ help="In the case of using MaxQuant data, the proteinGroups.txt table is needed 
 @click.option("--filename_suffix", "-fs", type=str, default="", help="A suffix to add to the output file name.")
 @click.option("--num_cores",  "-nc", type = int, default = None, help="The number of cores to use (default is to use multiprocessing).")
 @click.option("--deactivate_normalization",  "-dn", type = bool, default = False, help="If you want to deactivate the normalization step, you can set this flag to True.")
+@click.option("--filter_dict",  "-dn", type = bool, default = False, help="In case you want to define specific filters in addition to the standard filters, you can add a yaml file where the filters are defined (see GitHub docu for example).")
+
 def run_directlfq(**kwargs):
     print("starting directLFQ")
     import directlfq.lfq_manager
