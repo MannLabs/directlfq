@@ -1,0 +1,8 @@
+protein_qval:
+  param: Lib.PG.Q.Value
+  comparator: "<="
+  value: 0.01
+peptide_qval:
+  param: Lib.Q.Value
+  comparator: "<="
+  value: 0.01
