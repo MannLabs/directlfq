@@ -9,6 +9,7 @@ import directlfq.protein_intensity_estimation as lfqprot_estimation
 import directlfq.utils as lfqutils
 import pandas as pd
 import directlfq
+import os
 
 import warnings
 
@@ -17,7 +18,7 @@ warnings.filterwarnings(action='once')
 
 
 def run_lfq(input_file,  columns_to_add = [], selected_proteins_file :str = None, mq_protein_groups_txt = None, min_nonan = 1, input_type_to_use = None, maximum_number_of_quadratic_ions_to_use_per_protein = 10, 
-number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deactivate_normalization = False
+number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deactivate_normalization = False, filter_dict = None
 ):
     """Run the directLFQ pipeline on a given input file. The input file is expected to contain ion intensities. The output is a table containing protein intensities.
 
@@ -34,9 +35,9 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
     """
     print("Starting directLFQ analysis.")
     input_file = prepare_input_filename(input_file)
-    print("reformatting input file, for large files this might take a while.")
+    filter_dict = load_filter_dict_if_given_as_yaml(filter_dict)
     input_file = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, input_type_to_use,mq_protein_groups_txt, columns_to_add)
-    input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use)
+    input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use, filter_dict=filter_dict)
     input_df = lfqutils.index_and_log_transform_input_df(input_df)
     input_df = lfqutils.remove_allnan_rows_input_df(input_df)
     
@@ -58,6 +59,15 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
     save_ion_df(ion_df,outfile_basename)
     
     print("Analysis finished!")
+
+def load_filter_dict_if_given_as_yaml(filter_dict):
+    if os.path.isfile(str(filter_dict)):
+        #check if filter_dict is a path to a yaml file
+        if filter_dict.endswith(".yaml"):
+            filter_dict = lfqutils.load_config(filter_dict)
+            return filter_dict
+    else:
+        return filter_dict
 
 def prepare_input_filename(input_file):
     input_file = fr"{input_file}".replace("\ ", " ").rstrip() #replace escaped spaces with normal spaces and remove trailing whitespace

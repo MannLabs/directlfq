@@ -176,6 +176,16 @@ class RunPipeline(BaseWidget):
             margin=(15, 15, 0, 15)
         )
 
+        self.yaml_filt_dict_title = pn.pane.Markdown('* In case you want to define specific filters in addition to the standard filters, you can add a yaml file where the filters are defined (see GitHub docs).')
+        self.yaml_filt_dict_path = pn.widgets.TextInput(
+            name='',
+            default = None,
+            placeholder='(optional) Enter the whole path to the yaml file with the filters',
+            width=900,
+            sizing_mode='stretch_width',
+            margin=(15, 15, 0, 15)
+        )
+
         self.dropdown_menu_for_input_type_title = pn.pane.Markdown('* Specify the type of the input table you want to use from the dropdown menu. Applies only if you want to use non-default settings, for example if you want to use summarized precursor intensities instead of fragment ion intensities for DIA data:')
         self.dropdown_menu_for_input_type = pn.widgets.Select(name = "",
         options = {'detect automatically' : None, 'Alphapept peptides.csv' : 'alphapept_peptides', 'MaxQuant evidence.txt' : "maxquant_evidence", 'MaxQuant peptides.txt' : 'maxquant_peptides',
@@ -184,6 +194,9 @@ class RunPipeline(BaseWidget):
 
         self.num_nonan_vals_title = pn.pane.Markdown('* Specify the minimum number of non-nan ion intensities required to derive a protein intensity. The higher this number, the more reliable the protein quantification at the cost of more missing values:')
         self.num_nonan_vals = pn.widgets.IntInput(name='', value=1, step=1, start=0, end=1000)
+
+        self.num_cores_title = pn.pane.Markdown('* Specify the number of cores to use (default of 0 means multiprocessing):')
+        self.num_cores_vals = pn.widgets.IntInput(name='', value=0, step=1, start=0, end=1000)
 
 
 
@@ -231,6 +244,10 @@ class RunPipeline(BaseWidget):
                             self.protein_subset_for_normalization_file,
                             self.num_nonan_vals_title,
                             self.num_nonan_vals,
+                            self.num_cores_title,
+                            self.num_cores_vals,
+                            self.yaml_filt_dict_title,
+                            self.yaml_filt_dict_path,
                             ), ), 
                             header='optional configurations',
                             collapsed=True,
@@ -308,10 +325,12 @@ class RunPipeline(BaseWidget):
         additional_headers = [] if self.additional_headers.value == '' else self.additional_headers.value
         min_nonan = self.num_nonan_vals.value
         file_of_proteins_for_normalization = None if self.protein_subset_for_normalization_file.value == '' else self.protein_subset_for_normalization_file.value
-
+        num_cores = None if self.num_cores_vals.value == -1 else self.num_cores_vals.value
+        yaml_filt_dict_path = None if self.yaml_filt_dict_path.value == '' else self.yaml_filt_dict_path.value
 
         lfq_manager.run_lfq(input_file = input_file, input_type_to_use = input_type_to_use, maximum_number_of_quadratic_ions_to_use_per_protein = 10,
-         number_of_quadratic_samples = 50, mq_protein_groups_txt= mq_protein_groups_txt, columns_to_add= additional_headers, selected_proteins_file= file_of_proteins_for_normalization, min_nonan = min_nonan)
+         number_of_quadratic_samples = 50, mq_protein_groups_txt= mq_protein_groups_txt, columns_to_add= additional_headers, selected_proteins_file= file_of_proteins_for_normalization, 
+         min_nonan = min_nonan, num_cores=num_cores, yaml_filt_dict_path=yaml_filt_dict_path)
 
         self.trigger_dependancy()
         self.run_pipeline_progress.active = False

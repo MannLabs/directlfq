@@ -769,7 +769,7 @@ import pandas as pd
 import os
 import pathlib
 
-def import_data(input_file, input_type_to_use = None, samples_subset = None, results_dir = None):
+def import_data(input_file, input_type_to_use = None, samples_subset = None, filter_dict = None):
     """
     Function to import peptide level data. Depending on available columns in the provided file,
     the function identifies the type of input used (e.g. Spectronaut, MaxQuant, DIA-NN), reformats if necessary
@@ -782,16 +782,19 @@ def import_data(input_file, input_type_to_use = None, samples_subset = None, res
     if ("aq_reformat" in input_file) | (input_type_to_use == "directlfq"):
         file_to_read = input_file
     else:
-        file_to_read = reformat_and_save_input_file(input_file=input_file, input_type_to_use=input_type_to_use)
+        file_to_read = reformat_and_save_input_file(input_file=input_file, input_type_to_use=input_type_to_use, filter_dict=filter_dict)
     
     input_reshaped = pd.read_csv(file_to_read, sep = "\t", encoding = 'latin1', usecols=samples_subset)
     input_reshaped = input_reshaped.drop_duplicates(subset='ion')
     return input_reshaped
 
 
-def reformat_and_save_input_file(input_file, input_type_to_use = None):
+def reformat_and_save_input_file(input_file, input_type_to_use = None, filter_dict = None):
     
     input_type, config_dict_for_type, sep = get_input_type_and_config_dict(input_file, input_type_to_use)
+
+    if filter_dict is not None:
+        config_dict_for_type['filters']=  dict(config_dict_for_type.get('filters', {}),**filter_dict)
     print(f"using input type {input_type}")
     format = config_dict_for_type.get('format')
     outfile_name = f"{input_file}.{input_type}.aq_reformat.tsv"
