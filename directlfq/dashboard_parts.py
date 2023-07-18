@@ -330,7 +330,7 @@ class RunPipeline(BaseWidget):
 
         lfq_manager.run_lfq(input_file = input_file, input_type_to_use = input_type_to_use, maximum_number_of_quadratic_ions_to_use_per_protein = 10,
          number_of_quadratic_samples = 50, mq_protein_groups_txt= mq_protein_groups_txt, columns_to_add= additional_headers, selected_proteins_file= file_of_proteins_for_normalization, 
-         min_nonan = min_nonan, num_cores=num_cores, yaml_filt_dict_path=yaml_filt_dict_path)
+         min_nonan = min_nonan, num_cores=num_cores, filter_dict=yaml_filt_dict_path)
 
         self.trigger_dependancy()
         self.run_pipeline_progress.active = False
