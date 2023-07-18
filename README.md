@@ -195,9 +195,9 @@ In case of issues, check out the following:
 ---
 ## Citations
 
-In the case that directLFQ is useful to you, please consider supporting us by citing the [preprint](https://doi.org/10.1101/2023.02.17.528962)
+In the case that directLFQ is useful to you, please consider supporting us by citing the [paper](https://doi.org/10.1016/j.mcpro.2023.100581)
 
-Ammar, C., Schessner, J.P., Willems, S., Michaelis, A.C., and Mann, M. (2023). Accurate label-free quantification by directLFQ to compare unlimited numbers of proteomes. bioRxiv, 2023.02.17.528962. 10.1101/2023.02.17.528962.
+Ammar, C., Schessner, J.P., Willems, S., Michaelis, A.C., and Mann, M. (2023). Accurate label-free quantification by directLFQ to compare unlimited numbers of proteomes.  Molecular & Cellular Proteomics, 100581.
 
 
 
@@ -229,6 +229,7 @@ directLFQ is started internally via the directlfq.lfq_manager.run_lfq() command.
 -  **num_cores**: The number of cores to use (default is to use multiprocessing).
 -  **filename_suffix**: Suffix to append to the output files.
 -  **deactivate_normalization**: Set to true, if no between-sample normalization should be performed before processing.
+-  **filter_dict**: In case you want to define specific filters in addition to the standard filters, you can add a yaml file where the filters are defined (see example [here](release/examples/filterdict.yaml)). In the Python API you can also directly put in the dictionary instead of the .yaml file.
 
 ---
 
