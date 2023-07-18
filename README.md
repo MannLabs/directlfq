@@ -195,9 +195,9 @@ In case of issues, check out the following:
 ---
 ## Citations
 
-In the case that directLFQ is useful to you, please consider supporting us by citing the [preprint](https://doi.org/10.1101/2023.02.17.528962)
+In the case that directLFQ is useful to you, please consider supporting us by citing the [paper](https://doi.org/10.1016/j.mcpro.2023.100581)
 
-Ammar, C., Schessner, J.P., Willems, S., Michaelis, A.C., and Mann, M. (2023). Accurate label-free quantification by directLFQ to compare unlimited numbers of proteomes. bioRxiv, 2023.02.17.528962. 10.1101/2023.02.17.528962.
+Ammar, C., Schessner, J.P., Willems, S., Michaelis, A.C., and Mann, M. (2023). Accurate label-free quantification by directLFQ to compare unlimited numbers of proteomes.  Molecular & Cellular Proteomics, 100581.
 
 
 
