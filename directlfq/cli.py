@@ -195,6 +195,7 @@ help="In the case of using MaxQuant data, the proteinGroups.txt table is needed 
 @click.option("--maximum_number_of_quadratic_ions_to_use_per_protein", "-mn", type= int, default = 10,  help="How many ions are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime.")
 @click.option("--number_of_quadratic_samples", "-nq", type = int, default = 50, help="How many samples are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime.")
 @click.option("--filename_suffix", "-fs", type=str, default="", help="A suffix to add to the output file name.")
+@click.option("--num_cores",  "-nc", type = int, default = None, help="The number of cores to use (default is to use multiprocessing).")
 @click.option("--deactivate_normalization",  "-dn", type = bool, default = False, help="If you want to deactivate the normalization step, you can set this flag to True.")
 def run_directlfq(**kwargs):
     print("starting directLFQ")
