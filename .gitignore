@@ -190,3 +190,5 @@ misc/bumpversion.sh
 figures/
 _docs/
 _proc/
+
+sandbox/

@@ -433,8 +433,8 @@ def filter_input(filter_dict, input):
 def merge_protein_and_ion_cols(input_df, config_dict):
     protein_cols =  config_dict.get("protein_cols")
     ion_cols = config_dict.get("ion_cols")
-    input_df['protein'] = input_df.apply(lambda row : "_".join(row[protein_cols].astype('string')), axis = 1)
-    input_df['ion'] = input_df.apply(lambda row : "_".join(row[ion_cols].astype('string')), axis = 1)
+    input_df['protein'] = join_columns(input_df, protein_cols)
+    input_df['ion'] = join_columns(input_df, ion_cols)
 
     input_df = input_df.rename(columns = {config_dict.get('quant_ID') : "quant_val"})
     return input_df
@@ -458,7 +458,7 @@ def merge_protein_cols_and_ion_dict(input_df, config_dict):
 
     ion_dfs = []
     #concatenate multiple protein columns into one
-    input_df['protein'] = input_df.apply(lambda row: "_".join(row[protein_cols].astype('string')), axis=1)
+    input_df['protein'] = join_columns(input_df, protein_cols)
 
     input_df = input_df.drop(columns = [x for x in protein_cols if x!='protein'])
     for hierarchy_type in ion_hierarchy.keys():
@@ -482,6 +482,12 @@ def merge_protein_cols_and_ion_dict(input_df, config_dict):
         ion_dfs.append(df_subset)
     input_df = pd.concat(ion_dfs, ignore_index=True)
     return input_df
+
+def join_columns(df, columns, separator='_'):
+    if len(columns) == 1:
+        return df[columns[0]].fillna('nan').astype(str)
+    else:
+        return df[columns].fillna('nan').astype(str).agg(separator.join, axis=1)
 
 
 def get_quantitative_columns(input_df, hierarchy_type, config_dict, ion_headers_merged):
