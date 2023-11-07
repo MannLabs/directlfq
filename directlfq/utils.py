@@ -785,14 +785,23 @@ def import_data(input_file, input_type_to_use = None, samples_subset = None, fil
     """
 
     samples_subset = add_ion_protein_headers_if_applicable(samples_subset)
-    if ("aq_reformat" in input_file) | (input_type_to_use == "directlfq"):
+    file_is_already_formatted = ("aq_reformat" in input_file) | (input_type_to_use == "directlfq")
+    if file_is_already_formatted:
         file_to_read = input_file
     else:
         file_to_read = reformat_and_save_input_file(input_file=input_file, input_type_to_use=input_type_to_use, filter_dict=filter_dict)
     
     input_reshaped = pd.read_csv(file_to_read, sep = "\t", encoding = 'latin1', usecols=samples_subset)
+    input_reshaped = adapt_table_for_alphabaseformat_backward_compatibility(file_is_already_formatted, input_reshaped)
     input_reshaped = input_reshaped.drop_duplicates(subset='ion')
+
     return input_reshaped
+
+def add_ion_protein_headers_if_applicable(samples_subset):
+    if samples_subset is not None:
+        return samples_subset + ["ion", "protein"]
+    else:
+        return None
 
 
 def reformat_and_save_input_file(input_file, input_type_to_use = None, filter_dict = None):
@@ -814,13 +823,12 @@ def reformat_and_save_input_file(input_file, input_type_to_use = None, filter_di
     return outfile_name
 
 
+def adapt_table_for_alphabaseformat_backward_compatibility(file_is_already_formatted, input_reshaped):
+    if file_is_already_formatted:
+        if 'quant_id' in input_reshaped.columns:
+            return input_reshaped.rename(columns = {'quant_id' : 'ion'})
 
-
-def add_ion_protein_headers_if_applicable(samples_subset):
-    if samples_subset is not None:
-        return samples_subset + ["ion", "protein"]
-    else:
-        return None
+    return input_reshaped
 
 
 
