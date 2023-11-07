@@ -272,7 +272,7 @@ def add_columns_to_lfq_results_table(lfq_results_df, input_file, columns_to_add)
     lfq_results_df_appended = pd.merge(lfq_results_df, input_df, left_on='protein', right_on=protein_column_input_table, how='left')
     length_after = len(lfq_results_df_appended.index)
 
-    lfq_results_df_appended = lfq_results_df_appended.set_index('protein')
+    #lfq_results_df_appended = lfq_results_df_appended.set_index('protein')
     
 
     assert length_before == length_after

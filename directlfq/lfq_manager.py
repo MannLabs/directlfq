@@ -82,7 +82,7 @@ def get_outfile_basename(input_file, input_type_to_use, selected_proteins_file, 
     return outfile_basename
 
 def save_protein_df(protein_df, outfile_basename):
-    protein_df.to_csv(f"{outfile_basename}.protein_intensities.tsv", sep = "\t")
+    protein_df.to_csv(f"{outfile_basename}.protein_intensities.tsv", sep = "\t", index = None)
 
 def save_ion_df(ion_df, outfile_basename):
     ion_df.to_csv(f"{outfile_basename}.ion_intensities.tsv", sep = "\t")
