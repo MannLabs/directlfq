@@ -89,11 +89,17 @@ def save_ion_df(ion_df, outfile_basename):
 
 
 def save_run_config(outfile_basename, kwargs):
+    simple_kwargs = {k: v for k, v in kwargs.items() if is_simple_data(v)}
     try:
-        df_configs = pd.DataFrame.from_dict(kwargs, orient='index', columns=['value'])
-        #add row with directlfq version
+        df_configs = pd.DataFrame.from_dict(simple_kwargs, orient='index', columns=['value'])
+        # Add row with directlfq version
         df_configs.loc["directlfq_version"] = directlfq.__version__
-        df_configs.to_csv(f"{outfile_basename}.run_config.tsv", sep = "\t")
-    except:
-        print("Could not save run config.")
+        df_configs.to_csv(f"{outfile_basename}.run_config.tsv", sep="\t")
+    except Exception as e:
+        print(f"Could not save run config: {e}")
+
+def is_simple_data(value):
+    """Check if the data is a simple data type."""
+    return isinstance(value, (int, float, str, bool, type(None), list))
+
 
