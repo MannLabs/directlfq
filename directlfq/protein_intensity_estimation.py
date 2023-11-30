@@ -71,9 +71,6 @@ def get_normed_dfs(normed_df, allprots):
     list_of_normed_dfs = []
     for protein in allprots:
         peptide_intensity_df = pd.DataFrame(normed_df.loc[protein])#DataFrame definition to avoid pandas Series objects
-        if len(peptide_intensity_df.index) > 1:
-            peptide_intensity_df = ProtvalCutter(peptide_intensity_df, maximum_df_length=100).get_dataframe()
-            peptide_intensity_df = OrphanIonRemover(peptide_intensity_df).orphan_removed_df
         list_of_normed_dfs.append(peptide_intensity_df)
 
     return list_of_normed_dfs
@@ -116,6 +113,9 @@ def get_protein_dataframe_from_list_of_protein_profiles(allprots, list_of_tuple_
 
 
 def calculate_peptide_and_protein_intensities(idx,peptide_intensity_df , num_samples_quadratic, min_nonan):
+    if len(peptide_intensity_df.index) > 1:
+        peptide_intensity_df = ProtvalCutter(peptide_intensity_df, maximum_df_length=100).get_dataframe()
+    
     if(idx%100 ==0):
         print(f"prot {idx}")
     summed_pepint = np.nansum(2**peptide_intensity_df)
@@ -189,102 +189,3 @@ class ProtvalCutter():
     def _get_shortened_dataframe(self):
         shortened_index = self._sorted_idx[:self._maximum_df_length]
         return self._protvals_df.loc[shortened_index]
-
-
-# %% ../nbdev_nbs/03_protein_intensity_estimation.ipynb 6
-import numpy as np
-import pandas as pd
-
-class OrphanIonRemover(): #removes ions that do not have any overlap with any of the other ions
-    def __init__(self, protvals_df : pd.DataFrame):
-        self._protvals_df = protvals_df
-        
-        self._provals_is_not_na_df = None
-        self._count_of_nonans_per_position = None
-        
-        self._orphan_ions = []
-        self._non_orphan_ions = []
-
-        self.orphan_removed_df = None
-
-        self._define_protvals_is_not_na_df()
-        self._define_count_of_nonans_per_position()
-        self._define_orphan_ions_and_non_orphan_ions()
-        self._define_orphan_removed_df()
-
-    def _define_protvals_is_not_na_df(self):
-        self._provals_is_not_na_df = self._protvals_df.notna()
-
-    def _define_count_of_nonans_per_position(self):
-        self._count_of_nonans_per_position = self._provals_is_not_na_df.sum(axis=0)
-    
-    def _define_orphan_ions_and_non_orphan_ions(self):
-        for ion in self._provals_is_not_na_df.index:
-            is_nonan_per_position_for_ion = self._provals_is_not_na_df.loc[ion].to_numpy()
-            orphan_checked_ion = IonCheckedForOrphan(ion,self._count_of_nonans_per_position, is_nonan_per_position_for_ion)
-            self._append_to_orphan_or_non_orphan_list(orphan_checked_ion)
-
-    def _append_to_orphan_or_non_orphan_list(self, orphan_checked_ion):
-            if orphan_checked_ion.is_orphan:
-                self._orphan_ions.append(orphan_checked_ion)
-            else:
-                self._non_orphan_ions.append(orphan_checked_ion)
-    
-    def _define_orphan_removed_df(self):
-        ions_to_delete = OrphanIonsForDeletionSelector(self._orphan_ions, self._non_orphan_ions).ion_accessions_for_deletion
-        self.orphan_removed_df = self._protvals_df.drop(ions_to_delete, axis='index')
-
-
-
-class OrphanIonsForDeletionSelector():
-    def __init__(self, orphan_ions : list, non_orphan_ions : list):
-        self._orphan_ions = orphan_ions
-        self._non_orphan_ions = non_orphan_ions
-        
-        self.ion_accessions_for_deletion = None
-
-        self._define_orphan_ions_for_deletion()
-    
-    def _define_orphan_ions_for_deletion(self):
-        if len(self._non_orphan_ions)>0:
-            self.ion_accessions_for_deletion = self._get_accessions_of_list_of_ions(self._orphan_ions)
-        else:
-            if len(self._orphan_ions)>1:
-                self._sort_list_of_ions_by_num_nonans_descending(self._orphan_ions)
-                orphan_ions_to_delete = self._orphan_ions[1:]
-                self.ion_accessions_for_deletion = self._get_accessions_of_list_of_ions(orphan_ions_to_delete)
-    
-    def _get_accessions_of_list_of_ions(self, ions_checked_for_orphan : list):
-        return [ion_checked_for_orphan.ion_accession for ion_checked_for_orphan in ions_checked_for_orphan]
-
-    def _sort_list_of_ions_by_num_nonans_descending(self, ions : list):
-        ions.sort(key=lambda x: x.num_nonans, reverse=True)
-    
-
-
-
-
-class IonCheckedForOrphan():
-    def __init__(self, ion_accession, count_of_nonans_per_position : np.array, is_nonan_per_position_for_ion : np.array):
-        self.ion_accession = ion_accession
-        
-        self._count_of_nonans_per_position = count_of_nonans_per_position
-        self._is_nonan_per_position_for_ion = is_nonan_per_position_for_ion
-
-        self._count_of_nonans_per_position_for_ion = None
-
-        self.is_orphan = None
-        self.num_nonans = None
-
-        self._define_count_of_nonans_per_position_for_ion()
-        self._check_if_is_orphan()
-        self._define_num_nonans()
-
-    def _define_count_of_nonans_per_position_for_ion(self):
-        self._count_of_nonans_per_position_for_ion = self._count_of_nonans_per_position[self._is_nonan_per_position_for_ion]
-
-    def _check_if_is_orphan(self):
-        self.is_orphan = np.max(self._count_of_nonans_per_position_for_ion) == 1
-    
-    def _define_num_nonans(self):
-        self.num_nonans = np.sum(self._count_of_nonans_per_position_for_ion)
