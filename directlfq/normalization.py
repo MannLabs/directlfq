@@ -13,6 +13,7 @@ __all__ = ['get_normfacts', 'set_samples_with_only_single_intensity_to_nan', 'ap
 import numpy as np
 import pandas as pd
 import time
+import directlfq.orphan_remover as orphan_remover
 
 def get_normfacts(samples):##row is the sample column is the features
 
@@ -26,6 +27,8 @@ def get_normfacts(samples):##row is the sample column is the features
     exclusion_set = set() #already clustered samples are stored here
     distance_matrix = create_distance_matrix(samples)
     variance_matrix = create_distance_matrix(samples, metric = 'variance')
+    orphan_remover.exclude_unconnected_samples(distance_matrix)
+    orphan_remover.exclude_unconnected_samples(variance_matrix)
     #print(f"distance matrix start\n{distance_matrix}")
 
     for rep in range(num_samples-1):
@@ -391,6 +394,9 @@ class SampleShifterLinear():
     def _shift_to_reference_sample(self, row_idx):
         distance_to_reference = self._calc_distance(samples_1=self._reference_intensities, samples_2=self._ion_dataframe_values[row_idx,:]) #reference-sample = distance
         self.ion_dataframe.iloc[row_idx, :] += distance_to_reference
+        if np.isnan(distance_to_reference):
+            distance_to_reference(self.ion_dataframe.iloc[row_idx, :])
+
         #self._ion_dataframe_values[row_idx, :] += distance_to_reference
 
     @staticmethod
@@ -398,7 +404,7 @@ class SampleShifterLinear():
         distrib = get_fcdistrib(samples_1, samples_2)
         distance = np.nanmedian(distrib)
         if np.isnan(distance):
-            return 0
+            return np.nan
         else:
             return distance
         
