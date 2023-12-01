@@ -13,7 +13,7 @@ __all__ = ['get_normfacts', 'set_samples_with_only_single_intensity_to_nan', 'ap
 import numpy as np
 import pandas as pd
 import time
-import directlfq.orphan_remover as orphan_remover
+import directlfq.tracefilter as tracefilter
 
 def get_normfacts(samples):##row is the sample column is the features
 
@@ -27,8 +27,8 @@ def get_normfacts(samples):##row is the sample column is the features
     exclusion_set = set() #already clustered samples are stored here
     distance_matrix = create_distance_matrix(samples)
     variance_matrix = create_distance_matrix(samples, metric = 'variance')
-    orphan_remover.exclude_unconnected_samples(distance_matrix)
-    orphan_remover.exclude_unconnected_samples(variance_matrix)
+    tracefilter.exclude_unconnected_samples(distance_matrix)
+    tracefilter.exclude_unconnected_samples(variance_matrix)
     #print(f"distance matrix start\n{distance_matrix}")
 
     for rep in range(num_samples-1):
