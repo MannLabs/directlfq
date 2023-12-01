@@ -2,12 +2,11 @@ import numpy as np
 from numba import njit
 
 def exclude_unconnected_samples(distance_matrix): #ensures that every sample in the matrix is connected to every other sample at arbitrary degree
+    if distance_matrix.shape[0] < 2:
+        return
     unconnected_sample_idxs = get_unconnected_sample_idxs(distance_matrix)
     distance_matrix[unconnected_sample_idxs, :] = np.inf
     distance_matrix[:, unconnected_sample_idxs] = np.inf
-    if len(unconnected_sample_idxs) > 0:
-        print(f"Excluded {len(unconnected_sample_idxs)} samples of {distance_matrix.shape[0]} that were not connected to the rest of the samples.")
-
 
 def get_unconnected_sample_idxs(lower_matrix):
     full_matrix = convert_lower_to_full_matrix(lower_matrix)
