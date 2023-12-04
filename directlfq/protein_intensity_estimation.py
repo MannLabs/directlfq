@@ -95,8 +95,8 @@ def add_protein_names_to_ion_ints(ion_ints, allprots):
     return ion_ints
 
 def add_protein_name_to_ion_df(ion_df, protein):
-    ion_df["protein"] = protein
-    ion_df = ion_df.reset_index().set_index(["protein", "ion"])
+    ion_df[config.PROTEIN_ID] = protein
+    ion_df = ion_df.reset_index().set_index([config.PROTEIN_ID, config.QUANT_ID])
     return ion_df
 
 
@@ -112,7 +112,7 @@ def get_protein_dataframe_from_list_of_protein_profiles(allprots, list_of_tuple_
         index_list.append(allprots[idx])
         profile_list.append(list_of_protein_profiles[idx])
     
-    index_for_protein_df = pd.Index(data=index_list, name="protein")
+    index_for_protein_df = pd.Index(data=index_list, name=config.PROTEIN_ID)
     protein_df = 2**pd.DataFrame(profile_list, index = index_for_protein_df, columns = normed_df.columns)
     protein_df = protein_df.replace(np.nan, 0)
     protein_df = protein_df.reset_index()

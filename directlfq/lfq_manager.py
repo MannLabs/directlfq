@@ -4,6 +4,7 @@
 __all__ = ['run_lfq', 'prepare_input_filename', 'get_outfile_basename', 'save_protein_df', 'save_ion_df', 'save_run_config']
 
 # %% ../nbdev_nbs/01_lfq_manager.ipynb 1
+import directlfq.config as config
 import directlfq.normalization as lfqnorm
 import directlfq.protein_intensity_estimation as lfqprot_estimation
 import directlfq.utils as lfqutils
@@ -12,7 +13,6 @@ import directlfq
 import os
 import logging
 import warnings
-import directlfq.config as config
 
 warnings.filterwarnings(action='once')
 config.setup_logging()

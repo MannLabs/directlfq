@@ -39,7 +39,7 @@ if "__file__" in globals():#only run in the translated python file, as __file__ 
 import logging
 import directlfq.config as config
 
-config.setup_logging()
+#config.setup_logging()
 LOGGER = logging.getLogger(__name__)
 
 # %% ../nbdev_nbs/04_utils.ipynb 5
@@ -62,8 +62,8 @@ import pandas as pd
 def get_samplenames_from_input_df(data):
     """extracts the names of the samples of the AQ input dataframe"""
     names = list(data.columns)
-    names.remove('protein')
-    names.remove('ion')
+    names.remove(config.PROTEIN_ID)
+    names.remove(config.QUANT_ID)
     return names
 
 # %% ../nbdev_nbs/04_utils.ipynb 7
@@ -257,7 +257,6 @@ def save_annotated_mq_df(annotated_mq_df, annotated_mq_file):
 
 
 # %% ../nbdev_nbs/04_utils.ipynb 21
-from distutils.command.config import config
 
 
 def add_columns_to_lfq_results_table(lfq_results_df, input_file, columns_to_add):
@@ -272,13 +271,13 @@ def add_columns_to_lfq_results_table(lfq_results_df, input_file, columns_to_add)
     all_columns = filter_columns_to_existing_columns(all_columns, input_file)
 
     input_df = pd.read_csv(input_file, sep="\t", usecols=all_columns).drop_duplicates(subset=protein_column_input_table)
-    lfq_results_df = lfq_results_df[[x is not None for x in lfq_results_df['protein']]]
+    lfq_results_df = lfq_results_df[[x is not None for x in lfq_results_df[config.PROTEIN_ID]]]
 
     length_before = len(lfq_results_df.index)
-    lfq_results_df_appended = pd.merge(lfq_results_df, input_df, left_on='protein', right_on=protein_column_input_table, how='left')
+    lfq_results_df_appended = pd.merge(lfq_results_df, input_df, left_on=config.PROTEIN_ID, right_on=protein_column_input_table, how='left')
     length_after = len(lfq_results_df_appended.index)
 
-    #lfq_results_df_appended = lfq_results_df_appended.set_index('protein')
+    #lfq_results_df_appended = lfq_results_df_appended.set_index(config.PROTEIN_ID)
     
 
     assert length_before == length_after
@@ -321,7 +320,7 @@ def write_chunk_to_file(chunk, filepath ,write_header):
 
 # %% ../nbdev_nbs/04_utils.ipynb 24
 def index_and_log_transform_input_df(data_df):
-    data_df = data_df.set_index(["protein", "ion"])
+    data_df = data_df.set_index([config.PROTEIN_ID, config.QUANT_ID])
     return np.log2(data_df.replace(0, np.nan))
 
 # %% ../nbdev_nbs/04_utils.ipynb 25
@@ -439,8 +438,8 @@ def filter_input(filter_dict, input):
 def merge_protein_and_ion_cols(input_df, config_dict):
     protein_cols =  config_dict.get("protein_cols")
     ion_cols = config_dict.get("ion_cols")
-    input_df['protein'] = join_columns(input_df, protein_cols)
-    input_df['ion'] = join_columns(input_df, ion_cols)
+    input_df[config.PROTEIN_ID] = join_columns(input_df, protein_cols)
+    input_df[config.QUANT_ID] = join_columns(input_df, ion_cols)
 
     input_df = input_df.rename(columns = {config_dict.get('quant_ID') : "quant_val"})
     return input_df
@@ -455,7 +454,7 @@ def merge_protein_cols_and_ion_dict(input_df, config_dict):
         confid_dict ([dict[String[]]]): nested dict containing the parse information. derived from yaml file
 
     Returns:
-        pandas dataframe: longtable with newly assigned "protein" and "ion" columns
+        pandas dataframe: longtable with newly assigned config.PROTEIN_ID and config.QUANT_ID columns
     """
     protein_cols = config_dict.get("protein_cols")
     ion_hierarchy = config_dict.get("ion_hierarchy")
@@ -464,15 +463,15 @@ def merge_protein_cols_and_ion_dict(input_df, config_dict):
 
     ion_dfs = []
     #concatenate multiple protein columns into one
-    input_df['protein'] = join_columns(input_df, protein_cols)
+    input_df[config.PROTEIN_ID] = join_columns(input_df, protein_cols)
 
-    input_df = input_df.drop(columns = [x for x in protein_cols if x!='protein'])
+    input_df = input_df.drop(columns = [x for x in protein_cols if x!=config.PROTEIN_ID])
     for hierarchy_type in ion_hierarchy.keys():
         df_subset = input_df.copy()
         ion_hierarchy_local = ion_hierarchy.get(hierarchy_type).get("order")
         ion_headers_merged, ion_headers_grouped = get_ionname_columns(ion_hierarchy.get(hierarchy_type).get("mapping"), ion_hierarchy_local) #ion headers merged is just a helper to select all relevant rows, ionheaders grouped contains the sets of ionstrings to be merged into a list eg [[SEQ, MOD], [CH]]
         quant_columns = get_quantitative_columns(df_subset, hierarchy_type, config_dict, ion_headers_merged)
-        headers = list(set(ion_headers_merged + quant_columns + ['protein']))
+        headers = list(set(ion_headers_merged + quant_columns + [config.PROTEIN_ID]))
         if "sample_ID" in config_dict.keys():
             headers+=[config_dict.get("sample_ID")]
         df_subset = df_subset[headers].drop_duplicates()
@@ -497,7 +496,7 @@ def join_columns(df, columns, separator='_'):
 
 
 def get_quantitative_columns(input_df, hierarchy_type, config_dict, ion_headers_merged):
-    naming_columns = ion_headers_merged + ['protein']
+    naming_columns = ion_headers_merged + [config.PROTEIN_ID]
     if config_dict.get("format") == 'longtable':
         quantcol = config_dict.get("quant_ID").get(hierarchy_type)
         return [quantcol]
@@ -580,7 +579,7 @@ def add_merged_ionnames(df_subset, ion_hierarchy_local, ion_headers_grouped, qua
                 ionstring+= f"_{row[count]}_"
                 count+=1
         ions.append(ionstring)
-    df_subset['ion'] = ions
+    df_subset[config.QUANT_ID] = ions
     df_subset = df_subset.reset_index()
     if quant_id_dict!= None:
         df_subset = df_subset.rename(columns = {quant_id_dict.get(hierarchy_type) : "quant_val"})
@@ -642,8 +641,8 @@ def process_with_dask(*, tmpfile_columnfilt, outfile_name, config_dict_for_type)
     df = dd.read_csv(tmpfile_columnfilt, sep = "\t")
     allcols = df[config_dict_for_type.get("sample_ID")].drop_duplicates().compute() # the columns of the output table are the sample IDs
     allcols = extend_sample_allcolumns_for_plexdia_case(allcols_samples=allcols, config_dict_for_type=config_dict_for_type)
-    allcols = ['protein', 'ion'] + sorted(allcols)
-    df = df.set_index('protein')
+    allcols = [config.PROTEIN_ID, config.QUANT_ID] + sorted(allcols)
+    df = df.set_index(config.PROTEIN_ID)
     sorted_filedir = f"{tmpfile_columnfilt}_sorted"
     df.to_csv(sorted_filedir, sep = "\t")
     #now the files are sorted and can be pivoted chunkwise (multiindex pivoting at the moment not possible in dask)
@@ -663,7 +662,7 @@ def process_with_dask(*, tmpfile_columnfilt, outfile_name, config_dict_for_type)
 def reshape_input_df(input_df, config_dict):
     input_df = input_df.astype({'quant_val': 'float'})
     input_df = adapt_input_df_columns_in_case_of_plexDIA(input_df=input_df, config_dict_for_type=config_dict)
-    input_reshaped = pd.pivot_table(input_df, index = ['protein', 'ion'], columns = config_dict.get("sample_ID"), values = 'quant_val', fill_value=0)
+    input_reshaped = pd.pivot_table(input_df, index = [config.PROTEIN_ID, config.QUANT_ID], columns = config_dict.get("sample_ID"), values = 'quant_val', fill_value=0)
 
     input_reshaped = input_reshaped.reset_index()
     return input_reshaped
@@ -705,8 +704,8 @@ def extend_sampleID_column_for_plexDIA_case(input_df,config_dict_for_type):
 
 
 def set_mtraq_reduced_ion_column_into_dataframe(input_df):
-    new_ions = remove_mtraq_modifications_from_ion_ids(input_df['ion'])
-    input_df['ion'] = new_ions
+    new_ions = remove_mtraq_modifications_from_ion_ids(input_df[config.QUANT_ID])
+    input_df[config.QUANT_ID] = new_ions
     return input_df
 
 def remove_mtraq_modifications_from_ion_ids(ions):
@@ -756,7 +755,7 @@ def reformat_and_write_wideformat_table(peptides_tsv, outfile_name, config_dict)
     input_df = merge_protein_cols_and_ion_dict(input_df, config_dict)
     if 'quant_pre_or_suffix' in config_dict.keys():
         quant_pre_or_suffix = config_dict.get('quant_pre_or_suffix')
-        headers = ['protein', 'ion'] + list(filter(lambda x: x.startswith(quant_pre_or_suffix) or x.endswith(quant_pre_or_suffix), input_df.columns))
+        headers = [config.PROTEIN_ID, config.QUANT_ID] + list(filter(lambda x: x.startswith(quant_pre_or_suffix) or x.endswith(quant_pre_or_suffix), input_df.columns))
         input_df = input_df[headers]
         input_df = input_df.rename(columns = lambda x : x.replace(quant_pre_or_suffix, ""))
 
@@ -799,13 +798,13 @@ def import_data(input_file, input_type_to_use = None, samples_subset = None, fil
     
     input_reshaped = pd.read_csv(file_to_read, sep = "\t", encoding = 'latin1', usecols=samples_subset)
     input_reshaped = adapt_table_for_alphabaseformat_backward_compatibility(file_is_already_formatted, input_reshaped)
-    input_reshaped = input_reshaped.drop_duplicates(subset='ion')
+    input_reshaped = input_reshaped.drop_duplicates(subset=config.QUANT_ID)
 
     return input_reshaped
 
 def add_ion_protein_headers_if_applicable(samples_subset):
     if samples_subset is not None:
-        return samples_subset + ["ion", "protein"]
+        return samples_subset + [config.QUANT_ID, config.PROTEIN_ID]
     else:
         return None
 
@@ -832,7 +831,7 @@ def reformat_and_save_input_file(input_file, input_type_to_use = None, filter_di
 def adapt_table_for_alphabaseformat_backward_compatibility(file_is_already_formatted, input_reshaped):
     if file_is_already_formatted:
         if 'quant_id' in input_reshaped.columns:
-            return input_reshaped.rename(columns = {'quant_id' : 'ion'})
+            return input_reshaped.rename(columns = {'quant_id' : config.QUANT_ID})
 
     return input_reshaped
 
@@ -914,8 +913,8 @@ def prepare_loaded_tables(data_df, samplemap_df):
     samplemap_df = samplemap_df[samplemap_df["condition"]!=""] #remove rows that have no condition entry
     filtvec_not_in_data = [(x in data_df.columns) for x in samplemap_df["sample"]] #remove samples that are not in the dataframe
     samplemap_df = samplemap_df[filtvec_not_in_data]
-    headers = ['protein'] + samplemap_df["sample"].to_list()
-    data_df = data_df.set_index("ion")
+    headers = [config.PROTEIN_ID] + samplemap_df["sample"].to_list()
+    data_df = data_df.set_index(config.QUANT_ID)
     for sample in samplemap_df["sample"]:
         data_df[sample] = np.log2(data_df[sample].replace(0, np.nan))
     return data_df[headers], samplemap_df
@@ -1179,7 +1178,7 @@ class AcquisitionTableReformater(LongTableReformater):
     def __get_cols_to_use__(self):
         cols_to_use = self._header_infos._relevant_headers
         if self._dataframe_already_preformated:
-            return cols_to_use+['ion']
+            return cols_to_use+[config.QUANT_ID]
         else:
             return cols_to_use
 
@@ -1206,12 +1205,12 @@ class AcquisitionTableHeaderFilter():
 def merge_acquisition_df_parameter_df(acquisition_df, parameter_df, groupby_merge_type = 'mean'):
     """acquisition df contains details on the acquisition, parameter df are the parameters derived from the tree
     """
-    merged_df = parameter_df.merge(acquisition_df, how = 'left', on = 'ion')
+    merged_df = parameter_df.merge(acquisition_df, how = 'left', on = config.QUANT_ID)
     if groupby_merge_type == 'mean':
-        merged_df = merged_df.groupby('ion').mean().reset_index()
+        merged_df = merged_df.groupby(config.QUANT_ID).mean().reset_index()
     if groupby_merge_type == 'min':
-        merged_df = merged_df.groupby('ion').min().reset_index()
+        merged_df = merged_df.groupby(config.QUANT_ID).min().reset_index()
     if groupby_merge_type == 'max':
-        merged_df = merged_df.groupby('ion').max().reset_index()
+        merged_df = merged_df.groupby(config.QUANT_ID).max().reset_index()
     merged_df = merged_df.dropna(axis=1, how='all')
     return merged_df
