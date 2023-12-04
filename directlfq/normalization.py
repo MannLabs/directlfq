@@ -14,6 +14,11 @@ import numpy as np
 import pandas as pd
 import time
 import directlfq.tracefilter as tracefilter
+import logging
+import directlfq.config as config
+
+config.setup_logging()
+LOGGER = logging.getLogger(__name__)
 
 def get_normfacts(samples):##row is the sample column is the features
 
@@ -231,7 +236,7 @@ def drop_nas_if_possible(df):
     fraction_nonans = calculate_fraction_with_no_NAs(df, df_nonans)
     num_nonans = len(df_nonans.columns)
     if num_nonans<1000 or fraction_nonans<0.001:
-        print('to few values for normalization without missing values. Including missing values')
+        LOGGER.info('to few values for normalization without missing values. Including missing values')
         return df
     else:
         return df_nonans

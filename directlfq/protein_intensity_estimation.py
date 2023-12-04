@@ -17,12 +17,19 @@ import numpy as np
 import directlfq.normalization as lfqnorm
 import multiprocess
 import itertools
+import logging
+import directlfq.config as config
+
+config.setup_logging()
+
+LOGGER = logging.getLogger(__name__)
+
 
 def estimate_protein_intensities(normed_df, min_nonan, num_samples_quadratic, num_cores):
     "derives protein pseudointensities from between-sample normalized data"
     
     allprots = list(normed_df.index.get_level_values(0).unique())
-    print(f"{len(allprots)} prots total")
+    LOGGER.info(f"{len(allprots)} prots total")
     
     list_of_tuple_w_protein_profiles_and_shifted_peptides = get_list_of_tuple_w_protein_profiles_and_shifted_peptides(allprots, normed_df, num_samples_quadratic, min_nonan, num_cores)
     protein_df = get_protein_dataframe_from_list_of_protein_profiles(allprots=allprots, list_of_tuple_w_protein_profiles_and_shifted_peptides=list_of_tuple_w_protein_profiles_and_shifted_peptides, normed_df= normed_df)
@@ -56,7 +63,7 @@ def get_configured_multiprocessing_pool(num_cores):
     if num_cores is None:
         num_cores = multiprocess.cpu_count() if multiprocess.cpu_count() < 60 else 60 #windows upper thread limit
     pool = multiprocess.Pool(num_cores)
-    print(f"using {pool._processes} processes")
+    LOGGER.info(f"using {pool._processes} processes")
     return pool
 
 
@@ -116,8 +123,8 @@ def calculate_peptide_and_protein_intensities(idx,peptide_intensity_df , num_sam
     if len(peptide_intensity_df.index) > 1:
         peptide_intensity_df = ProtvalCutter(peptide_intensity_df, maximum_df_length=100).get_dataframe()
     
-    if(idx%100 ==0):
-        print(f"prot {idx}")
+    if(idx%100 ==0) and config.LOG_PROCESSED_PROTEINS:
+        LOGGER.info(f"prot {idx}")
     summed_pepint = np.nansum(2**peptide_intensity_df)
     
     if(peptide_intensity_df.shape[1]<2):

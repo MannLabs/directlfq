@@ -36,6 +36,12 @@ if "__file__" in globals():#only run in the translated python file, as __file__ 
     INTABLE_CONFIG = os.path.join(pathlib.Path(__file__).parent.absolute(), "configs", "intable_config.yaml") #the yaml config is located one directory below the python library files
     CONFIG_PATH = os.path.join(pathlib.Path(__file__).parent.absolute(), "configs")
 
+import logging
+import directlfq.config as config
+
+config.setup_logging()
+LOGGER = logging.getLogger(__name__)
+
 # %% ../nbdev_nbs/04_utils.ipynb 5
 def get_samples_used_from_samplemap_file(samplemap_file, cond1, cond2):
     samplemap_df = load_samplemap(samplemap_file)
@@ -162,7 +168,7 @@ def get_z_from_p_empirical(p_emp,p2z):
 def count_fraction_outliers_from_expected_fc(result_df, threshold, expected_log2fc):
     num_outliers = sum([abs(x-expected_log2fc)> threshold for x in result_df["log2fc"]])
     fraction_outliers = num_outliers/len(result_df["log2fc"])
-    print(f"{round(fraction_outliers, 2)} outliers")
+    LOGGER.info(f"{round(fraction_outliers, 2)} outliers")
     return fraction_outliers
 
 # %% ../nbdev_nbs/04_utils.ipynb 19
@@ -179,7 +185,7 @@ def add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(mq_file, in
         input_type = _get_input_type(mq_file, input_type_to_use)
         if ("maxquant_evidence" in input_type or "maxquant_peptides" in input_type) and ("aq_reformat" not in mq_file) and ("directlfq" not in input_type_to_use) and (input_type_to_use != "directlfq"):
             if mq_protein_group_file is None:
-                print("You provided a MaxQuant peptide or evidence file as input. To have the identical ProteinGroups as in the MaxQuant analysis, please provide the ProteinGroups.txt file as well.")
+                LOGGER.info("You provided a MaxQuant peptide or evidence file as input. To have the identical ProteinGroups as in the MaxQuant analysis, please provide the ProteinGroups.txt file as well.")
                 return mq_file
             else:
                 mq_df = load_input_file_and_de_duplicate_if_evidence(mq_file, input_type, columns_to_add)
@@ -810,7 +816,7 @@ def reformat_and_save_input_file(input_file, input_type_to_use = None, filter_di
 
     if filter_dict is not None:
         config_dict_for_type['filters']=  dict(config_dict_for_type.get('filters', {}),**filter_dict)
-    print(f"using input type {input_type}")
+    LOGGER.info(f"using input type {input_type}")
     format = config_dict_for_type.get('format')
     outfile_name = f"{input_file}.{input_type}.aq_reformat.tsv"
 
@@ -895,7 +901,7 @@ def load_samplemap(samplemap_file):
         sep='\t'
 
     if 'sep' not in locals():
-        print(f"neither of the file extensions (.tsv, .csv, .txt) detected for file {samplemap_file}! Trying with tab separation. In the case that it fails, please add the appropriate extension to your file name.")
+        LOGGER.info(f"neither of the file extensions (.tsv, .csv, .txt) detected for file {samplemap_file}! Trying with tab separation. In the case that it fails, please add the appropriate extension to your file name.")
         sep = "\t"
 
     return pd.read_csv(samplemap_file, sep = sep, encoding ='latin1', dtype='str')
@@ -1006,7 +1012,7 @@ class AcquisitionTableHandler():
     def __remove_possible_pre_existing_ml_table__(output_file_name):
         if os.path.exists(output_file_name):
             os.remove(output_file_name)
-            print(f"removed pre existing {output_file_name}")
+            LOGGER.info(f"removed pre existing {output_file_name}")
 
 
 class AcquisitionTableInfo():
