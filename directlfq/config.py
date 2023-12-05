@@ -13,8 +13,8 @@ def set_log_processed_proteins(log_processed_proteins = True):
     LOG_PROCESSED_PROTEINS = log_processed_proteins
 
 
-PROTEIN_ID = None
-QUANT_ID = None
+PROTEIN_ID = 'protein'
+QUANT_ID = 'ion'
 
 def set_global_protein_and_ion_id(protein_id = 'protein', quant_id = 'ion'):
     global PROTEIN_ID
