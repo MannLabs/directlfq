@@ -14,3 +14,4 @@ wget==3.2
 seaborn==0.12.2
 matplotlib==3.6.3
 nbdev==2.3.9
+notebook==6.4.12
