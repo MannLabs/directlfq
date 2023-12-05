@@ -13,6 +13,12 @@ __all__ = ['get_normfacts', 'set_samples_with_only_single_intensity_to_nan', 'ap
 import numpy as np
 import pandas as pd
 import time
+import directlfq.tracefilter as tracefilter
+import logging
+import directlfq.config as config
+
+config.setup_logging()
+LOGGER = logging.getLogger(__name__)
 
 def get_normfacts(samples):##row is the sample column is the features
 
@@ -26,6 +32,8 @@ def get_normfacts(samples):##row is the sample column is the features
     exclusion_set = set() #already clustered samples are stored here
     distance_matrix = create_distance_matrix(samples)
     variance_matrix = create_distance_matrix(samples, metric = 'variance')
+    tracefilter.exclude_unconnected_samples(distance_matrix)
+    tracefilter.exclude_unconnected_samples(variance_matrix)
     #print(f"distance matrix start\n{distance_matrix}")
 
     for rep in range(num_samples-1):
@@ -228,7 +236,7 @@ def drop_nas_if_possible(df):
     fraction_nonans = calculate_fraction_with_no_NAs(df, df_nonans)
     num_nonans = len(df_nonans.columns)
     if num_nonans<1000 or fraction_nonans<0.001:
-        print('to few values for normalization without missing values. Including missing values')
+        LOGGER.info('to few values for normalization without missing values. Including missing values')
         return df
     else:
         return df_nonans
@@ -391,14 +399,13 @@ class SampleShifterLinear():
     def _shift_to_reference_sample(self, row_idx):
         distance_to_reference = self._calc_distance(samples_1=self._reference_intensities, samples_2=self._ion_dataframe_values[row_idx,:]) #reference-sample = distance
         self.ion_dataframe.iloc[row_idx, :] += distance_to_reference
-        #self._ion_dataframe_values[row_idx, :] += distance_to_reference
 
     @staticmethod
     def _calc_distance(samples_1, samples_2):
         distrib = get_fcdistrib(samples_1, samples_2)
         distance = np.nanmedian(distrib)
         if np.isnan(distance):
-            return 0
+            return np.nan
         else:
             return distance
         
