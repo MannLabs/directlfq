@@ -184,7 +184,11 @@ class ProtvalCutter():
     @staticmethod
     @njit
     def _get_num_nas_in_row(row):
-        return sum(np.isnan(row))
+        sum = 0
+        isnans = np.isnan(row)
+        for is_nan in isnans:
+            sum+=is_nan
+        return sum
 
 
     def get_dataframe(self):
