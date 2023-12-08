@@ -148,7 +148,7 @@ class RunPipeline(BaseWidget):
         self.path_protein_groups_file = pn.widgets.TextInput(
             name='(optional) If you are using MaxQuant evidence.txt or peptides.txt files, you can add the link to the corresponding proteinGroups.txt file (will improve peptide-to-protein mapping)',
             placeholder='(optional) Enter the whole path to the MaxQuant proteinGroups.txt file',
-            default = None,
+            value = None,
             width=900,
             sizing_mode='stretch_width',
             margin=(15, 15, 0, 15)
@@ -156,11 +156,11 @@ class RunPipeline(BaseWidget):
 
         ## optional files
 
-        self.additional_headers_title = pn.pane.Markdown('* Add the names of columns that you want to keep in the directLFQ output file, separated by semicolons. Note that some basic additional columns such as gene names are always added to the output table by default.\nWARNING: Take care that columns you add are not ambigous. For example, adding the peptide sequence column will not work, because there are multiple peptide sequences per protein.')
+        self.additional_headers_title = pn.pane.Markdown('* Add the names of columns that you want to keep in the directLFQ output file, separated by semicolons. Note that some basic additional columns such as gene names are always added to the output table by value.\nWARNING: Take care that columns you add are not ambigous. For example, adding the peptide sequence column will not work, because there are multiple peptide sequences per protein.')
         self.additional_headers = pn.widgets.TextInput(
             name='',
             placeholder='(optional) Enter the names of columns that you want to keep',
-            default = None,
+            value = None,
             #width=900,
             #sizing_mode='stretch_width',
             #margin=(15, 15, 0, 15)
@@ -169,7 +169,7 @@ class RunPipeline(BaseWidget):
         self.protein_subset_for_normalization_title = pn.pane.Markdown('* Specify a list of proteins (no header, seperated by linebreaks) that you want to use for normalization. This could for example be a list of housekeeping proteins:')
         self.protein_subset_for_normalization_file = pn.widgets.TextInput(
             name='',
-            default = None,
+            value = None,
             placeholder='(optional) Enter the whole path to the protein list file',
             width=900,
             sizing_mode='stretch_width',
@@ -179,7 +179,7 @@ class RunPipeline(BaseWidget):
         self.yaml_filt_dict_title = pn.pane.Markdown('* In case you want to define specific filters in addition to the standard filters, you can add a yaml file where the filters are defined (see GitHub docs).')
         self.yaml_filt_dict_path = pn.widgets.TextInput(
             name='',
-            default = None,
+            value = None,
             placeholder='(optional) Enter the whole path to the yaml file with the filters',
             width=900,
             sizing_mode='stretch_width',
