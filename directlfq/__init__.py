@@ -2,7 +2,7 @@
 
 
 __project__ = "directlfq"
-__version__ = "0.2.15"
+__version__ = "0.2.16"
 __license__ = "Apache"
 __description__ = "An open-source Python package of the AlphaPept ecosystem"
 __author__ = "Mann Labs"
