@@ -193,3 +193,5 @@ _proc/
 
 sandbox/
 test_data/unit_tests/input_table_formats/spectronaut.frgions.large.tsv.tmp.longformat.columnfilt.tsv
+test_data/unit_tests/input_table_formats/diann.tsv.diann_protein.aq_reformat.tsv
+test_data/unit_tests/input_table_formats/mq_peptides.txt.maxquant_peptides_leading_razor_protein.aq_reformat.tsv
