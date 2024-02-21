@@ -26,7 +26,17 @@ LOGGER = logging.getLogger(__name__)
 
 
 def estimate_protein_intensities(normed_df, min_nonan, num_samples_quadratic, num_cores):
-    "derives protein pseudointensities from between-sample normalized data"
+    """"Performs the LFQ protein intensity estimation. The input is a normalized ion intensity dataframe. The output is the lfq protein intensity dataframe and the lfq ion intensity dataframe.
+
+    Args:
+        normed_df (pd.DataFrame): A pandas dataframe that contains the multi-index of [config.PROTEIN_ID, config.QUANT_ID]. The columns are the sample names and the values are the ion intensities. Zero value are replaced with NaNs and the dataframe is subsequently log-transformed. The dataframe needs to be sorted by the protein IDs, as the subsequent functions assume this.
+        min_nonan (int): minimum number of NaNs
+        num_samples_quadratic (int): minimum number of samples to use for the quadratic normalization
+        num_cores (int): number of cores to use for the multiprocessing. If set to 1, the processing is done sequentially.
+
+    Returns:
+        tuple[protein_intensity_df, ion_intensity_df]: protein intensity dataframe and an ion intensity dataframe. The ion intensity dataframe is only compiled if the config.COMPILE_NORMALIZED_ION_TABLE is set to True.
+    """
     
     allprots = list(normed_df.index.get_level_values(0).unique())
     LOGGER.info(f"{len(allprots)} lfq-groups total")
