@@ -45,6 +45,8 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
     filter_dict = load_filter_dict_if_given_as_yaml(filter_dict)
     input_file = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, input_type_to_use,mq_protein_groups_txt, columns_to_add)
     input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use, filter_dict=filter_dict)
+
+    input_df = lfqutils.sort_input_df_by_protein_id(input_df)
     input_df = lfqutils.index_and_log_transform_input_df(input_df)
     input_df = lfqutils.remove_allnan_rows_input_df(input_df)
     

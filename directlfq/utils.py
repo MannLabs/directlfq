@@ -327,6 +327,9 @@ def index_and_log_transform_input_df(data_df):
 def remove_allnan_rows_input_df(data_df):
     return data_df.dropna(axis = 0, how = 'all')
 
+def sort_input_df_by_protein_id(data_df):
+    return data_df.sort_values(by = config.PROTEIN_ID,ignore_index=True)
+
 
     
 

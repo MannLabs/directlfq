@@ -407,11 +407,11 @@ class SampleShifterLinear():
     @staticmethod
     def _calc_distance(samples_1, samples_2):
         distrib = get_fcdistrib(samples_1, samples_2)
-        distance = np.nanmedian(distrib)
-        if np.isnan(distance):
+        is_all_nan = np.all(np.isnan(distrib))
+        if is_all_nan:
             return np.nan
         else:
-            return distance
+            return np.nanmedian(distrib)
         
     
     def _update_ion_dataframe(self):
