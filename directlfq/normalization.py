@@ -314,7 +314,7 @@ class NormalizationManagerSamples(NormalizationManager):
 
 class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
     def __init__(self, complete_dataframe, num_samples_quadratic, selected_proteins_file = None):
-        complete_dataframe = complete_dataframe.T.copy() #the samples to shift are in each row, therefore the df needs to be transposed
+        complete_dataframe = complete_dataframe.T #the samples to shift are in each row, therefore the df needs to be transposed
         super().__init__(complete_dataframe, num_samples_quadratic)
         self.normalization_function = self._normalization_function
         self._selected_proteins_file = selected_proteins_file
@@ -344,7 +344,7 @@ class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
             ion_dataframe_selected = ion_dataframe
             sample2shift = get_normfacts(drop_nas_if_possible(ion_dataframe_selected).to_numpy())
 
-        df_c_normed = pd.DataFrame(apply_sampleshifts(ion_dataframe.to_numpy(), sample2shift), index = ion_dataframe.index, columns = ion_dataframe.columns)
+        df_c_normed = pd.DataFrame(apply_sampleshifts(ion_dataframe.to_numpy(copy = True), sample2shift), index = ion_dataframe.index, columns = ion_dataframe.columns)
         return df_c_normed
     
     def _create_reference_sample(self):
