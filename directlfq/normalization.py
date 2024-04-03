@@ -225,7 +225,7 @@ def normalize_dataframe_between_samples(ion_dataframe):
     return df_c_normed
 
 def normalize_ion_profiles(protein_profile_df):
-    protein_profile_numpy = protein_profile_df.to_numpy()
+    protein_profile_numpy = protein_profile_df.to_numpy(copy = True)
     sample2shift = get_normfacts(protein_profile_numpy)
     df_normed = pd.DataFrame(apply_sampleshifts(protein_profile_numpy, sample2shift), index = protein_profile_df.index, columns = protein_profile_df.columns)
     return df_normed
