@@ -314,7 +314,7 @@ class NormalizationManagerSamples(NormalizationManager):
 
 class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
     def __init__(self, complete_dataframe, num_samples_quadratic, selected_proteins_file = None):
-        complete_dataframe = complete_dataframe.T #the samples to shift are in each row, therefore the df needs to be transposed
+        complete_dataframe = complete_dataframe.T.copy() #the samples to shift are in each row, therefore the df needs to be transposed
         super().__init__(complete_dataframe, num_samples_quadratic)
         self.normalization_function = self._normalization_function
         self._selected_proteins_file = selected_proteins_file
