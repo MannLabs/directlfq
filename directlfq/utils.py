@@ -130,22 +130,8 @@ def get_nonna_array(array_w_nas):
         res.append(np.array(sub_res))
     return np.array(res)
 
-# %% ../nbdev_nbs/04_utils.ipynb 14
-import numpy as np
-def get_non_nas_from_pd_df(df):
-    return {
-        pep_name: sub_vals[~np.isnan(sub_vals)] for pep_name, sub_vals in
-        zip( df.index.values, df.values)
-    }
 
 # %% ../nbdev_nbs/04_utils.ipynb 15
-import numpy as np
-def get_ionints_from_pd_df(df):
-    return {
-        pep_name: sub_vals for pep_name, sub_vals in
-        zip( df.index.values, df.values)
-    }
-
 # %% ../nbdev_nbs/04_utils.ipynb 16
 def invert_dictionary(my_map):
     inv_map = {}
