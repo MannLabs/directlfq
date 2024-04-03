@@ -299,17 +299,14 @@ def show_diff(df1, df2):
     return df1.merge(df2, indicator=True, how='outer').loc[lambda x : x['_merge']!='both']
 
 
-# %% ../nbdev_nbs/04_utils.ipynb 23
 def write_chunk_to_file(chunk, filepath ,write_header):
     """write chunk of pandas dataframe to a file"""
     chunk.to_csv(filepath, header=write_header, mode='a', sep = "\t", index = None)
 
-# %% ../nbdev_nbs/04_utils.ipynb 24
 def index_and_log_transform_input_df(data_df):
     data_df = data_df.set_index([config.PROTEIN_ID, config.QUANT_ID])
     return np.log2(data_df.replace(0, np.nan))
 
-# %% ../nbdev_nbs/04_utils.ipynb 25
 def remove_allnan_rows_input_df(data_df):
     return data_df.dropna(axis = 0, how = 'all')
 
