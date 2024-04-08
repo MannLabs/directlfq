@@ -39,6 +39,7 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
     config.set_global_protein_and_ion_id(protein_id=protein_id, quant_id=quant_id)
     config.set_log_processed_proteins(log_processed_proteins=log_processed_proteins)
     config.set_compile_normalized_ion_table(compile_normalized_ion_table= compile_normalized_ion_table)
+    config.check_wether_to_copy_numpy_arrays_derived_from_pandas()
 
     LOGGER.info("Starting directLFQ analysis.")
     input_file = prepare_input_filename(input_file)
