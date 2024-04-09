@@ -225,7 +225,7 @@ def normalize_dataframe_between_samples(ion_dataframe):
     return df_c_normed
 
 def normalize_ion_profiles(protein_profile_df):
-    protein_profile_numpy = protein_profile_df.to_numpy()
+    protein_profile_numpy = protein_profile_df.to_numpy(copy = config.COPY_NUMPY_ARRAYS_DERIVED_FROM_PANDAS)
     sample2shift = get_normfacts(protein_profile_numpy)
     df_normed = pd.DataFrame(apply_sampleshifts(protein_profile_numpy, sample2shift), index = protein_profile_df.index, columns = protein_profile_df.columns)
     return df_normed
@@ -344,7 +344,7 @@ class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
             ion_dataframe_selected = ion_dataframe
             sample2shift = get_normfacts(drop_nas_if_possible(ion_dataframe_selected).to_numpy())
 
-        df_c_normed = pd.DataFrame(apply_sampleshifts(ion_dataframe.to_numpy(), sample2shift), index = ion_dataframe.index, columns = ion_dataframe.columns)
+        df_c_normed = pd.DataFrame(apply_sampleshifts(ion_dataframe.to_numpy(copy = config.COPY_NUMPY_ARRAYS_DERIVED_FROM_PANDAS), sample2shift), index = ion_dataframe.index, columns = ion_dataframe.columns)
         return df_c_normed
     
     def _create_reference_sample(self):
