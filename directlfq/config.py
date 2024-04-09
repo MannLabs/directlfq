@@ -5,7 +5,7 @@ import pandas as pd
 def setup_logging():
     logging.basicConfig(level=logging.INFO, 
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
+setup_logging()
 ##########################
 LOG_PROCESSED_PROTEINS = True
 
@@ -40,6 +40,7 @@ def check_wether_to_copy_numpy_arrays_derived_from_pandas():
         _manipulate_numpy_array_without_copy()
         COPY_NUMPY_ARRAYS_DERIVED_FROM_PANDAS = False
     except:
+        logging.info('Some numpy arrays derived from pandas will be copied.')
         COPY_NUMPY_ARRAYS_DERIVED_FROM_PANDAS = True
 
 def _manipulate_numpy_array_without_copy():
