@@ -318,6 +318,8 @@ def remove_potential_quant_id_duplicates(data_df):
         entries_removed = before_drop - after_drop
         LOGGER.info(f"Duplicate quant_ids detected. {entries_removed} rows removed from input df.")
 
+    return data_df
+
 
 def sort_input_df_by_protein_id(data_df):
     return data_df.sort_values(by = config.PROTEIN_ID,ignore_index=True)
