@@ -310,6 +310,15 @@ def index_and_log_transform_input_df(data_df):
 def remove_allnan_rows_input_df(data_df):
     return data_df.dropna(axis = 0, how = 'all')
 
+def remove_potential_quant_id_duplicates(data_df):
+    before_drop = len(data_df)
+    data_df = data_df.drop_duplicates(subset=config.QUANT_ID, keep='first')
+    after_drop = len(data_df)
+    if before_drop != after_drop:
+        entries_removed = before_drop - after_drop
+        LOGGER.info(f"Duplicate quant_ids detected. {entries_removed} rows removed from input df.")
+
+
 def sort_input_df_by_protein_id(data_df):
     return data_df.sort_values(by = config.PROTEIN_ID,ignore_index=True)
 

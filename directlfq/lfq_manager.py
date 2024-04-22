@@ -50,6 +50,7 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
     input_df = lfqutils.sort_input_df_by_protein_id(input_df)
     input_df = lfqutils.index_and_log_transform_input_df(input_df)
     input_df = lfqutils.remove_allnan_rows_input_df(input_df)
+    input_df = lfqutils.remove_potential_quant_id_duplicates(input_df)
     
     if not deactivate_normalization:
         LOGGER.info("Performing sample normalization.")
