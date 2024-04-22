@@ -259,10 +259,15 @@ class NormalizationManager():
         self.normalization_function = None
 
     def _run_normalization(self):
+        self._check_that_there_are_no_duplicate_rows()
         if len(self.complete_dataframe.index) <= self._num_samples_quadratic:
             self._normalize_complete_input_quadratic()
         else:
             self._normalize_quadratic_and_linear()
+
+    def _check_that_there_are_no_duplicate_rows(self):
+        if self.complete_dataframe.index.duplicated().any():
+            raise ValueError("There are duplicate rows in the input dataframe. Ensure that there are no duplicate quant_id/ion values.")
     
     def _normalize_complete_input_quadratic(self):
         self.complete_dataframe =  self.normalization_function(self.complete_dataframe)
@@ -295,6 +300,8 @@ class NormalizationManager():
         linear_shifted_dataframe = SampleShifterLinear(linear_subset_dataframe, self._merged_reference_sample).ion_dataframe
         self.complete_dataframe.loc[ self._linear_subset_rows, :] = linear_shifted_dataframe
     
+
+
     @staticmethod
     @njit
     def _get_num_nas_in_row(row):
