@@ -19,7 +19,8 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }
+          miniconda-version: latest
       - name: Conda info
         shell: bash -l {0}
         run: conda info
@@ -45,6 +46,7 @@ jobs:
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
+          miniconda-version: latest
       - name: Conda info
         shell: bash -l {0}
         run: conda info
