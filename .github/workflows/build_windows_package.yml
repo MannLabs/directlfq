@@ -18,6 +18,7 @@ jobs:
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
+          miniconda-version: latest
       - name: Master version bumped
         id: master_version_bumped
         shell: bash -l {0}
@@ -52,6 +53,7 @@ jobs:
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
+          miniconda-version: latest
       - name: Conda info
         shell: bash -l {0}
         run: conda info
