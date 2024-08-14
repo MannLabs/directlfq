@@ -361,6 +361,10 @@ diann_precursors:
       param: Lib.PG.Q.Value
       comparator: "<="
       value: 0.01
+    protein_name:
+      param: Protein.Group
+      comparator: "!="
+      value: "nan"
   
   # filters:
   #   shape_quality:
