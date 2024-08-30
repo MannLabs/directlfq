@@ -1,3 +1,4 @@
+# TODO remove with old release workflow
 cd ../..
 conda create -n directlfq_pypi_wheel python=3.8
 conda activate directlfq_pypi_wheel
