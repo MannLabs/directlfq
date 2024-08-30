@@ -14,18 +14,18 @@ website:
           - plotting_examples/example_outline.ipynb
       - section: release
         contents:
-          - section: one_click_macos_gui
+          - section: macos
             contents:
               - section: Resources
                 contents:
-                  - release/one_click_macos_gui/Resources/conclusion.html
+                  - release/macos/Resources/conclusion.html
       - section: release
         contents:
-          - section: one_click_macos_gui
+          - section: macos
             contents:
               - section: Resources
                 contents:
-                  - release/one_click_macos_gui/Resources/welcome.html
+                  - release/macos/Resources/welcome.html
       - section: test_data
         contents:
           - section: system_tests

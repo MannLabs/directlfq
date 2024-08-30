@@ -149,9 +149,9 @@ debug.py
 #reference_databases
 
 #releases
-release/one_click_macos_gui/directlfq.pkg
-release/one_click_macos_gui/build
-release/one_click_macos_gui/dist
+release/macos/directlfq.pkg
+release/macos/build
+release/macos/dist
 
 #logs
 logs
