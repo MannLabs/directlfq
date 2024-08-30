@@ -25,7 +25,8 @@ LicenseFile=..\..\LICENSE
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=dist
-OutputBaseFilename=directlfq_gui_installer_windows
+; example for BUILD_NAME: peptdeep-1.2.1-windows-amd64
+OutputBaseFilename={#GetEnv('BUILD_NAME')}
 SetupIconFile=..\logos\alpha_logo.ico
 Compression=lzma
 SolidCompression=yes
