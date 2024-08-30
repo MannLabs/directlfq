@@ -1,3 +1,4 @@
+# TODO remove with old release workflow
 current_version=$(grep "__version__" ../directlfq/__init__.py | cut -f3 -d ' ' | sed 's/"//g')
 current_version_as_regex=$(echo $current_version | sed 's/\./\\./g')
 conda create -n version_check python=3.8 pip=20.1 -y
