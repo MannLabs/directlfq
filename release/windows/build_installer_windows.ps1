@@ -12,16 +12,4 @@ pip install "dist/directlfq-0.2.20-py3-none-any.whl[stable, gui]"
 # Creating the stand-alone pyinstaller folder
 pip install pyinstaller
 pyinstaller release/pyinstaller/directlfq.spec -y
-pip install jinja2==3.0
-
-# for some reason, the installer builder expects the files here
-echo XX LS DIST
-ls dist
-ls dist/*
-
-mkdir release/windows/dist
-mv dist/* release/windows/dist
-
-# mkdir release/windows/dist/directlfq_gui
-# mv release/windows/dist/directlfq_gui.exe release/windows/dist/directlfq_gui
-
+# pip install jinja2==3.0
