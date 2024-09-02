@@ -8,3 +8,5 @@ mv dist_pyinstaller/* release/windows/dist
 
 # Wrapping the pyinstaller folder in a .exe package
 &  "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" .\release\windows\directlfq_innoinstaller.iss
+# release workflow expects artifact at root of repository
+mv .\release\windows\*.exe .
