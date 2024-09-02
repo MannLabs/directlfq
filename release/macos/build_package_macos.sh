@@ -12,16 +12,23 @@ rm -rf ${BUILD_NAME}.pkg
 # cp ../../directlfq/data/*.fasta dist/directlfq/data
 
 # Wrapping the pyinstaller folder in a .pkg package
-CONTENTS_FOLDER=dist/${PACKAGE_NAME}/Contents/Resources
+CONTENTS_FOLDER=dist_pyinstaller/${PACKAGE_NAME}/Contents
 
 mkdir -p ${CONTENTS_FOLDER}/Resources
 cp release/logos/alpha_logo.icns ${CONTENTS_FOLDER}/Resources
-mv dist/directlfq_gui ${CONTENTS_FOLDER}/MacOS
+mv dist_pyinstaller/directlfq_gui ${CONTENTS_FOLDER}/MacOS
 cp release/macos/Info.plist ${CONTENTS_FOLDER}
 cp release/macos/directlfq_terminal ${CONTENTS_FOLDER}/MacOS
 cp ./LICENSE ${CONTENTS_FOLDER}/Resources/LICENSE
 cp release/logos/alpha_logo.png ${CONTENTS_FOLDER}/Resources/alpha_logo.png
+
+# link _internal folder containing the python libraries to the Frameworks folder where they are expected
+# to avoid e.g. "Failed to load Python shared library '/Applications/AlphaMap.app/Contents/Frameworks/libpython3.8.dylib'"
+cd ${CONTENTS_FOLDER}
+ln -s ./MacOS/_internal ./Frameworks
+cd -
+
 chmod 777 release/macos/scripts/*
 
-pkgbuild --root dist/${PACKAGE_NAME} --identifier de.mpg.biochem.${PACKAGE_NAME}.app --version 0.2.20 --install-location /Applications/${PACKAGE_NAME}.app --scripts release/macos/scripts ${PACKAGE_NAME}.pkg
-productbuild --distribution release/macos/distribution.xml --resources Resources --package-path ${PACKAGE_NAME}.pkg dist/${BUILD_NAME}.pkg
+pkgbuild --root dist_pyinstaller/${PACKAGE_NAME} --identifier de.mpg.biochem.${PACKAGE_NAME}.app --version 0.2.20 --install-location /Applications/${PACKAGE_NAME}.app --scripts release/macos/scripts ${PACKAGE_NAME}.pkg
+productbuild --distribution release/macos/distribution.xml --resources release/macos/Resources --package-path ${PACKAGE_NAME}.pkg ${BUILD_NAME}.pkg

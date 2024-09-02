@@ -4,7 +4,7 @@
 
 # Apparently, ISCC uses the directory of the .iss input file as the working directory.
 mkdir release/windows/dist
-mv dist/* release/windows/dist
+mv dist_pyinstaller/* release/windows/dist
 
 # Wrapping the pyinstaller folder in a .exe package
 &  "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" .\release\windows\directlfq_innoinstaller.iss
