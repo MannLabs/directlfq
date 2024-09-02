@@ -24,3 +24,4 @@ jobs:
       build_nodejs_ui: false
       commit_to_release: ${{ inputs.commit_to_release }}
       tag_to_release: ${{ inputs.tag_to_release }}
+      python_version: "3.8"
