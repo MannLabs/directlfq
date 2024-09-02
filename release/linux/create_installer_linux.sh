@@ -1,5 +1,7 @@
 #!bash
 
+# TODO remove with old release workflow
+
 # Initial cleanup
 rm -rf dist
 rm -rf build
