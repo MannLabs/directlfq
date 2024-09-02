@@ -15,8 +15,13 @@ pyinstaller release/pyinstaller/directlfq.spec -y
 pip install jinja2==3.0
 
 # for some reason, the installer builder expects the files here
+echo XX LS DIST
+ls dist
+ls dist/*
+
 mkdir release/windows/dist
 mv dist/* release/windows/dist
-mkdir release/windows/dist/directlfq_gui
-mv release/windows/dist/directlfq_gui.exe release/windows/dist/directlfq_gui
+
+# mkdir release/windows/dist/directlfq_gui
+# mv release/windows/dist/directlfq_gui.exe release/windows/dist/directlfq_gui
 
