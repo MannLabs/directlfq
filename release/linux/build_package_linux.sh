@@ -20,4 +20,4 @@ mkdir dist_pyinstaller/${BUILD_NAME}/DEBIAN
 cp release/linux/control dist_pyinstaller/${BUILD_NAME}/DEBIAN
 dpkg-deb --build --root-owner-group dist_pyinstaller/${BUILD_NAME}/
 # release workflow expects artifact at root of repository
-mv ${BUILD_NAME}/*.deb .
+mv dist_pyinstaller/${BUILD_NAME}.deb .
