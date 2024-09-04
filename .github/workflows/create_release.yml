@@ -18,6 +18,5 @@ jobs:
     with:
       package_name: directlfq
       commitish_to_release: ${{ inputs.commitish_to_release }}
-      build_nodejs_ui: false
       python_version: 3.8
       test_app: false
