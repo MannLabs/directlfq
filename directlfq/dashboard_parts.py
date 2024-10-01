@@ -148,7 +148,7 @@ class RunPipeline(BaseWidget):
         self.path_protein_groups_file = pn.widgets.TextInput(
             name='(optional) If you are using MaxQuant evidence.txt or peptides.txt files, you can add the link to the corresponding proteinGroups.txt file (will improve peptide-to-protein mapping)',
             placeholder='(optional) Enter the whole path to the MaxQuant proteinGroups.txt file',
-            value = None,
+            value = '',
             width=900,
             sizing_mode='stretch_width',
             margin=(15, 15, 0, 15)
@@ -160,7 +160,7 @@ class RunPipeline(BaseWidget):
         self.additional_headers = pn.widgets.TextInput(
             name='',
             placeholder='(optional) Enter the names of columns that you want to keep',
-            value = None,
+            value = '',
             #width=900,
             #sizing_mode='stretch_width',
             #margin=(15, 15, 0, 15)
