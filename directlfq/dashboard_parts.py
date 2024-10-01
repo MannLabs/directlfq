@@ -327,6 +327,8 @@ class RunPipeline(BaseWidget):
         file_of_proteins_for_normalization = None if self.protein_subset_for_normalization_file.value == '' else self.protein_subset_for_normalization_file.value
         num_cores = None if self.num_cores_vals.value == -1 else self.num_cores_vals.value
         yaml_filt_dict_path = None if self.yaml_filt_dict_path.value == '' else self.yaml_filt_dict_path.value
+        if type(additional_headers) == str: #the user will enter a string with semicolon separated values
+            additional_headers = additional_headers.split(';')
 
         lfq_manager.run_lfq(input_file = input_file, input_type_to_use = input_type_to_use, maximum_number_of_quadratic_ions_to_use_per_protein = 10,
          number_of_quadratic_samples = 50, mq_protein_groups_txt= mq_protein_groups_txt, columns_to_add= additional_headers, selected_proteins_file= file_of_proteins_for_normalization, 
