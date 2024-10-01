@@ -256,8 +256,10 @@ def add_columns_to_lfq_results_table(lfq_results_df, input_file, columns_to_add)
     all_columns = columns_to_add + [protein_column_input_table] + standard_columns_for_input_type
     all_columns = filter_columns_to_existing_columns(all_columns, input_file)
 
-    input_df = pd.read_csv(input_file, sep="\t", usecols=all_columns).drop_duplicates(subset=protein_column_input_table)
     lfq_results_df = lfq_results_df[[x is not None for x in lfq_results_df[config.PROTEIN_ID]]]
+    if len(all_columns) == 1: #if there are no columns to add, return the original dataframe
+        return lfq_results_df 
+    input_df = pd.read_csv(input_file, sep="\t", usecols=all_columns).drop_duplicates(subset=protein_column_input_table)
 
     length_before = len(lfq_results_df.index)
     lfq_results_df_appended = pd.merge(lfq_results_df, input_df, left_on=config.PROTEIN_ID, right_on=protein_column_input_table, how='left')
