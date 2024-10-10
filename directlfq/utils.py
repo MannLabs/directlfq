@@ -1,5 +1,4 @@
 
-# %% ../nbdev_nbs/04_utils.ipynb 2
 import os
 import pathlib
 if "__file__" in globals():#only run in the translated python file, as __file__ is not defined with ipython
@@ -8,8 +7,8 @@ if "__file__" in globals():#only run in the translated python file, as __file__ 
 
 import logging
 import directlfq.config as config
+import directlfq.utils_fileread as utils_fileread
 
-#config.setup_logging()
 LOGGER = logging.getLogger(__name__)
 
 
@@ -251,7 +250,7 @@ def get_standard_columns_for_input_type(input_type):
         return []
 
 def filter_columns_to_existing_columns(columns, input_file):
-    existing_columns =  pd.read_csv(input_file, sep='\t', nrows=1).columns
+    existing_columns =  utils_fileread.read_columns_from_file(input_file)
     return [x for x in columns if x in existing_columns]
 
 
@@ -576,7 +575,7 @@ def reformat_and_write_longtable_according_to_config(input_file, outfile_name, c
             os.remove(outfile_name)
     
     relevant_cols = get_relevant_columns_config_dict(config_dict_for_type)
-    input_df_it = read_file_with_pandas(input_file=input_file, sep=sep, decimal=decimal, usecols=relevant_cols, chunksize=chunksize)
+    input_df_it = utils_fileread.read_file_with_pandas(input_file=input_file, sep=sep, decimal=decimal, usecols=relevant_cols, chunksize=chunksize)
     input_df_list = []
     header = True
     for input_df_subset in input_df_it:
@@ -748,20 +747,6 @@ def check_for_processed_runs_in_results_folder(results_folder):
     return contained_condpairs
 
 
-def read_file_with_pandas(input_file, decimal='.', usecols=None, chunksize=None, nrows=None, sep = None):
-    filename = str(input_file)
-    if '.parquet' in filename:
-        return pd.read_parquet(input_file, columns=usecols, chunksize=chunksize, nrows=nrows)
-    else:
-        if sep is None:
-            if '.csv' in filename:
-                sep=','
-            elif '.tsv' in filename:
-                sep='\t'
-            else:
-                sep='\t'
-            LOGGER.info(f"neither of the file extensions (.tsv, .csv) detected for file {input_file}! Trying with tab separation. In the case that it fails, please provide the correct file extension")
-        return pd.read_csv(input_file,sep=sep, decimal=decimal, usecols=usecols, encoding='latin1', chunksize=chunksize, nrows=nrows)
 
 
 
@@ -850,9 +835,11 @@ def get_input_type_and_config_dict(input_file, input_type_to_use = None):
         sep='\t'
     if '.txt' in filename:
         sep='\t'
+    else:
+        sep="\t"
 
 
-    uploaded_data_columns = set(read_file_with_pandas(input_file, nrows=1).columns)
+    uploaded_data_columns = utils_fileread.read_columns_from_file(input_file, sep=sep)
 
     for input_type in type2relevant_columns.keys():
         if (input_type_to_use is not None) and (input_type!=input_type_to_use):
