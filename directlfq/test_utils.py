@@ -3,6 +3,12 @@ import pandas as pd
 
 from  numpy.random import MT19937
 from numpy.random import RandomState, SeedSequence
+import directlfq.config as config
+import logging
+config.setup_logging()
+
+LOGGER = logging.getLogger(__name__)
+
 
 class ProteinProfileGenerator():
     def __init__(self, peptide_profiles):
@@ -112,4 +118,4 @@ class RatioConsistencyChecker():
     def _assert_no_bias(self):
         assert self._fc_deviation_center < self._deviation_threshold, f"Deviation from center: {self._fc_deviation_center:.2f}"
         assert self._fraction_consistent >0.95, f"Fraction consistent below 95%: {self._fraction_consistent:.2f}"
-        print("Checked ratios, no bias detected")
+        LOGGER.info("Checked ratios, no bias detected")
