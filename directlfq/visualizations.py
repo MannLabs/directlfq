@@ -1,3 +1,4 @@
+import numpy as np
 import directlfq.config as config
 import logging
 config.setup_logging()
@@ -223,12 +224,10 @@ def plot_relative_to_median_fcs(normed_intensity_df):
 
 
 
-import numpy as np
 class MultiOrganismIntensityFCPlotter():
     def __init__(self, ax, resultstable_w_ratios, organisms_to_plot = None, fcs_to_expect = None, title = ""):
-        LOGGER.info('init MultiOrganismIntensityFCPlotter')
         self.ax = ax
-        self._color_list_hex = ['#ffd479', '#325e7a', '#bad566']
+        self._color_list_hex = ['#bad566', '#325e7a', '#ffd479']
         self._resultstable_w_ratios = resultstable_w_ratios
         self._organism_column = resultstable_w_ratios.organism_column
         self._log2fc_column = resultstable_w_ratios.log2fc_column
@@ -259,6 +258,7 @@ class MultiOrganismIntensityFCPlotter():
             LOGGER.info(self._get_stats_of_organism(organism, subtable_organism))
 
     def _generate_title(self):
+        title = ""
         for organism in self._organisms_to_plot:
             subtable_organism = self._get_organism_subtable(organism)
             title += self._get_stats_of_organism(organism, subtable_organism)
