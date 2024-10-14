@@ -1,5 +1,6 @@
 #!/bin/bash
 conda activate directlfq
+cd ratio_tests
 pip install pytest
 pip install nbmake==1.5.3
 echo "Running ratio tests"
