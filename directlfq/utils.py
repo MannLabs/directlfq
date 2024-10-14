@@ -227,7 +227,7 @@ def add_columns_to_lfq_results_table(lfq_results_df, input_file, columns_to_add)
     all_columns = filter_columns_to_existing_columns(all_columns, input_file)
 
     lfq_results_df = lfq_results_df[[x is not None for x in lfq_results_df[config.PROTEIN_ID]]]
-    if (len(columns_to_add) == 0) and (len(standard_columns_for_input_type)==0) : #if there are no columns to add and no additional standard columns defined return the original dataframe
+    if (len(columns_to_add) == 0) and (len(standard_columns_for_input_type)==0) :
         return lfq_results_df 
     input_df = pd.read_csv(input_file, sep="\t", usecols=all_columns).drop_duplicates(subset=protein_column_input_table)
 
