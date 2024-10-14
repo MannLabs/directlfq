@@ -1,6 +1,6 @@
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
   workflow_dispatch:
 
 name: Ratio tests, ubuntu stable
