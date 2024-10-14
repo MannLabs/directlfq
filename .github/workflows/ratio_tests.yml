@@ -1,0 +1,35 @@
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+name: Quick tests based on default installation, ubuntu stable
+
+jobs:
+  loose_installation:
+    name: Test loose pip installation on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          miniconda-version: latest
+      - name: Conda info
+        shell: bash -l {0}
+        run: conda info
+      - name: Test pip installation with stable dependencies
+        shell: bash -l {0}
+        run: |
+          cd misc
+          . ./stable_pip_install.sh
+
+      - name: Ratio tests
+        shell: bash -l {0}
+        run: |
+          cd tests
+          . ./run_ratio_tests.sh
