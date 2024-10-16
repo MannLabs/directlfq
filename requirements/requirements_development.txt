@@ -15,5 +15,5 @@ seaborn
 matplotlib
 nbdev>=2.3.9
 notebook
-alphabase>=1.2.1
+alphabase>=1.4.0
 progressbar
