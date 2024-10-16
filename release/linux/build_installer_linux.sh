@@ -9,7 +9,7 @@ rm -rf dist_pyinstaller build_pyinstaller
 
 # Creating the wheel
 python setup.py sdist bdist_wheel
-pip install "dist/directlfq-0.2.20-py3-none-any.whl[stable,gui]"
+pip install "dist/directlfq-0.3.0-py3-none-any.whl[stable,gui]"
 
 # Creating the stand-alone pyinstaller folder
 pip install pyinstaller

@@ -5,7 +5,7 @@
 ; so all paths are given relative to the location of this .iss file.
 
 #define MyAppName "directlfq"
-#define MyAppVersion "0.2.20"
+#define MyAppVersion "0.3.0"
 #define MyAppPublisher "Max Planck Institute of Biochemistry and the University of Copenhagen, Mann Labs"
 #define MyAppURL "https://github.com/MannLabs/directlfq"
 #define MyAppExeName "directlfq_gui.exe"

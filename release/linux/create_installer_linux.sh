@@ -19,7 +19,7 @@ python setup.py sdist bdist_wheel
 # Setting up the local package
 cd release/linux
 # Make sure you include the required extra packages and always use the stable or very-stable options!
-pip install "../../dist/directlfq-0.2.20-py3-none-any.whl[stable, gui]"
+pip install "../../dist/directlfq-0.3.0-py3-none-any.whl[stable, gui]"
 
 # Creating the stand-alone pyinstaller folder
 pip install pyinstaller==4.10
