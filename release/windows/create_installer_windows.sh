@@ -10,7 +10,7 @@ rm -rf dist
 rm -rf build
 
 # Creating a conda environment
-conda create -n directlfq_installer python=3.8 -y
+conda create -n directlfq_installer python=3.9 -y
 conda activate directlfq_installer
 
 # Creating the wheel
