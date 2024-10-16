@@ -1,9 +1,9 @@
 conda activate directlfq
-pip install wget
-python download_testfiles.py quicktest
+pip install pytest
+pip install nbmake==1.5.3
+pip install alphabase>=1.2.1
 cd quicktests
-jupyter nbconvert --to script run_pipeline_w_different_input_formats.ipynb
-python run_pipeline_w_different_input_formats.py
+pytest --nbmake run_pipeline_w_different_input_formats.ipynb
 directlfq lfq -i ../../test_data/system_tests/quicktests/diann/shortened_input.tsv
 cd ..
 conda deactivate
