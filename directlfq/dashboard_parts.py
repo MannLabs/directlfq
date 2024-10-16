@@ -327,16 +327,17 @@ class RunPipeline(BaseWidget):
         self.run_pipeline_button.on_click(self.run_pipeline)
         return self.layout
 
+    
     def run_pipeline(self, *args):
         self.run_pipeline_progress.active = True
-        input_file = self.path_analysis_file.value
+        input_file = self.path_analysis_file.value_input
         input_type_to_use = self.dropdown_menu_for_input_type.value
-        mq_protein_groups_txt = None if self.path_protein_groups_file.value == '' else self.path_protein_groups_file.value
-        additional_headers = [] if self.additional_headers.value == '' else self.additional_headers.value
+        mq_protein_groups_txt = None if self.path_protein_groups_file.value_input == '' else self.path_protein_groups_file.value_input
+        additional_headers = [] if self.additional_headers.value_input == '' else self.additional_headers.value_input
         min_nonan = self.num_nonan_vals.value
-        file_of_proteins_for_normalization = None if self.protein_subset_for_normalization_file.value == '' else self.protein_subset_for_normalization_file.value
+        file_of_proteins_for_normalization = None if self.protein_subset_for_normalization_file.value_input == '' else self.protein_subset_for_normalization_file.value_input
         num_cores = None if self.num_cores_vals.value == -1 else self.num_cores_vals.value
-        yaml_filt_dict_path = None if self.yaml_filt_dict_path.value == '' else self.yaml_filt_dict_path.value
+        yaml_filt_dict_path = None if self.yaml_filt_dict_path.value_input == '' else self.yaml_filt_dict_path.value_input
         if isinstance(additional_headers, str):  # The user will enter a string with semicolon-separated values
             additional_headers = additional_headers.split(';')
 
@@ -355,6 +356,7 @@ class RunPipeline(BaseWidget):
 
         self.trigger_dependancy()
         self.run_pipeline_progress.active = False
+
 
 
 class Tabs(object):
