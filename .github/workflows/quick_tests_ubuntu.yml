@@ -10,6 +10,8 @@ jobs:
   loose_installation:
     name: Test loose pip installation on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write  # Add this line
     strategy:
       matrix:
         os: [ubuntu-latest]
