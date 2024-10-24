@@ -333,7 +333,7 @@ class RunPipeline(BaseWidget):
         input_file = self.path_analysis_file.value_input
         input_type_to_use = self.dropdown_menu_for_input_type.value
         mq_protein_groups_txt = None if self.path_protein_groups_file.value_input == '' else self.path_protein_groups_file.value_input
-        additional_headers = [] if self.additional_headers.value_input == '' else self.additional_headers.value_input
+        additional_headers = None if self.additional_headers.value_input == '' else self.additional_headers.value_input
         min_nonan = self.num_nonan_vals.value
         file_of_proteins_for_normalization = None if self.protein_subset_for_normalization_file.value_input == '' else self.protein_subset_for_normalization_file.value_input
         num_cores = None if self.num_cores_vals.value == -1 else self.num_cores_vals.value
