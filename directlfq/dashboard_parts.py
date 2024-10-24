@@ -337,8 +337,8 @@ class RunPipeline(BaseWidget):
         min_nonan = self.num_nonan_vals.value
         file_of_proteins_for_normalization = None if self.protein_subset_for_normalization_file.value_input == '' else self.protein_subset_for_normalization_file.value_input
         num_cores = None if self.num_cores_vals.value == -1 else self.num_cores_vals.value
-        yaml_filt_dict_path = None if self.yaml_filt_dict_path.value_input == '' else self.yaml_filt_dict_path.value_input
-        if isinstance(additional_headers, str):  # The user will enter a string with semicolon-separated values
+        yaml_filt_dict_path = None if self.yaml_filt_dict_path.value == '' else self.yaml_filt_dict_path.value
+        if additional_headers is not None: #the user will enter a string with semicolon separated values
             additional_headers = additional_headers.split(';')
 
         lfq_manager.run_lfq(
