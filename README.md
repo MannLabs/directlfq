@@ -54,7 +54,7 @@ There are currently two different types of installation possible:
 
 * [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the GUI and/or keep things as simple as possible.
 <!---
-* [**Pip installer:**](#pip) Choose this installation if you want to use directlfq as a Python package in an existing Python 3.8 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
+* [**Pip installer:**](#pip) Choose this installation if you want to use directlfq as a Python package in an existing Python 3.9 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
 -->
 * [**Developer installer:**](#developer) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of directlfq and even allows to modify its source code directly. Generally, the developer version of directlfq outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
 
@@ -71,7 +71,7 @@ Older releases remain available on the [release page](https://github.com/MannLab
 -
 ### Pip
 
-directLFQ can be installed in an existing Python 3.8 environment with a single `bash` command.
+directLFQ can be installed in an existing Python 3.9 environment with a single `bash` command.
 
 ```bash
 pip install directlfq
@@ -117,7 +117,7 @@ git clone https://github.com/MannLabs/directlfq.git
 For any Python package, it is highly recommended to use a separate [conda virtual environment](https://docs.conda.io/en/latest/), as otherwise *dependancy conflicts can occur with already existing packages*.
 
 ```bash
-conda create --name directlfq python=3.8 -y
+conda create --name directlfq python=3.9 -y
 conda activate directlfq
 ```
 

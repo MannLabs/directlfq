@@ -3,6 +3,12 @@ import pandas as pd
 
 from  numpy.random import MT19937
 from numpy.random import RandomState, SeedSequence
+import directlfq.config as config
+import logging
+config.setup_logging()
+
+LOGGER = logging.getLogger(__name__)
+
 
 class ProteinProfileGenerator():
     def __init__(self, peptide_profiles):
@@ -58,3 +64,58 @@ class PeptideProfile():
         idxs_to_set_zero = np.random.choice(self._num_samples,size=num_elements_to_set_zero, replace=False)
         self.peptide_profile_vector[idxs_to_set_zero] = 0
         
+
+
+
+
+class RatioChecker():
+    def __init__(self, formatted_df : pd.DataFrame, organism2expectedfc : dict, organism2CI95 : dict):
+        """the ratio checker takes in a dataframe with columns 'log2fc' and 'organism' and checks if the ratios are consistent with the expected median fold changes and confidence intervals
+        
+        Args:
+            formatted_df (pd.DataFrame): dataframe with columns 'log2fc' and 'organism' from mixed species experiment
+            organism2expectedfc (dict): the expected log2fc for this organism in the mixed species experiment
+            organism2CI95 (dict): the expected confidence interval for this organism in the mixed species experiment (i.e. 95% of protein ratios should be within this interval)
+        """
+        self._formatted_df = formatted_df
+        self._organism2expectedfc = organism2expectedfc
+        self._organism2deviation_threshold = organism2CI95
+        self._organism2fcs = self._get_organism2fcs()
+        self._check_ratio_consistency_per_organism()
+
+    def _get_organism2fcs(self):
+        return self._formatted_df.groupby('organism')['log2fc'].apply(list).to_dict()
+    
+    def _check_ratio_consistency_per_organism(self):
+        for organism in self._organism2expectedfc.keys():
+            expected_fc = self._organism2expectedfc[organism]
+            deviation_threshod = self._organism2deviation_threshold[organism]
+            fcs = self._organism2fcs[organism]
+            RatioConsistencyChecker(fcs = fcs, expected_fc = expected_fc, deviation_threshold = deviation_threshod)			
+
+class RatioConsistencyChecker():
+    def __init__(self, fcs, expected_fc, deviation_threshold):
+        self._fcs = np.array([fc for fc in fcs if np.isfinite(fc)])
+        self._expected_fc = expected_fc
+        self._fc_deviations = self._calc_fc_deviations()
+        self._deviation_threshold = deviation_threshold
+        self._fc_deviation_center = self._calc_deviation_center() #should be 0 if no bias
+        self._fraction_consistent = self._get_fraction_consistent()
+
+        self._assert_no_bias()
+
+    def _calc_fc_deviations(self):
+        return abs(self._fcs - self._expected_fc)
+    
+    def _calc_deviation_center(self):
+        return np.nanmedian(self._fc_deviations)
+    
+    def _get_fraction_consistent(self):
+        consistent_fcs= sum(self._fc_deviations <= self._deviation_threshold)
+        total_fcs = len(self._fcs)
+        return consistent_fcs/total_fcs
+    
+    def _assert_no_bias(self):
+        assert self._fc_deviation_center < self._deviation_threshold, f"Deviation from center: {self._fc_deviation_center:.2f}"
+        assert self._fraction_consistent >0.95, f"Fraction consistent below 95%: {self._fraction_consistent:.2f}"
+        LOGGER.info("Checked ratios, no bias detected")

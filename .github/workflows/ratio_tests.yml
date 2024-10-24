@@ -1,10 +1,8 @@
 on:
-  push:
-    branches: [ main, development ]
   pull_request:
   workflow_dispatch:
 
-name: Quick tests based on default installation, ubuntu stable
+name: Ratio tests, ubuntu stable
 
 jobs:
   loose_installation:
@@ -29,8 +27,8 @@ jobs:
           cd misc
           . ./stable_pip_install.sh
 
-      - name: Unittests
+      - name: Ratio tests
         shell: bash -l {0}
         run: |
           cd tests
-          . ./run_quicktests.sh
+          . ./run_ratio_tests.sh
