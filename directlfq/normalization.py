@@ -242,6 +242,9 @@ def drop_nas_if_possible(df):
         return df_nonans
 
 def calculate_fraction_with_no_NAs(df, df_nonnans):
+    if len(df.columns) == 0:
+        LOGGER.warning('Not a single value measured in sample. Returning 0')
+        return 0
     return len(df_nonnans.columns)/len(df.columns)
 
 
