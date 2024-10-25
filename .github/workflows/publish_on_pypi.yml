@@ -17,6 +17,7 @@ jobs:
       package_name: directlfq
       tag_to_release: ${{ inputs.tag_to_release }}
       use_pyproject_toml: false
+      python_version: 3.9
     secrets:
       test_pypi_api_token: ${{ secrets.TEST_PYPI_API_TOKEN }}
       pypi_api_token: ${{ secrets.PYPI_API_TOKEN }}
