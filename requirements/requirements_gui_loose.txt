@@ -1,0 +1,5 @@
+# Additional dependencies required for running the "loose" version of directlfq GUI.
+# All dependencies that are also included in `requirements.txt` must be added also here (enforced by a test).
+panel==0.10.3
+dash==2.5.1
+matplotlib==3.4.3
