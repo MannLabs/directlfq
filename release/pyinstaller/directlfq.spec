@@ -26,10 +26,10 @@ datas, binaries, hidden_imports = PyInstaller.utils.hooks.collect_all(
 )
 
 # add extra packages that don't have pyinstaller hooks
-extra_pkgs = ["bokeh", ] # other alphaX packages would be added here
-for alpha_package in extra_pkgs:
+extra_pkgs = ["panel", ] # other alphaX packages would be added here
+for pkg in extra_pkgs:
 	_datas, _binaries, _hidden_imports = PyInstaller.utils.hooks.collect_all(
-		alpha_package,
+		pkg,
 		include_py_files=True
 	)
 	datas+=_datas
