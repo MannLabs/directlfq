@@ -1,7 +1,10 @@
+# Dependencies required for running the "stable" version of directlfq.
+# Only usage of fixed versions is allowed, and all dependencies listed here must also be
+# included in `requirements_loose.txt` (enforced by a test).
 Jinja2==3.1.2
 numpy==1.23.5
-pandas>=1.5.3
-dask>=2023.1.0
+pandas>=1.5.3  # test: tolerate_version
+dask>=2023.1.0  # test: tolerate_version
 numba==0.56.4
 multiprocess==0.70.14
 wget==3.2

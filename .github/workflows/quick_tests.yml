@@ -23,6 +23,11 @@ jobs:
       - name: Conda info
         shell: bash -le {0}
         run: conda info
+      - name: Pytest tests
+        shell: bash -le {0}
+        run: |
+          pip install pytest
+          pytest tests/pytest
       - name: Test pip installation with all stable dependencies
         shell: bash -le {0}
         run: |
@@ -49,6 +54,11 @@ jobs:
       - name: Conda info
         shell: bash -le {0}
         run: conda info
+      - name: Pytest tests
+        shell: bash -le {0}
+        run: |
+          pip install pytest
+          pytest tests/pytest
       - name: Test pip installation with all loose dependencies
         shell: bash -le {0}
         run: |
