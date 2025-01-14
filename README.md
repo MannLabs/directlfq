@@ -91,10 +91,10 @@ pip install "directlfq[stable]"
 
 NOTE: You might need to run `pip install pip==21.0` before installing directlfq like this. Also note the double quotes `"`.
 
-For those who are really adventurous, it is also possible to directly install any branch (e.g. `@development`) with any extras (e.g. `#egg=directlfq[stable,development-stable]`) from GitHub with e.g.
+For those who are really adventurous, it is also possible to directly install any branch (e.g. `@development`) with any extras (e.g. `#egg=directlfq[stable,development]`) from GitHub with e.g.
 
 ```bash
-pip install "git+https://github.com/MannLabs/directlfq.git@development#egg=directlfq[stable,development-stable]"
+pip install "git+https://github.com/MannLabs/directlfq.git@development#egg=directlfq[stable,development]"
 ```
 
 ### Developer
@@ -127,7 +127,7 @@ Finally, directlfq and all its [dependencies](requirements) need to be installed
 pip install -e "./directlfq[development,gui]"
 ```
 
-By default this installs loose dependencies (no explicit versioning), although it is also possible to use stable dependencies (e.g. `pip install -e "./directlfq[stable,development-stable]"`).
+By default this installs loose dependencies (no explicit versioning), although it is also possible to use stable dependencies (e.g. `pip install -e "./directlfq[stable,development]"`).
 
 ***By using the editable flag `-e`, all modifications to the [directlfq source code folder](directlfq) are directly reflected when running directlfq. Note that the directlfq folder cannot be moved and/or renamed if an editable version is installed. In case of confusion, you can always retrieve the location of any Python module with e.g. the command `import module` followed by `module.__file__`.***
 
