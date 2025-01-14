@@ -12,8 +12,8 @@ python -m build
 # Make sure you include the required extra packages and always use the stable options!
 
 # substitute X.Y.Z-devN with X.Y.Z.devN
-WHL_NAME=$(echo "directlfq-0.3.1-dev0-py3-none-any.whl" | sed 's/\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)-dev\([0-9][0-9]*\)/\1.dev\2/g')
-pip install "dist/${WHL_NAME}[stable,gui-stable]"
+$WHL_NAME = "directlfq-0.3.1-dev0-py3-none-any.whl" -replace '(\d+\.\d+\.\d+)-dev(\d+)', '$1.dev$2'
+pip install "dist/$WHL_NAME[stable,gui-stable]"
 
 # Creating the stand-alone pyinstaller folder
 pip install pyinstaller
