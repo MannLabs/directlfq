@@ -22,15 +22,15 @@ jobs:
           python-version: ${{ matrix.python-version }}
           miniconda-version: latest
       - name: Conda info
-        shell: bash -l {0}
+        shell: bash -le {0}
         run: conda info
       - name: Test pip installation with all loose dependencies
-        shell: bash -l {0}
+        shell: bash -le {0}
         run: |
           cd misc
           . ./loose_pip_install.sh
       - name: Unittests
-        shell: bash -l {0}
+        shell: bash -le {0}
         run: |
           cd tests
           . ./run_tests.sh
