@@ -8,7 +8,7 @@ rm -rf dist build *.egg-info
 rm -rf dist_pyinstaller build_pyinstaller
 
 # Creating the wheel
-python setup.py sdist bdist_wheel
+python -m build
 pip install "dist/directlfq-0.3.1-dev0-py3-none-any.whl[stable,gui]"
 
 # Creating the stand-alone pyinstaller folder
