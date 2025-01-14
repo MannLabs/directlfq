@@ -9,6 +9,11 @@ on:
         type: string
         required: true
 
+      only_testpypi_release:
+        description: 'If checked, the release on "real" pypi will be skipped.'
+        type: boolean
+        default: false
+
 jobs:
   publish_on_pypi:
     uses: MannLabs/alphashared/.github/workflows/publish_on_pypi.yml@v1
@@ -16,8 +21,8 @@ jobs:
       # see the documentation of the workflow for more information on the parameters
       package_name: directlfq
       tag_to_release: ${{ inputs.tag_to_release }}
-      use_pyproject_toml: false
       python_version: 3.9
+      only_testpypi_release: only_testpypi_release
     secrets:
       test_pypi_api_token: ${{ secrets.TEST_PYPI_API_TOKEN }}
       pypi_api_token: ${{ secrets.PYPI_API_TOKEN }}

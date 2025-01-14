@@ -4,7 +4,7 @@ pyinstaller
 autodocsumm
 sphinx-rtd-theme
 twine
-bumpversion
+bump-my-version
 pipdeptree
 ipykernel
 tqdm
