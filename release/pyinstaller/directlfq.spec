@@ -25,17 +25,18 @@ datas, binaries, hidden_imports = PyInstaller.utils.hooks.collect_all(
 	include_py_files=True
 )
 
-# in case we need other alphaX packages:
-# alpha_x = ['alphabase', ]
-# for alpha_package in alpha_x:
-# 	_datas, _binaries, _hidden_imports = PyInstaller.utils.hooks.collect_all(
-# 		alpha_package,
-# 		include_py_files=True
-# 	)
-# 	datas+=_datas
-# 	binaries+=_binaries
-# 	hidden_imports+=_hidden_imports
+# add extra packages that don't have pyinstaller hooks
+extra_pkgs = ["bokeh", ] # other alphaX packages would be added here
+for alpha_package in extra_pkgs:
+	_datas, _binaries, _hidden_imports = PyInstaller.utils.hooks.collect_all(
+		alpha_package,
+		include_py_files=True
+	)
+	datas+=_datas
+	binaries+=_binaries
+	hidden_imports+=_hidden_imports
 
+# prepare hidden imports and datas
 hidden_imports = [h for h in hidden_imports if "__pycache__" not in h]
 hidden_imports = sorted(
 		[h for h in hidden_imports if "tests" not in h.split(".")]
