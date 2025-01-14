@@ -10,7 +10,7 @@ on:
         required: true
 
       only_testpypi_release:
-        description: 'If checked, the release on "real" pypi will be skipped.'
+        description: 'Skip release on "real" pypi (only for debugging).'
         type: boolean
         default: false
 
@@ -22,7 +22,7 @@ jobs:
       package_name: directlfq
       tag_to_release: ${{ inputs.tag_to_release }}
       python_version: 3.9
-      only_testpypi_release: only_testpypi_release
+      only_testpypi_release: ${{ inputs.only_testpypi_release }}
     secrets:
       test_pypi_api_token: ${{ secrets.TEST_PYPI_API_TOKEN }}
       pypi_api_token: ${{ secrets.PYPI_API_TOKEN }}
