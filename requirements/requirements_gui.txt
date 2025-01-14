@@ -3,4 +3,4 @@
 # included in `requirements_gui_loose.txt` (enforced by a test).
 panel==0.10.3
 dash==2.5.1
-matplotlib==3.4.3
+matplotlib==3.5.3
