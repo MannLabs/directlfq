@@ -4,7 +4,7 @@ if __name__ == "__main__":
         import multiprocessing
         multiprocessing.freeze_support()
         directlfq.gui.run()
-    except e:
+    except Exception as e:
         import traceback
         import sys
         exc_info = sys.exc_info()
