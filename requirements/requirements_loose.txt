@@ -5,6 +5,5 @@ pandas
 dask
 numba
 multiprocess
-wget
 PyYAML
 pyarrow
