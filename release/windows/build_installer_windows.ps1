@@ -11,7 +11,7 @@ Remove-Item -Recurse -Force -ErrorAction SilentlyContinue ./dist_pyinstaller
 python -m build
 
 # substitute X.Y.Z-devN with X.Y.Z.devN
-$WHL_NAME = "directlfq-0.3.1-dev0-py3-none-any.whl" -replace '(\d+\.\d+\.\d+)-dev(\d+)', '$1.dev$2'
+$WHL_NAME = "directlfq-0.3.1-dev1-py3-none-any.whl" -replace '(\d+\.\d+\.\d+)-dev(\d+)', '$1.dev$2'
 pip install "dist/$WHL_NAME[stable,gui-stable]"
 
 # Creating the stand-alone pyinstaller folder
