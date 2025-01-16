@@ -60,15 +60,10 @@ There are currently two different types of installation possible:
 
 ### One-click GUI
 
-The GUI of directlfq is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click on one of the links below to download the latest release for:
-
-* [**Windows**](https://github.com/MannLabs/directlfq/releases/latest/download/directlfq_gui_installer_windows.exe)
-* [**macOS**](https://github.com/MannLabs/directlfq/releases/latest/download/directlfq_gui_installer_macos.pkg)
-* [**Linux**](https://github.com/MannLabs/directlfq/releases/latest/download/directlfq_gui_installer_linux.deb)
+The GUI of directlfq is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click [**here**](https://github.com/MannLabs/directlfq/releases/latest/) to download the latest release for either Windows, macOS or Linux.
 
 Older releases remain available on the [release page](https://github.com/MannLabs/directlfq/releases), but no backwards compatibility is guaranteed.
 
--
 ### Pip
 
 directLFQ can be installed in an existing Python 3.9 environment with a single `bash` command.
