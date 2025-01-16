@@ -5,5 +5,4 @@ pandas
 dask
 numba
 multiprocess
-PyYAML
 pyarrow
