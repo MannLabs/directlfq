@@ -32,7 +32,7 @@ jobs:
         shell: bash -le {0}
         run: |
           cd misc
-          . ./stable_pip_install.sh
+          ./pip_install.sh stable,tests
       - name: Run pipeline
         shell: bash -le {0}
         run: |
@@ -63,7 +63,7 @@ jobs:
         shell: bash -le {0}
         run: |
           cd misc
-          . ./loose_pip_install.sh
+          ./pip_install.sh loose,tests
       - name: Run pipeline
         shell: bash -le {0}
         run: |
