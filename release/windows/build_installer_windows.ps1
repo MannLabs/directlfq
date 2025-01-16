@@ -18,4 +18,3 @@ pip install "dist/$WHL_NAME[stable,gui-stable]"
 # Creating the stand-alone pyinstaller folder
 pip install pyinstaller
 pyinstaller release/pyinstaller/directlfq.spec --distpath dist_pyinstaller --workpath build_pyinstaller -y
-# pip install jinja2==3.0
