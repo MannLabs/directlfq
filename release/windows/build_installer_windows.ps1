@@ -9,7 +9,6 @@ Remove-Item -Recurse -Force -ErrorAction SilentlyContinue ./dist_pyinstaller
 
 # Creating the wheel
 python -m build
-# Make sure you include the required extra packages and always use the stable options!
 
 # substitute X.Y.Z-devN with X.Y.Z.devN
 $WHL_NAME = "directlfq-0.3.1-dev0-py3-none-any.whl" -replace '(\d+\.\d+\.\d+)-dev(\d+)', '$1.dev$2'
