@@ -1,6 +1,7 @@
 on:
   push:
-    branches: [ main, development ]
+  #  branches: [ main, development ]
+  # TODO: this is covered already by quick_tests.yml
   pull_request:
   workflow_dispatch:
 
@@ -27,7 +28,7 @@ jobs:
         shell: bash -le {0}
         run: |
           cd misc
-          . ./stable_pip_install.sh
+          . ./pip_install.sh stable,tests
 
       - name: Unittests
         shell: bash -le {0}
