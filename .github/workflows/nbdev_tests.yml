@@ -27,7 +27,7 @@ jobs:
         shell: bash -le {0}
         run: |
           cd misc
-          ./pip_install.sh loose,tests
+          . ./pip_install.sh loose,tests
 
       - name: Unittests
         shell: bash -le {0}
