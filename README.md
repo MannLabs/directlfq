@@ -240,7 +240,7 @@ directLFQ is started internally via the directlfq.lfq_manager.run_lfq() command.
 -  **num_cores**: The number of cores to use (default is to use multiprocessing).
 -  **filename_suffix**: Suffix to append to the output files.
 -  **deactivate_normalization**: Set to true, if no between-sample normalization should be performed before processing.
--  **filter_dict**: In case you want to define specific filters in addition to the standard filters, you can add a yaml file where the filters are defined (see example [here](release/examples/filterdict.yaml)). In the Python API you can also directly put in the dictionary instead of the .yaml file.
+-  **filter_dict**: In case you want to define specific filters in addition to the standard filters, you can add a yaml file where the filters are defined (see example [here](misc/examples/filterdict.yaml)). In the Python API you can also directly put in the dictionary instead of the .yaml file.
 
 ---
 
