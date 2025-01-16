@@ -17,3 +17,4 @@ nbdev>=2.3.9
 notebook
 alphabase>=1.4.0
 progressbar
+pytest
