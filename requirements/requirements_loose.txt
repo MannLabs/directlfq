@@ -1,11 +1,8 @@
 # Dependencies required for running the "loose" version of direclfq.
 # All dependencies that are also included in `requirements.txt` must be added also here (enforced by a test).
-Jinja2
 numpy
 pandas
 dask
 numba
 multiprocess
-wget
-PyYAML
 pyarrow

@@ -51,7 +51,8 @@ dependencies = {file = ["requirements/requirements_loose.txt"]}
 optional-dependencies = { stable = { file = ["requirements/requirements.txt",
 ] }, gui = { file = [ "requirements/requirements_gui_loose.txt",
 ] }, gui-stable = { file = [ "requirements/requirements_gui.txt",
-] }, development = { file = ["requirements/requirements_development.txt"
+] }, tests = { file = [ "requirements/requirements_tests.txt",
+] }, development = { file = ["requirements/requirements_development.txt", "requirements/requirements_tests.txt",
 ] }}
 
 version = {attr = "directlfq.__version__"}
