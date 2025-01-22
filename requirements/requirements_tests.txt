@@ -7,3 +7,4 @@ nbdev>=2.3.9
 alphabase>=1.5.0
 progressbar
 pytest
+nbmake==1.5.3
