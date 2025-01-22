@@ -1,21 +1,9 @@
+# Dependencies helping for development
 jupyter
 jupyter_contrib_nbextensions
-pyinstaller
 autodocsumm
 sphinx-rtd-theme
-twine
-bumpversion
+bump-my-version
 pipdeptree
 ipykernel
-tqdm
-psutil
-pytest
-matplotlib_venn
-wget
-seaborn
-matplotlib
-nbdev>=2.3.9
-nbmake==1.5.3
 notebook
-alphabase>=1.5.0
-progressbar

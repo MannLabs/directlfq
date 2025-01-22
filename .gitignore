@@ -186,8 +186,6 @@ tests/quicktests/run_pipeline_w_different_input_formats.nbconvert.ipynb
 
 tests/download_testfiles.ipynb
 
-#bash scripts
-misc/bumpversion.sh
 #figures
 figures/
 _docs/

@@ -60,15 +60,10 @@ There are currently two different types of installation possible:
 
 ### One-click GUI
 
-The GUI of directlfq is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click on one of the links below to download the latest release for:
-
-* [**Windows**](https://github.com/MannLabs/directlfq/releases/latest/download/directlfq_gui_installer_windows.exe)
-* [**macOS**](https://github.com/MannLabs/directlfq/releases/latest/download/directlfq_gui_installer_macos.pkg)
-* [**Linux**](https://github.com/MannLabs/directlfq/releases/latest/download/directlfq_gui_installer_linux.deb)
+The GUI of directlfq is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click [**here**](https://github.com/MannLabs/directlfq/releases/latest/) to download the latest release for either Windows, macOS or Linux.
 
 Older releases remain available on the [release page](https://github.com/MannLabs/directlfq/releases), but no backwards compatibility is guaranteed.
 
--
 ### Pip
 
 directLFQ can be installed in an existing Python 3.9 environment with a single `bash` command.
@@ -91,10 +86,10 @@ pip install "directlfq[stable]"
 
 NOTE: You might need to run `pip install pip==21.0` before installing directlfq like this. Also note the double quotes `"`.
 
-For those who are really adventurous, it is also possible to directly install any branch (e.g. `@development`) with any extras (e.g. `#egg=directlfq[stable,development-stable]`) from GitHub with e.g.
+For those who are really adventurous, it is also possible to directly install any branch (e.g. `@development`) with any extras (e.g. `#egg=directlfq[stable,development]`) from GitHub with e.g.
 
 ```bash
-pip install "git+https://github.com/MannLabs/directlfq.git@development#egg=directlfq[stable,development-stable]"
+pip install "git+https://github.com/MannLabs/directlfq.git@development#egg=directlfq[stable,development]"
 ```
 
 ### Developer
@@ -127,7 +122,7 @@ Finally, directlfq and all its [dependencies](requirements) need to be installed
 pip install -e "./directlfq[development,gui]"
 ```
 
-By default this installs loose dependencies (no explicit versioning), although it is also possible to use stable dependencies (e.g. `pip install -e "./directlfq[stable,development-stable]"`).
+By default this installs loose dependencies (no explicit versioning), although it is also possible to use stable dependencies (e.g. `pip install -e "./directlfq[stable,development]"`).
 
 ***By using the editable flag `-e`, all modifications to the [directlfq source code folder](directlfq) are directly reflected when running directlfq. Note that the directlfq folder cannot be moved and/or renamed if an editable version is installed. In case of confusion, you can always retrieve the location of any Python module with e.g. the command `import module` followed by `module.__file__`.***
 
@@ -240,7 +235,7 @@ directLFQ is started internally via the directlfq.lfq_manager.run_lfq() command.
 -  **num_cores**: The number of cores to use (default is to use multiprocessing).
 -  **filename_suffix**: Suffix to append to the output files.
 -  **deactivate_normalization**: Set to true, if no between-sample normalization should be performed before processing.
--  **filter_dict**: In case you want to define specific filters in addition to the standard filters, you can add a yaml file where the filters are defined (see example [here](release/examples/filterdict.yaml)). In the Python API you can also directly put in the dictionary instead of the .yaml file.
+-  **filter_dict**: In case you want to define specific filters in addition to the standard filters, you can add a yaml file where the filters are defined (see example [here](misc/examples/filterdict.yaml)). In the Python API you can also directly put in the dictionary instead of the .yaml file.
 
 ---
 

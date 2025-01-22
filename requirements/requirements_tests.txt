@@ -1,0 +1,9 @@
+# Dependencies required for running tests
+matplotlib_venn
+matplotlib
+wget
+seaborn
+nbdev>=2.3.9
+alphabase>=1.4.0
+progressbar
+pytest
