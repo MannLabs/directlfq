@@ -28,7 +28,7 @@ jobs:
         shell: bash -le {0}
         run: |
           cd misc
-          . ./pip_install.sh stable,tests
+          . ./pip_install.sh stable,dask-stable,tests
 
       - name: Unittests
         shell: bash -le {0}
