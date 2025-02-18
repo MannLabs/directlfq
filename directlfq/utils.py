@@ -11,6 +11,13 @@ import directlfq.utils_fileread as utils_fileread
 
 LOGGER = logging.getLogger(__name__)
 
+try:
+    import dask.dataframe as dd
+    HAS_DASK=True
+except ModuleNotFoundError:
+    logging.warning("Dask not installed. Falling back to non-dask base processing.")
+    HAS_DASK=False
+
 
 def get_samples_used_from_samplemap_file(samplemap_file, cond1, cond2):
     samplemap_df = load_samplemap(samplemap_file)
@@ -586,7 +593,7 @@ def reformat_and_write_longtable_according_to_config(input_file, outfile_name, c
             input_df_list.append(input_df_subset)
         header = False
         
-    if file_is_large:
+    if file_is_large and HAS_DASK:
         process_with_dask(tmpfile_columnfilt=tmpfile_large , outfile_name = outfile_name, config_dict_for_type=config_dict_for_type)
     else:
         input_df = pd.concat(input_df_list)
@@ -602,7 +609,6 @@ def adapt_subtable(input_df_subset, config_dict):
         return merge_protein_and_ion_cols(input_df_subset, config_dict)
 
 # %% ../nbdev_nbs/04_utils.ipynb 35
-import dask.dataframe as dd
 import pandas as pd
 import glob
 import os
