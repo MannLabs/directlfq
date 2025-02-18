@@ -69,22 +69,23 @@ Older releases remain available on the [release page](https://github.com/MannLab
 directLFQ can be installed in an existing Python 3.9 environment with a single `bash` command.
 
 ```bash
-pip install directlfq
+pip install "directlfq[dask]"
 ```
 
 This installs the core directLFQ without graphical user interface (GUI). If you want to install with additional dependencies for GUI support, you can do this with:
 
 ```bash
-pip install "directlfq[gui]"
+pip install "directlfq[gui,dask]"
 ```
 
 For installation with stable dependencies, use:
 
 ```bash
-pip install "directlfq[stable]"
+pip install "directlfq[stable,gui-stable,dask-stable]"
 ```
 
 NOTE: You might need to run `pip install pip==21.0` before installing directlfq like this. Also note the double quotes `"`.
+Note: The 'dask' extra can be omitted for slimmer dependencies, but this comes with a performance penalty for large datasets.
 
 For those who are really adventurous, it is also possible to directly install any branch (e.g. `@development`) with any extras (e.g. `#egg=directlfq[stable,development]`) from GitHub with e.g.
 
