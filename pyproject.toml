@@ -51,6 +51,8 @@ dependencies = {file = ["requirements/requirements_loose.txt"]}
 optional-dependencies.stable = { file = ["requirements/requirements.txt"] }
 optional-dependencies.gui = { file = [ "requirements/requirements_gui_loose.txt" ] }
 optional-dependencies.gui-stable = { file = [ "requirements/requirements_gui.txt" ] }
+optional-dependencies.dask = { file = [ "requirements/requirements_dask_loose.txt" ] }
+optional-dependencies.dask-stable = { file = [ "requirements/requirements_dask.txt" ] }
 optional-dependencies.tests = { file = [ "requirements/requirements_tests.txt" ] }
 optional-dependencies.development = { file = [
     "requirements/requirements_development.txt",

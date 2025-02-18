@@ -70,7 +70,7 @@ def _get_requirements_path():
     return requirements_path
 
 
-@pytest.mark.parametrize("extra_name", ["", "_gui"])
+@pytest.mark.parametrize("extra_name", ["", "_gui", "_dask"])
 def test_requirements(extra_name):
     """Test the strict and loose requirements.
 
