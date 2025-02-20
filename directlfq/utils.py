@@ -6,6 +6,7 @@ if "__file__" in globals():#only run in the translated python file, as __file__ 
     CONFIG_PATH = os.path.join(pathlib.Path(__file__).parent.absolute(), "configs")
 
 import logging
+import warnings
 import directlfq.config as config
 import directlfq.utils_fileread as utils_fileread
 
@@ -15,7 +16,7 @@ try:
     import dask.dataframe as dd
     HAS_DASK=True
 except ModuleNotFoundError:
-    logging.warning("Dask not installed. Falling back to non-dask base processing.")
+    warnings.warn("Dependency 'dask' not installed. If you want to use its functionality, install directlfq with the 'dask' extra. Falling back to non-dask based processing.")
     HAS_DASK=False
 
 
