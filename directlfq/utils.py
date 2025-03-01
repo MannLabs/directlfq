@@ -565,7 +565,7 @@ def add_merged_ionnames(df_subset, ion_hierarchy_local, ion_headers_grouped, qua
 
 # %% ../nbdev_nbs/04_utils.ipynb 34
 import os.path
-def reformat_and_write_longtable_according_to_config(input_file, outfile_name, config_dict_for_type, sep = "\t",decimal = ".", enforce_largefile_processing = False, chunksize =1000_000):
+def reformat_and_write_longtable_according_to_config(input_file, outfile_name, config_dict_for_type, sep = "\t",decimal = ".", enforce_largefile_processing = True, chunksize =1000_000):
     """Reshape a long format proteomics results table (e.g. Spectronaut or DIA-NN) to a wide format table.
     :param file input_file: long format proteomic results table
     :param string input_type: the configuration key stored in the config file (e.g. "diann_precursor")
