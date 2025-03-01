@@ -20,13 +20,14 @@ config.setup_logging()
 LOGGER = logging.getLogger(__name__)
 
 
-def run_lfq(input_file,  columns_to_add = [], selected_proteins_file :str = None, mq_protein_groups_txt = None, min_nonan = 1, input_type_to_use = None, maximum_number_of_quadratic_ions_to_use_per_protein = 10, 
+def run_lfq(input_file, input_df = None, columns_to_add = [], selected_proteins_file :str = None, mq_protein_groups_txt = None, min_nonan = 1, input_type_to_use = None, maximum_number_of_quadratic_ions_to_use_per_protein = 10, 
 number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deactivate_normalization = False, filter_dict = None, log_processed_proteins = True, protein_id = 'protein', quant_id = 'ion'
 ,compile_normalized_ion_table = True):
     """Run the directLFQ pipeline on a given input file. The input file is expected to contain ion intensities. The output is a table containing protein intensities.
 
     Args:
         input_file (_type_): the input file containing the ion intensities. Usually the output of a search engine.
+        input_df (_type_, optional): if you want to use a pandas dataframe directly, you can pass it here. Defaults to None.
         columns_to_add (list, optional): additional columns to add to the LFQ intensity output table. They are extraced from the input file. Defaults to [].
         selected_proteins_file (str, optional): if you want to perform normalization only on a subset of proteins, you can pass a .txt file containing the protein IDs, separeted by line breaks. No header expected. Defaults to None.
         mq_protein_groups_txt (_type_, optional): In the case of using MaxQuant data, the proteinGroups.txt table is needed in order to map IDs analogous to MaxQuant. Adding this table improves protein mapping, but is not necessary. Defaults to None.
@@ -38,20 +39,22 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
     """
     config.set_global_protein_and_ion_id(protein_id=protein_id, quant_id=quant_id)
     config.set_log_processed_proteins(log_processed_proteins=log_processed_proteins)
-    config.set_compile_normalized_ion_table(compile_normalized_ion_table= compile_normalized_ion_table)
+    config.set_compile_normalized_ion_table(compile_normalized_ion_table=compile_normalized_ion_table)
     config.check_wether_to_copy_numpy_arrays_derived_from_pandas()
 
     LOGGER.info("Starting directLFQ analysis.")
-    input_file = prepare_input_filename(input_file)
-    filter_dict = load_filter_dict_if_given_as_yaml(filter_dict)
-    input_file = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, input_type_to_use,mq_protein_groups_txt, columns_to_add)
-    input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use, filter_dict=filter_dict)
-
-    input_df = lfqutils.sort_input_df_by_protein_id(input_df)
-    input_df = lfqutils.remove_potential_quant_id_duplicates(input_df)
-    input_df = lfqutils.index_and_log_transform_input_df(input_df)
-    input_df = lfqutils.remove_allnan_rows_input_df(input_df)
-    
+    if input_df is None:
+        input_file = prepare_input_filename(input_file)
+        filter_dict = load_filter_dict_if_given_as_yaml(filter_dict)
+        input_file = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, input_type_to_use,mq_protein_groups_txt, columns_to_add)
+        input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use, filter_dict=filter_dict)
+    else:
+        LOGGER.info("Using input_df directly.")
+        input_df = lfqutils.sort_input_df_by_protein_id(input_df)
+        input_df = lfqutils.remove_potential_quant_id_duplicates(input_df)
+        input_df = lfqutils.index_and_log_transform_input_df(input_df)
+        input_df = lfqutils.remove_allnan_rows_input_df(input_df)
+        
     if not deactivate_normalization:
         LOGGER.info("Performing sample normalization.")
         input_df = lfqnorm.NormalizationManagerSamplesOnSelectedProteins(input_df, num_samples_quadratic=number_of_quadratic_samples, selected_proteins_file=selected_proteins_file).complete_dataframe
