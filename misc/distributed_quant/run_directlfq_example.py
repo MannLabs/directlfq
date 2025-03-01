@@ -1,7 +1,3 @@
-import directlfq
-import os
+import directlfq.lfq_manager as lfq_manager
 
-input_path = None
-input_filename = None
-
-directlfq.lfq_manager.run_lfq(input_file = os.path.join(input_path, input_filename))
+lfq_manager.run_lfq(input_file = "/Users/vincenthbrennsteiner/Documents/mann_labs/_git_repositories/projects/collaborations/DirectLFQ/notebooks/data/pars_05_ALL_MBR_with_speclib_ALL_COHORTS_20250222_SAMPLE_3_FILES_COPY_fragment_quantities.parquet")
