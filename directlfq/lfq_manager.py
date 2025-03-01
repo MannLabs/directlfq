@@ -20,7 +20,7 @@ config.setup_logging()
 LOGGER = logging.getLogger(__name__)
 
 
-def run_lfq(input_file, input_df = None, columns_to_add = [], selected_proteins_file :str = None, mq_protein_groups_txt = None, min_nonan = 1, input_type_to_use = None, maximum_number_of_quadratic_ions_to_use_per_protein = 10, 
+def run_lfq(input_file = None, input_df = None, output_path = None, columns_to_add = [], selected_proteins_file :str = None, mq_protein_groups_txt = None, min_nonan = 1, input_type_to_use = None, maximum_number_of_quadratic_ions_to_use_per_protein = 10, 
 number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deactivate_normalization = False, filter_dict = None, log_processed_proteins = True, protein_id = 'protein', quant_id = 'ion'
 ,compile_normalized_ion_table = True):
     """Run the directLFQ pipeline on a given input file. The input file is expected to contain ion intensities. The output is a table containing protein intensities.
@@ -43,18 +43,24 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
     config.check_wether_to_copy_numpy_arrays_derived_from_pandas()
 
     LOGGER.info("Starting directLFQ analysis.")
-    if input_df is None:
-        input_file = prepare_input_filename(input_file)
-        filter_dict = load_filter_dict_if_given_as_yaml(filter_dict)
-        input_file = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, input_type_to_use,mq_protein_groups_txt, columns_to_add)
-        input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use, filter_dict=filter_dict)
-    else:
+
+    filter_dict = load_filter_dict_if_given_as_yaml(filter_dict)
+
+    if (input_file is None and input_df is None) or (input_file is not None and input_df is not None):
+        raise ValueError("Please provide either an input file or a pandas dataframe, but not both.")
+
+    if input_df is not None:
         LOGGER.info("Using input_df directly.")
         input_df = lfqutils.sort_input_df_by_protein_id(input_df)
         input_df = lfqutils.remove_potential_quant_id_duplicates(input_df)
         input_df = lfqutils.index_and_log_transform_input_df(input_df)
         input_df = lfqutils.remove_allnan_rows_input_df(input_df)
-        
+
+    elif input_file is not None:
+        input_file = prepare_input_filename(input_file)
+        input_file = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, input_type_to_use,mq_protein_groups_txt, columns_to_add)
+        input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use, filter_dict=filter_dict)
+
     if not deactivate_normalization:
         LOGGER.info("Performing sample normalization.")
         input_df = lfqnorm.NormalizationManagerSamplesOnSelectedProteins(input_df, num_samples_quadratic=number_of_quadratic_samples, selected_proteins_file=selected_proteins_file).complete_dataframe
@@ -67,12 +73,23 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
         LOGGER.info("Could not add additional columns to protein table, printing without additional columns.")
     
     LOGGER.info("Writing results files.")
-    outfile_basename = get_outfile_basename(input_file, input_type_to_use, selected_proteins_file, deactivate_normalization,filename_suffix)
-    save_run_config(outfile_basename, locals())
-    save_protein_df(protein_df,outfile_basename)
+
+    if input_file is not None:
+        outfile_basename = get_outfile_basename(input_file, input_type_to_use, selected_proteins_file, deactivate_normalization,filename_suffix)
+    elif input_file is None and output_path is not None:
+        outfile_basename = "directLFQ_output"
+
+    if output_path is None:
+        save_run_config(outfile_basename, locals())
+        save_protein_df(protein_df,outfile_basename)
+        if config.COMPILE_NORMALIZED_ION_TABLE:
+            save_ion_df(ion_df, outfile_basename)
+    else:
+        save_run_config(outfile_basename, locals(), output_path = output_path)
+        save_protein_df(protein_df, outfile_basename, output_path = output_path)
+        if config.COMPILE_NORMALIZED_ION_TABLE:
+            save_ion_df(ion_df, outfile_basename, output_path = output_path)
     
-    if config.COMPILE_NORMALIZED_ION_TABLE:
-        save_ion_df(ion_df,outfile_basename)
     
     LOGGER.info("Analysis finished!")
 
@@ -97,14 +114,19 @@ def get_outfile_basename(input_file, input_type_to_use, selected_proteins_file, 
     outfile_basename += filename_suffix
     return outfile_basename
 
-def save_protein_df(protein_df, outfile_basename):
+def save_protein_df(protein_df, outfile_basename, output_path = None):
+    if output_path is not None:
+        outfile_basename = os.path.join(output_path, outfile_basename)
     protein_df.to_csv(f"{outfile_basename}.protein_intensities.tsv", sep = "\t", index = None)
 
-def save_ion_df(ion_df, outfile_basename):
+def save_ion_df(ion_df, outfile_basename, output_path = None):
+    if output_path is not None:
+        outfile_basename = os.path.join(output_path, outfile_basename)
     ion_df.to_csv(f"{outfile_basename}.ion_intensities.tsv", sep = "\t")
 
-
-def save_run_config(outfile_basename, kwargs):
+def save_run_config(outfile_basename, kwargs, output_path = None):
+    if output_path is not None:
+        outfile_basename = os.path.join(output_path, outfile_basename)
     simple_kwargs = {k: v for k, v in kwargs.items() if is_simple_data(v)}
     try:
         df_configs = pd.DataFrame.from_dict(simple_kwargs, orient='index', columns=['value'])

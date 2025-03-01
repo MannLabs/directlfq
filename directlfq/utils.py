@@ -572,6 +572,7 @@ def reformat_and_write_longtable_according_to_config(input_file, outfile_name, c
     """
     filesize = os.path.getsize(input_file)/(1024**3) #size in gigabyte
     file_is_large = (filesize>10 and str(input_file).endswith(".zip")) or filesize>50 or enforce_largefile_processing
+    print(f"enforce_largefile_processing is set to {enforce_largefile_processing}")
 
     if file_is_large:
         tmpfile_large = f"{input_file}.tmp.longformat.columnfilt.tsv" #only needed when file is large
