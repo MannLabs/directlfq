@@ -84,7 +84,6 @@ echo "All quantification chunks have been run"
 
 # Run python script to traverse all chunk directories and concatenate the protein tables
 python ./concatenate_protein_tables.py \
-    --output_dir "${output_dir}" \
-    --num_chunks "${num_tasks}"
+    --input_dir "${output_dir}"
 
 echo "All quantification chunks have been concatenated, output table written to ${output_dir}/protein_table.tsv"
