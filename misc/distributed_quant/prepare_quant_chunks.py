@@ -58,7 +58,7 @@ n_chunks = (num_proteins + args.chunk_size - 1) // args.chunk_size
 for i in range(n_chunks):
 
     # get the corresponding slice of the protein list
-    current_proteins = unique_proteins[i*args.chunk_size:(i+1)*args.chunk_size].to_list()
+    current_proteins = list(unique_proteins[i*args.chunk_size:(i+1)*args.chunk_size])
     
     # write the output config
     out_config = {
