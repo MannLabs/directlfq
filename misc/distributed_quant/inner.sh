@@ -12,6 +12,9 @@ if [[ -z "${output_dir:-}" ]]; then
     exit 1
 fi
 
+# Obtain the present working directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Navigate to chunk directory
 slurm_index=${SLURM_ARRAY_TASK_ID}
 chunk_directory="${output_dir}/chunk_${slurm_index}/"
@@ -29,8 +32,9 @@ if [[ ! -f "${config_filename}" ]]; then
     exit 1
 fi
 
-# run directlfq wrapper script
-python ./reshape_and_lfq.py --config "${config_filename}"
+# run directlfq wrapper script, which is in the same directory as this script
+python "${SCRIPT_DIR}/reshape_and_lfq.py" --config "${config_filename}"
+# python ./reshape_and_lfq.py --config "${config_filename}"
 
 echo "DirectLFQ completed successfully"
 
