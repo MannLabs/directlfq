@@ -6,14 +6,17 @@
 #SBATCH --time=2-00:00:00
 #SBATCH --output=./logs/%A_%a-%x-slurm.out
 
+# the script directory must be passed by the outer script
+if [[ -z "${script_dir:-}" ]]; then
+    echo "Error: script_dir is not set. Ensure it is passed via sbatch --export."
+    exit 1
+fi
+
 # output_dir is passed by the outer script
 if [[ -z "${output_dir:-}" ]]; then
     echo "Error: output_dir is not set. Ensure it is passed via sbatch --export."
     exit 1
 fi
-
-# Hard-coded for now, will break in other setting
-SCRIPT_DIR="/fs/home/brennsteiner/directlfq/3_file_test"
 
 # Navigate to chunk directory
 slurm_index=${SLURM_ARRAY_TASK_ID}
@@ -33,7 +36,7 @@ if [[ ! -f "${config_filename}" ]]; then
 fi
 
 # run directlfq wrapper script, which is in the same directory as this script
-python "${SCRIPT_DIR}/reshape_and_lfq.py" --config "${config_filename}"
+python "${script_dir}/reshape_and_lfq.py" --config "${config_filename}"
 # python ./reshape_and_lfq.py --config "${config_filename}"
 
 echo "DirectLFQ completed successfully"

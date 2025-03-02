@@ -72,7 +72,7 @@ sbatch --array=${slurm_array} \
     --ntasks-per-node=${ntasks_per_node} \
     --cpus-per-task=${cpus} \
     --mem=${mem} \
-    --export=ALL,output_dir=${output_dir} ./inner.sh
+    --export=ALL,output_dir=${output_dir},script_dir=$(pwd) ./inner.sh
 
 # Check if the job submission was successful
 if [[ $? -ne 0 ]]; then
