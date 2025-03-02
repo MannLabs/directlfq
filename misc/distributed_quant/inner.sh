@@ -12,8 +12,8 @@ if [[ -z "${output_dir:-}" ]]; then
     exit 1
 fi
 
-# Obtain the present working directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Hard-coded for now, will break in other setting
+SCRIPT_DIR="/fs/home/brennsteiner/directlfq/3_file_test"
 
 # Navigate to chunk directory
 slurm_index=${SLURM_ARRAY_TASK_ID}
