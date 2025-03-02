@@ -6,7 +6,8 @@ import os
 import gc
 import sys
 import yaml
-import directlfq
+import directlfq.utils
+import directlfq.lfq_manager
 
 # parse input parameters
 parser = argparse.ArgumentParser(
