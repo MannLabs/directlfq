@@ -53,7 +53,7 @@ df_sub_reshaped = df_sub_reshaped.reindex(columns=['protein', 'ion'] + all_sampl
 # Run the lfq manager with dataframe input
 directlfq.lfq_manager.run_lfq(
     input_df=df_sub_reshaped, 
-    outfile_path=results_dir, # the current chunk output directory
+    output_path=results_dir, # the current chunk output directory
     deactivate_normalization=True,
     compile_normalized_ion_table=False,
 )
