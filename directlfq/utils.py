@@ -827,7 +827,9 @@ import pathlib
 
 def get_input_type_and_config_dict(input_file, input_type_to_use = None):
     #parse the type of input (e.g. Spectronaut Fragion+MS1Iso) out of the input file
-
+    # verify that the input file exists
+    if not os.path.exists(input_file):
+        raise FileNotFoundError(f"File {input_file} not found!")
 
     config_dict = load_config(INTABLE_CONFIG)
     type2relevant_columns = get_type2relevant_cols(config_dict)
