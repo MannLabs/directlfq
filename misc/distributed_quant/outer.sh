@@ -53,7 +53,7 @@ mkdir -p "${output_dir}"
 num_tasks=$(python ./prepare_quant_chunks.py \
     --precursor_file "${precursor_file}" \
     --output_dir "${output_dir}" \
-    --chunk_size "${chunk_size}")
+    --chunk_size "${chunk_size}" | tail -n 1)
 
 # Check on num_tasks
 if ! [[ "$num_tasks" =~ ^[0-9]+$ ]]; then
