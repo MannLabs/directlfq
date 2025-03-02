@@ -74,7 +74,5 @@ for i in range(n_chunks):
     with open(os.path.join(args.output_dir,f"chunk_{i}/dist_lfq_config.yaml"), 'w') as file:
         yaml.dump(out_config, file)
 
-print(f"Generated {n_chunks} chunks in {args.output_dir}.")
-
 # Return the number of chunks, i.e. the number of tasks for the job scheduler
 print(n_chunks, flush=True)
