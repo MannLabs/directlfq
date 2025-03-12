@@ -35,7 +35,7 @@ classifiers = [
 
 [project.urls]
 
-"Paper preprint" = "https://www.biochem.mpg.de/mann"
+"Paper" = "https://doi.org/10.1016/j.mcpro.2023.100581"
 Repository = "https://github.com/MannLabs/directlfq"
 #Documentation = "https://readthedocs.org"
 #Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
