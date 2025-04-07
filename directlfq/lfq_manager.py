@@ -20,7 +20,7 @@ config.setup_logging()
 LOGGER = logging.getLogger(__name__)
 
 
-def run_lfq(input_file,  columns_to_add = [], selected_proteins_file :str = None, mq_protein_groups_txt = None, min_nonan = 1, input_type_to_use = None, maximum_number_of_quadratic_ions_to_use_per_protein = 10, 
+def run_lfq(input_file,  columns_to_add = [], selected_proteins_file :str = None, mq_protein_groups_txt = None, min_nonan = 1, input_type_to_use = None, maximum_number_of_quadratic_ions_to_use_per_protein = 10,
 number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deactivate_normalization = False, filter_dict = None, log_processed_proteins = True, protein_id = 'protein', quant_id = 'ion'
 ,compile_normalized_ion_table = True):
     """Run the directLFQ pipeline on a given input file. The input file is expected to contain ion intensities. The output is a table containing protein intensities.
@@ -47,30 +47,30 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
     input_file = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(input_file, input_type_to_use,mq_protein_groups_txt, columns_to_add)
     input_df = lfqutils.import_data(input_file=input_file, input_type_to_use=input_type_to_use, filter_dict=filter_dict)
 
-    input_df = lfqutils.sort_input_df_by_protein_id(input_df)
+    input_df = lfqutils.sort_input_df_by_protein_and_quant_id(input_df)
     input_df = lfqutils.remove_potential_quant_id_duplicates(input_df)
     input_df = lfqutils.index_and_log_transform_input_df(input_df)
     input_df = lfqutils.remove_allnan_rows_input_df(input_df)
-    
+
     if not deactivate_normalization:
         LOGGER.info("Performing sample normalization.")
         input_df = lfqnorm.NormalizationManagerSamplesOnSelectedProteins(input_df, num_samples_quadratic=number_of_quadratic_samples, selected_proteins_file=selected_proteins_file).complete_dataframe
-    
+
     LOGGER.info("Estimating lfq intensities.")
     protein_df, ion_df = lfqprot_estimation.estimate_protein_intensities(input_df,min_nonan=min_nonan,num_samples_quadratic=maximum_number_of_quadratic_ions_to_use_per_protein, num_cores = num_cores)
     try:
         protein_df = lfqutils.add_columns_to_lfq_results_table(protein_df, input_file, columns_to_add)
     except:
         LOGGER.info("Could not add additional columns to protein table, printing without additional columns.")
-    
+
     LOGGER.info("Writing results files.")
     outfile_basename = get_outfile_basename(input_file, input_type_to_use, selected_proteins_file, deactivate_normalization,filename_suffix)
     save_run_config(outfile_basename, locals())
     save_protein_df(protein_df,outfile_basename)
-    
+
     if config.COMPILE_NORMALIZED_ION_TABLE:
         save_ion_df(ion_df,outfile_basename)
-    
+
     LOGGER.info("Analysis finished!")
 
 def load_filter_dict_if_given_as_yaml(filter_dict):
