@@ -181,7 +181,7 @@ class ProtvalCutter():
             self._determine_nansorted_df_index()
 
     def _determine_nansorted_df_index(self):
-        """Sorts the dataframe index primarily by number of NaN values (ascending) and secondarily by summed intensity (descending).
+        """Sorts the dataframe index primarily by number of NaN values (ascending) and secondarily by summed intensity (descending). Sorting by intensties in case multiple ions have identical missing value counts. We expect initial sorting by ion name (which is done in the run_lfq module) to be deterministic.
 
         The sorting prioritizes:
         1. Rows with fewer NaN values come first
