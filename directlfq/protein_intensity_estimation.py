@@ -181,10 +181,16 @@ class ProtvalCutter():
             self._determine_nansorted_df_index()
 
     def _determine_nansorted_df_index(self):
+        """Sorts the dataframe index primarily by number of NaN values (ascending) and secondarily by summed intensity (descending).
+
+        The sorting prioritizes:
+        1. Rows with fewer NaN values come first
+        2. For rows with equal number of NaNs, higher intensity sums come first
+        """
         idxs = self._protvals_df.index
         self._sorted_idx = sorted(idxs, key=lambda idx: (
-            -np.nansum(self._protvals_df.loc[idx].to_numpy()),  # Sort by sum of intensities (descending)
-            self._get_num_nas_in_row(self._protvals_df.loc[idx].to_numpy())  # Then by number of NAs (ascending)
+            sum(np.isnan(self._protvals_df.loc[idx].to_numpy())),  # First by number of NaNs (ascending)
+            -np.nansum(self._protvals_df.loc[idx].to_numpy())      # Then by sum of intensities (descending)
         ))
 
     @staticmethod
