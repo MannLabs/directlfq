@@ -159,7 +159,7 @@ def _get_input_type(mq_file ,input_type_to_use):
         return input_type_to_use
     else:
         return get_input_type_and_config_dict(mq_file)[0]
-    
+
 
 def load_input_file_and_de_duplicate_if_evidence(input_file, input_type, columns_to_add):
     input_df = pd.read_csv(input_file, sep = "\t")
@@ -175,7 +175,7 @@ def load_input_file_and_de_duplicate_if_evidence(input_file, input_type, columns
 
     return input_df
 
-def create_id_to_protein_df(mq_protein_group_file, id_column):    
+def create_id_to_protein_df(mq_protein_group_file, id_column):
     id_mapping_df = pd.read_csv(mq_protein_group_file, sep = "\t", usecols=["Protein IDs", id_column])
     #apply lambda function to id column to split it into a list of ids
     id_mapping_df[id_column] = id_mapping_df[id_column].apply(lambda x: x.split(";"))
@@ -225,7 +225,7 @@ def add_columns_to_lfq_results_table(lfq_results_df, input_file, columns_to_add)
 
     lfq_results_df = lfq_results_df[[x is not None for x in lfq_results_df[config.PROTEIN_ID]]]
     if (len(columns_to_add) == 0) and (len(standard_columns_for_input_type)==0) :
-        return lfq_results_df 
+        return lfq_results_df
     input_df = pd.read_csv(input_file, sep="\t", usecols=all_columns).drop_duplicates(subset=protein_column_input_table)
 
     length_before = len(lfq_results_df.index)
@@ -233,7 +233,7 @@ def add_columns_to_lfq_results_table(lfq_results_df, input_file, columns_to_add)
     length_after = len(lfq_results_df_appended.index)
 
     #lfq_results_df_appended = lfq_results_df_appended.set_index(config.PROTEIN_ID)
-    
+
 
     assert length_before == length_after
     return lfq_results_df_appended
@@ -247,7 +247,7 @@ def get_protein_column_input_table(config_dict):
     return config_dict["protein_cols"][0]
 
 def get_standard_columns_for_input_type(input_type):
-    
+
     if 'maxquant' in input_type:
         return ["Gene names"]
     elif 'diann' in input_type:
@@ -303,11 +303,11 @@ def remove_potential_quant_id_duplicates(data_df : pd.DataFrame):
     return data_df
 
 
-def sort_input_df_by_protein_id(data_df):
-    return data_df.sort_values(by = config.PROTEIN_ID,ignore_index=True)
+def sort_input_df_by_protein_and_quant_id(data_df):
+     return data_df.sort_values(by=[config.PROTEIN_ID, config.QUANT_ID], ignore_index=True)
 
 
-    
+
 
 # %% ../nbdev_nbs/04_utils.ipynb 29
 import yaml
@@ -427,7 +427,7 @@ def merge_protein_and_ion_cols(input_df, config_dict):
 import copy
 def merge_protein_cols_and_ion_dict(input_df, config_dict):
     """[summary]
-    
+
     Args:
         input_df ([pandas dataframe]): longtable containing peptide intensity data
         confid_dict ([dict[String[]]]): nested dict containing the parse information. derived from yaml file
@@ -581,7 +581,7 @@ def reformat_and_write_longtable_according_to_config(input_file, outfile_name, c
             os.remove(tmpfile_large)
         if os.path.exists(outfile_name):
             os.remove(outfile_name)
-    
+
     relevant_cols = get_relevant_columns_config_dict(config_dict_for_type)
     input_df_it = utils_fileread.read_file_with_pandas(input_file=input_file, sep=sep, decimal=decimal, usecols=relevant_cols, chunksize=chunksize)
     input_df_list = []
@@ -593,14 +593,14 @@ def reformat_and_write_longtable_according_to_config(input_file, outfile_name, c
         else:
             input_df_list.append(input_df_subset)
         header = False
-        
+
     if file_is_large and HAS_DASK:
         process_with_dask(tmpfile_columnfilt=tmpfile_large , outfile_name = outfile_name, config_dict_for_type=config_dict_for_type)
     else:
         input_df = pd.concat(input_df_list)
         input_reshaped = reshape_input_df(input_df, config_dict_for_type)
         input_reshaped.to_csv(outfile_name, sep = "\t", index = None)
-    
+
 
 def adapt_subtable(input_df_subset, config_dict):
     input_df_subset = filter_input(config_dict.get("filters", {}), input_df_subset)
@@ -613,7 +613,7 @@ def adapt_subtable(input_df_subset, config_dict):
 import pandas as pd
 import glob
 import os
-import shutil 
+import shutil
 
 def process_with_dask(*, tmpfile_columnfilt, outfile_name, config_dict_for_type):
     df = dd.read_csv(tmpfile_columnfilt, sep = "\t")
@@ -718,7 +718,7 @@ def merge_sample_id_and_channels(input_df, channels, config_dict_for_type):
     sample_ids = list(input_df[sample_id])
     input_df[sample_id] = [merge_channel_and_sample_string(sample_ids[idx], channels[idx]) for idx in range(len(sample_ids))]
     return input_df
-            
+
 def merge_channel_and_sample_string(sample, channel):
     return f"{sample}_{channel}"
 
@@ -738,7 +738,7 @@ def reformat_and_write_wideformat_table(peptides_tsv, outfile_name, config_dict)
         input_df = input_df.rename(columns = lambda x : x.replace(quant_pre_or_suffix, ""))
 
     #input_df = input_df.reset_index()
-    
+
     input_df.to_csv(outfile_name, sep = '\t', index = None)
 
 
@@ -776,7 +776,7 @@ def import_data(input_file, input_type_to_use = None, samples_subset = None, fil
         file_to_read = input_file
     else:
         file_to_read = reformat_and_save_input_file(input_file=input_file, input_type_to_use=input_type_to_use, filter_dict=filter_dict)
-    
+
     input_reshaped = pd.read_csv(file_to_read, sep = "\t", encoding = 'latin1', usecols=samples_subset)
     input_reshaped = adapt_table_for_alphabaseformat_backward_compatibility(file_is_already_formatted, input_reshaped)
     input_reshaped = input_reshaped.drop_duplicates(subset=config.QUANT_ID)
@@ -791,7 +791,7 @@ def add_ion_protein_headers_if_applicable(samples_subset):
 
 
 def reformat_and_save_input_file(input_file, input_type_to_use = None, filter_dict = None):
-    
+
     input_type, config_dict_for_type, sep = get_input_type_and_config_dict(input_file, input_type_to_use)
 
     if filter_dict is not None:
@@ -911,20 +911,20 @@ class LongTableReformater():
     def reformat_and_load_acquisition_data_frame(self):
 
         input_df_it = self._iterator_function()
-        
+
         input_df_list = []
         for input_df_subset in input_df_it:
             input_df_subset = self._reformatting_function(input_df_subset)
             input_df_list.append(input_df_subset)
         input_df = pd.concat(input_df_list)
-        
+
         return input_df
 
     def reformat_and_save_acquisition_data_frame(self, output_file):
-        
+
         input_df_it = self._iterator_function()
         write_header = True
-        
+
         for input_df_subset in input_df_it:
             input_df_subset = self._reformatting_function(input_df_subset)
             self.__write_reformatted_df_to_file__(input_df_subset, output_file, write_header)
@@ -932,7 +932,7 @@ class LongTableReformater():
 
     def __initialize_df_iterator__(self):
         return pd.read_csv(self._input_file, sep = "\t", encoding ='latin1', chunksize=1000000)
-    
+
     @staticmethod
     def __write_reformatted_df_to_file__(reformatted_df, filepath ,write_header):
         reformatted_df.to_csv(filepath, header=write_header, mode='a', sep = "\t", index = None)
