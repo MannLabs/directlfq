@@ -89,7 +89,7 @@ In newer MacOS versions, additional steps are required to enable installation of
 This is indicated by a dialog telling you `“directlfq. ... .pkg” Not Opened`.
 1. Close this dialog by clicking `Done`.
 2. Choose `Apple menu` > `System Settings`, then `Privacy & Security` in the sidebar. (You may need to scroll down.)
-3. Go to `Security`, locate the line "alphadia.pkg was blocked to protect your Mac" then click `Open Anyway`.
+3. Go to `Security`, locate the line "directlfq.pkg was blocked to protect your Mac" then click `Open Anyway`.
 4. In the dialog windows, click `Open Anyway`.
 
 Older releases remain available on the [release
