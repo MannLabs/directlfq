@@ -1,43 +1,53 @@
 
+
+[![Default installation and tests](https://github.com/MannLabs/directlfq/actions/workflows/pip_installation.yml/badge.svg)](https://github.com/MannLabs/directlfq/actions/workflows/pip_installation.yml)
+[![Publish on PyPi and release on GitHub](https://github.com/MannLabs/directlfq/actions/workflows/publish_on_pypi.yml/badge.svg)](https://github.com/MannLabs/directlfq/actions/workflows/publish_and_release.yml)
+[![Documentation Status](https://readthedocs.org/projects/directlfq/badge/?version=latest)](https://directlfq.readthedocs.io/en/latest/?badge=latest)
+[![pypi](https://img.shields.io/pypi/v/directlfq)](https://pypi.org/project/directlfq)
+[![GitHub release](https://img.shields.io/github/v/release/mannlabs/directlfq?display_name=tag)](https://github.com/MannLabs/directlfq/releases)
+[![GitHub downloads](https://img.shields.io/github/downloads/mannlabs/directlfq/total?label=github%20downloads)](https://github.com/MannLabs/directlfq/releases)
+[![Downloads@pre-train-models](https://img.shields.io/github/downloads/mannlabs/directlfq/pre-trained-models/total)](https://github.com/MannLabs/directlfq/releases/tag/pre-trained-models)
+[![pip downloads](https://img.shields.io/pypi/dm/directlfq?color=blue&label=pip%20downloads)](https://pypi.org/project/directlfq)
+![Python](https://img.shields.io/pypi/pyversions/directlfq)
+
 <!-- ![Pip installation](https://github.com/MannLabs/directlfq/workflows/Default%20installation%20and%20tests/badge.svg) -->
 ![Unit tests](https://github.com/MannLabs/directlfq/actions/workflows/nbdev_tests.yml/badge.svg)
 ![System tests](https://github.com/MannLabs/directlfq/actions/workflows/quick_tests.yml/badge.svg)
+
 
 <!-- [![Downloads](https://pepy.tech/badge/directlfq)](https://pepy.tech/project/directlfq)
 [![Downloads](https://pepy.tech/badge/directlfq/month)](https://pepy.tech/project/directlfq)
 [![Downloads](https://pepy.tech/badge/directlfq/week)](https://pepy.tech/project/directlfq) -->
 
 
-
 # directLFQ
+
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <img src="release/logos/alpha_logo.png" alt="Logo" width="80" height="80">
+
+  <h3 align="center">directlfq</h3>
+
+  <p align="center">
+    <a href="https://doi.org/10.1016/j.mcpro.2023.100581">Publication</a>
+    ·
+    <a href="https://github.com/Mannlabs/directlfq/releases/latest">Download</a>
+    ·
+    <a href="#installation">Installation</a>
+    <!--·
+    <a href="#usage">Usage</a>-->
+    ·
+    <a href="https://alphapept.org">alphapept.org</a>
+
+  </p>
+</div>
+
 directLFQ is an open-source Python package for quantifying protein intensities based on peptide intensities or fragment-ion intensities measured with from Mass Spectrometry-based proteomics. It preserves peptide ratios, shows very accurate quantification and has a robust normalization approach. Furthermore, it allows fast processing also of very large sample cohorts, as runtime increases linearly with sample number. It is part of the AlphaPept ecosystem from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/).
 
 You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/MannLabs/alphapept), MaxQuant, FragPipe, Spectronaut and DIANN as well as [generic formats](#generic-input-format), using a Graphical User Interface (GUI) or the python package.
 
 
-- [directLFQ](#directlfq)
-  - [About](#about)
-  - [Installation](#installation)
-    - [One-click GUI](#one-click-gui)
-    - [Pip](#pip)
-    - [Developer](#developer)
-  - [Running directLFQ](#running-directlfq)
-    - [GUI](#gui)
-    - [CLI](#cli)
-    - [Python and Jupyter notebooks](#python-and-jupyter-notebooks)
-  - [Troubleshooting](#troubleshooting)
-  - [Citations](#citations)
-  - [How to contribute](#how-to-contribute)
-  - [License](#license)
-  - [directLFQ commands](#directlfq-commands)
-  - [directLFQ output](#directlfq-output)
-  - [preparing input files](#preparing-input-files)
-    - [Spectronaut](#spectronaut)
-    - [DIA-NN](#dia-nn)
-    - [MaxQuant](#maxquant)
-    - [FragPipe](#fragpipe)
-    - [generic input format](#generic-input-format)
-  - [reproducing data analyses from the paper](#reproducing-data-analyses-from-the-paper)
 
 ---
 ## About
@@ -45,6 +55,8 @@ Generating protein intensities from Mass Spectrometry proteomics data comes with
 With directLFQ, we provide a novel algorithm for addressing these challenges in an efficient and accurate manner. directLFQ retains peptide ratios and uses them to infer protein ratios and uses the concept of *intensity traces* for it's main processing steps. For futher details on the algorithm, please refer to the [preprint](https://doi.org/10.1101/2023.02.17.528962).
 
 ![](./release/images/methods_figure.png)
+
+Visit [alphapept.org](https://alphapept.org) for other packages of AlphaPept ecosystem.
 
 ---
 ## Installation
@@ -55,7 +67,7 @@ There are currently two different types of installation possible:
 * [**One-click GUI installation:**](#one-click-gui-installation) Choose this installation if you only want the GUI and/or keep things as simple as possible.
 * [**Pip installation:**](#pip-installation) Choose this installation if you want to use directlfq as a Python package in an existing Python 3.9 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
 * [**Developer installation:**](#developer-installation) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of directlfq and even allows to modify its source code directly. Generally, the developer version of directlfq outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
-- [**Docker installation:**](#docker-installation) Choose this installation if you want to use directlfq without any changes to your system.
+* [**Docker installation:**](#docker-installation) Choose this installation if you want to use directlfq without any changes to your system.
 
 ### One-click GUI installation
 
@@ -222,13 +234,6 @@ In case of issues, check out the following:
 * [Issues](https://github.com/MannLabs/directlfq/issues): Try a few different search terms to find out if a similar problem has been encountered before
 * [Discussions](https://github.com/MannLabs/directlfq/discussions): Check if your problem or feature requests has been discussed before.
 
----
-## Citations
-
-In the case that directLFQ is useful to you, please consider supporting us by citing the [paper](https://doi.org/10.1016/j.mcpro.2023.100581)
-
-Ammar, C., Schessner, J.P., Willems, S., Michaelis, A.C., and Mann, M. (2023). Accurate label-free quantification by directLFQ to compare unlimited numbers of proteomes.  Molecular & Cellular Proteomics, 100581.
-
 
 
 ---
@@ -248,11 +253,6 @@ This package uses a shared release process defined in the
 [alphashared](https://github.com/MannLabs/alphashared) repository. Please see the instructions
 [there](https://github.com/MannLabs/alphashared/blob/reusable-release-workflow/.github/workflows/README.md#release-a-new-version)
 
----
-
-## License
-
-directLFQ was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/) and is freely available with an [Apache License](LICENSE.txt). External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
 
 ---
 
@@ -324,3 +324,19 @@ If you want to reproduce data analyses presented in the [manuscript](#citations)
 python tests/download_testfiles.py all_tests
 ```
 This will download the underlying datasets into the appropriate location. The notebooks carrying out the analyses themselves are located in the tests directory in the respective subfolders ratio_tests, normalization_tests, runtime_tests and organellar_maps.
+
+---
+
+## Publication
+
+In the case that directLFQ is useful to you, please consider supporting us by citing the [paper](https://doi.org/10.1016/j.mcpro.2023.100581)
+
+> **Accurate label-free quantification by directLFQ to compare unlimited numbers of proteomes.**
+> Ammar, C., Schessner, J.P., Willems, S., Michaelis, A.C., and Mann, M. (2023). 
+> Molecular & Cellular Proteomics, 100581. doi: [10.1016/j.mcpro.2023.100581](https://doi.org/10.1016/j.mcpro.2023.100581)
+
+---
+
+## License
+
+directLFQ was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/) and is freely available with an [Apache License](LICENSE.txt). External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
