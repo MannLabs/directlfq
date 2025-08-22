@@ -58,7 +58,7 @@ Visit [alphapept.org](https://alphapept.org) for other packages of AlphaPept eco
 ## Installation
 
 directLFQ can be installed and used on all major operating systems (Windows, macOS and Linux).
-There are currently two different types of installation possible:
+There are different types of installation possible:
 
 * [**One-click GUI installation:**](#one-click-gui-installation) Choose this installation if you only want the GUI and/or keep things as simple as possible.
 * [**Pip installation:**](#pip-installation) Choose this installation if you want to use directlfq as a Python package in an existing Python 3.9 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
@@ -189,15 +189,15 @@ Set up your data to match the expected folder structure:
 create a folder and store its name in a variable, and specify a port
 ```
 DATA_FOLDER=/home/username/data; mkdir -p $DATA_FOLDER
-PORT=41215
+PORT=5006
 ```
 
 #### 3. Start the container
 ```bash
-docker run -v $DATA_FOLDER:/app/data -p $PORT:41215 mannlabs/directlfq:latest
+docker run -v $DATA_FOLDER:/app/data -p $PORT:5006 mannlabs/directlfq:latest
 ```
 After initial download of the container, directlfq will start running immediately,
-and can be accessed under [localhost:$PORT](http://localhost:41215).
+and can be accessed under [localhost:$PORT](http://localhost:5006).
 
 Note: in the app, the local `$DATA_FOLDER` needs to be referred to as "`/app/data`".
 
@@ -208,7 +208,7 @@ docker build -t directlfq .
 ```
 and run it with
 ```bash
-docker run -p $PORT:8501 -v $DATA_FOLDER:/app/data -t directlfq
+docker run -p $PORT:5006 -v $DATA_FOLDER:/app/data -t directlfq
 ```
 
 ---

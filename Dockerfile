@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM python:3.10-bookworm
+FROM --platform=linux/amd64 python:3.10-bookworm
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -22,13 +22,13 @@ COPY pyproject.toml pyproject.toml
 
 RUN pip install --no-cache-dir ".[stable,gui-stable]"
 
-ENV PORT=41215
-EXPOSE 41215
+ENV PORT=5006
+EXPOSE 5006
 
-# to allow other host ports than 41215
+# to allow other host ports than 5006
 ENV BOKEH_ALLOW_WS_ORIGIN=localhost
 
-CMD ["/usr/local/bin/directlfq", "gui", "--port", "41215"]
+CMD ["/usr/local/bin/directlfq", "gui", "--port", "5006"]
 
 # build & run:
 # docker build --progress=plain -t directlfq .
