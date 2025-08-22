@@ -1,15 +1,10 @@
 
 
-[![Default installation and tests](https://github.com/MannLabs/directlfq/actions/workflows/pip_installation.yml/badge.svg)](https://github.com/MannLabs/directlfq/actions/workflows/pip_installation.yml)
 [![Publish on PyPi and release on GitHub](https://github.com/MannLabs/directlfq/actions/workflows/publish_on_pypi.yml/badge.svg)](https://github.com/MannLabs/directlfq/actions/workflows/publish_and_release.yml)
-[![Documentation Status](https://readthedocs.org/projects/directlfq/badge/?version=latest)](https://directlfq.readthedocs.io/en/latest/?badge=latest)
 [![pypi](https://img.shields.io/pypi/v/directlfq)](https://pypi.org/project/directlfq)
 [![GitHub release](https://img.shields.io/github/v/release/mannlabs/directlfq?display_name=tag)](https://github.com/MannLabs/directlfq/releases)
 [![GitHub downloads](https://img.shields.io/github/downloads/mannlabs/directlfq/total?label=github%20downloads)](https://github.com/MannLabs/directlfq/releases)
-[![Downloads@pre-train-models](https://img.shields.io/github/downloads/mannlabs/directlfq/pre-trained-models/total)](https://github.com/MannLabs/directlfq/releases/tag/pre-trained-models)
-[![pip downloads](https://img.shields.io/pypi/dm/directlfq?color=blue&label=pip%20downloads)](https://pypi.org/project/directlfq)
 ![Python](https://img.shields.io/pypi/pyversions/directlfq)
-
 <!-- ![Pip installation](https://github.com/MannLabs/directlfq/workflows/Default%20installation%20and%20tests/badge.svg) -->
 ![Unit tests](https://github.com/MannLabs/directlfq/actions/workflows/nbdev_tests.yml/badge.svg)
 ![System tests](https://github.com/MannLabs/directlfq/actions/workflows/quick_tests.yml/badge.svg)
