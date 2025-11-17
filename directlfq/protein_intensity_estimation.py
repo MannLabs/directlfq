@@ -122,7 +122,7 @@ def calculate_peptide_and_protein_intensities(idx, peptide_intensity_df, num_sam
     if len(peptide_intensity_df.index) > 1:
         peptide_intensity_df = ProtvalCutter(peptide_intensity_df, maximum_df_length=100).get_dataframe()
 
-    if config.LOG_PROCESSED_PROTEINS and (idx%LOG_PROCESSED_PROTEINS_PERIOD == 0):
+    if config.LOG_PROCESSED_PROTEINS and (idx%config.LOG_PROCESSED_PROTEINS_PERIOD == 0):
         LOGGER.info(f"lfq-object {idx}")
     summed_pepint = np.nansum(2**peptide_intensity_df)
 
