@@ -52,19 +52,18 @@ With directLFQ, we provide a novel algorithm for addressing these challenges in 
 directLFQ can be installed and used on all major operating systems (Windows, macOS and Linux).
 There are currently two different types of installation possible:
 
-* [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the GUI and/or keep things as simple as possible.
-<!---
-* [**Pip installer:**](#pip) Choose this installation if you want to use directlfq as a Python package in an existing Python 3.9 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
--->
-* [**Developer installer:**](#developer) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of directlfq and even allows to modify its source code directly. Generally, the developer version of directlfq outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
+* [**One-click GUI installation:**](#one-click-gui-installation) Choose this installation if you only want the GUI and/or keep things as simple as possible.
+* [**Pip installation:**](#pip-installation) Choose this installation if you want to use directlfq as a Python package in an existing Python 3.9 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
+* [**Developer installation:**](#developer-installation) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of directlfq and even allows to modify its source code directly. Generally, the developer version of directlfq outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
+- [**Docker installation:**](#docker-installation) Choose this installation if you want to use directlfq without any changes to your system.
 
-### One-click GUI
+### One-click GUI installation
 
 The GUI of directlfq is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click [**here**](https://github.com/MannLabs/directlfq/releases/latest/) to download the latest release for either Windows, macOS or Linux.
 
 Older releases remain available on the [release page](https://github.com/MannLabs/directlfq/releases), but no backwards compatibility is guaranteed.
 
-### Pip
+### Pip installation
 
 directLFQ can be installed in an existing Python 3.9 environment with a single `bash` command.
 
@@ -93,7 +92,7 @@ For those who are really adventurous, it is also possible to directly install an
 pip install "git+https://github.com/MannLabs/directlfq.git@development#egg=directlfq[stable,development]"
 ```
 
-### Developer
+### Developer installation
 
 directlfq can also be installed in editable (i.e. developer) mode with a few `bash` commands. This allows to fully customize the software and even modify the source code to your specific needs. When an editable Python package is installed, its source code is stored in a transparent location of your choice. While optional, it is advised to first (create and) navigate to e.g. a general software folder:
 
@@ -127,7 +126,42 @@ By default this installs loose dependencies (no explicit versioning), although i
 
 ***By using the editable flag `-e`, all modifications to the [directlfq source code folder](directlfq) are directly reflected when running directlfq. Note that the directlfq folder cannot be moved and/or renamed if an editable version is installed. In case of confusion, you can always retrieve the location of any Python module with e.g. the command `import module` followed by `module.__file__`.***
 
+
+### Docker installation
+The containerized version can be used to run directlfq without any installation to your system.
+
+#### 1. Setting up Docker
+Install the latest version of docker (https://docs.docker.com/engine/install/).
+
+#### 2. Prepare folder structure
+Set up your data to match the expected folder structure:
+create a folder and store its name in a variable, and specify a port
+```
+DATA_FOLDER=/home/username/data; mkdir -p $DATA_FOLDER
+PORT=41215
+```
+
+#### 3. Start the container
+```bash
+docker run -v $DATA_FOLDER:/app/data -p $PORT:41215 mannlabs/directlfq:latest
+```
+After initial download of the container, directlfq will start running immediately,
+and can be accessed under [localhost:$PORT](http://localhost:41215).
+
+Note: in the app, the local `$DATA_FOLDER` needs to be referred to as "`/app/data`".
+
+#### Alternatively: Build the image yourself
+If you want to build the image yourself, you can do so by
+```bash
+docker build -t directlfq .
+```
+and run it with
+```bash
+docker run -p $PORT:8501 -v $DATA_FOLDER:/app/data -t directlfq
+```
+
 ---
+
 ## Running directLFQ
 
 There are three ways to use directlfq:
