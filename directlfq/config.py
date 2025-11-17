@@ -8,10 +8,12 @@ def setup_logging():
 setup_logging()
 ##########################
 LOG_PROCESSED_PROTEINS = True
+LOG_PROCESSED_PROTEINS_PERIOD = 100
 
-def set_log_processed_proteins(log_processed_proteins = True):
-    global LOG_PROCESSED_PROTEINS
+def set_log_processed_proteins(log_processed_proteins: bool = True, period: int = 100) -> None:
+    global LOG_PROCESSED_PROTEINS, LOG_PROCESSED_PROTEINS_PERIOD
     LOG_PROCESSED_PROTEINS = log_processed_proteins
+    LOG_PROCESSED_PROTEINS_PERIOD = period
 
 
 ##########################
