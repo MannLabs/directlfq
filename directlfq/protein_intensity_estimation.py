@@ -117,10 +117,6 @@ def get_configured_multiprocessing_pool(num_cores):
     LOGGER.info(f"using {pool._processes} processes")
     return pool
 
-def calculate_peptide_and_protein_intensities_from_list_of_peptide_intensity_dfs(idx, list_of_peptide_intensity_dfs, num_samples_quadratic, min_nonan):
-    for peptide_intensity_df in list_of_peptide_intensity_dfs:
-        calculate_peptide_and_protein_intensities
-
 
 def calculate_peptide_and_protein_intensities(idx, peptide_intensity_df, num_samples_quadratic, min_nonan):
     if len(peptide_intensity_df.index) > 1:
