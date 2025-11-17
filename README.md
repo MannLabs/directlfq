@@ -1,4 +1,10 @@
 
+
+[![Publish on PyPi and release on GitHub](https://github.com/MannLabs/directlfq/actions/workflows/publish_on_pypi.yml/badge.svg)](https://github.com/MannLabs/directlfq/actions/workflows/publish_and_release.yml)
+[![pypi](https://img.shields.io/pypi/v/directlfq)](https://pypi.org/project/directlfq)
+[![GitHub release](https://img.shields.io/github/v/release/mannlabs/directlfq?display_name=tag)](https://github.com/MannLabs/directlfq/releases)
+[![GitHub downloads](https://img.shields.io/github/downloads/mannlabs/directlfq/total?label=github%20downloads)](https://github.com/MannLabs/directlfq/releases)
+![Python](https://img.shields.io/pypi/pyversions/directlfq)
 <!-- ![Pip installation](https://github.com/MannLabs/directlfq/workflows/Default%20installation%20and%20tests/badge.svg) -->
 ![Unit tests](https://github.com/MannLabs/directlfq/actions/workflows/nbdev_tests.yml/badge.svg)
 ![System tests](https://github.com/MannLabs/directlfq/actions/workflows/quick_tests.yml/badge.svg)
@@ -7,124 +13,169 @@
 [![Downloads](https://pepy.tech/badge/directlfq/month)](https://pepy.tech/project/directlfq)
 [![Downloads](https://pepy.tech/badge/directlfq/week)](https://pepy.tech/project/directlfq) -->
 
-
-
 # directLFQ
+
+
+---
+
+
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <img src="release/logos/alpha_logo.png" alt="Logo" width="80" height="80">
+
+  <h3 align="center">directlfq</h3>
+
+  <p align="center">
+    <a href="https://doi.org/10.1016/j.mcpro.2023.100581">Publication</a>
+    ·
+    <a href="https://github.com/Mannlabs/directlfq/releases/latest">Download</a>
+    ·
+    <a href="#installation">Installation</a>
+    <!--·
+    <a href="#usage">Usage</a>-->
+    ·
+    <a href="https://alphapept.org">alphapept.org</a>
+
+  </p>
+</div>
+
 directLFQ is an open-source Python package for quantifying protein intensities based on peptide intensities or fragment-ion intensities measured with from Mass Spectrometry-based proteomics. It preserves peptide ratios, shows very accurate quantification and has a robust normalization approach. Furthermore, it allows fast processing also of very large sample cohorts, as runtime increases linearly with sample number. It is part of the AlphaPept ecosystem from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/).
 
 You can process DIA and DDA data analyzed by [AlphaPept](https://github.com/MannLabs/alphapept), MaxQuant, FragPipe, Spectronaut and DIANN as well as [generic formats](#generic-input-format), using a Graphical User Interface (GUI) or the python package.
 
-
-- [directLFQ](#directlfq)
-  - [About](#about)
-  - [Installation](#installation)
-    - [One-click GUI](#one-click-gui)
-    - [Pip](#pip)
-    - [Developer](#developer)
-  - [Running directLFQ](#running-directlfq)
-    - [GUI](#gui)
-    - [CLI](#cli)
-    - [Python and Jupyter notebooks](#python-and-jupyter-notebooks)
-  - [Troubleshooting](#troubleshooting)
-  - [Citations](#citations)
-  - [How to contribute](#how-to-contribute)
-  - [License](#license)
-  - [directLFQ commands](#directlfq-commands)
-  - [directLFQ output](#directlfq-output)
-  - [preparing input files](#preparing-input-files)
-    - [Spectronaut](#spectronaut)
-    - [DIA-NN](#dia-nn)
-    - [MaxQuant](#maxquant)
-    - [FragPipe](#fragpipe)
-    - [generic input format](#generic-input-format)
-  - [reproducing data analyses from the paper](#reproducing-data-analyses-from-the-paper)
-
 ---
+
 ## About
 Generating protein intensities from Mass Spectrometry proteomics data comes with a variety of challenges. Differing peptides that belong to the same protein can have strongly differing intensities, for example due to differing ionization efficiencies. Missing values (i.e. peptides that have been detected in one run but not in the other) make simple summarization of peptide intensities to protein intensities problematic. Differences in sample loading can introduce systematic biases into the analysis.
 With directLFQ, we provide a novel algorithm for addressing these challenges in an efficient and accurate manner. directLFQ retains peptide ratios and uses them to infer protein ratios and uses the concept of *intensity traces* for it's main processing steps. For futher details on the algorithm, please refer to the [preprint](https://doi.org/10.1101/2023.02.17.528962).
 
 ![](./release/images/methods_figure.png)
 
+Visit [alphapept.org](https://alphapept.org) for other packages of AlphaPept ecosystem.
+
 ---
 ## Installation
 
 directLFQ can be installed and used on all major operating systems (Windows, macOS and Linux).
-There are currently two different types of installation possible:
+There are different types of installation possible:
 
 * [**One-click GUI installation:**](#one-click-gui-installation) Choose this installation if you only want the GUI and/or keep things as simple as possible.
 * [**Pip installation:**](#pip-installation) Choose this installation if you want to use directlfq as a Python package in an existing Python 3.9 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
 * [**Developer installation:**](#developer-installation) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of directlfq and even allows to modify its source code directly. Generally, the developer version of directlfq outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
-- [**Docker installation:**](#docker-installation) Choose this installation if you want to use directlfq without any changes to your system.
+* [**Docker installation:**](#docker-installation) Choose this installation if you want to use directlfq without any changes to your system.
 
 ### One-click GUI installation
 
-The GUI of directlfq is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click [**here**](https://github.com/MannLabs/directlfq/releases/latest/) to download the latest release for either Windows, macOS or Linux.
+The GUI of directlfq is a completely stand-alone tool that requires no
+knowledge of Python or CLI tools.
 
-Older releases remain available on the [release page](https://github.com/MannLabs/directlfq/releases), but no backwards compatibility is guaranteed.
+You can download the latest release of directlfq [here](https://github.com/Mannlabs/directlfq/releases/latest).
+
+#### Windows
+Download the latest `directlfq-X.Y.Z-windows-amd64.exe ` build and double click it to install. If you receive a warning during installation click *Run anyway*.
+Important note: always install directlfq into a new folder, as the installer will not properly overwrite existing installations.
+
+#### Linux
+Download the latest `directlfq-X.Y.Z-linux-x64.deb` build and install it via `dpkg -i directlfq-X.Y.Z-linux-x64.deb`.
+
+#### MacOS
+Download the latest build suitable for your chip architecture
+(can be looked up by clicking on the Apple Symbol > *About this Mac* > *Chip* ("M1", "M2", "M3" -> `arm64`, "Intel" -> `x64`),
+`directlfq-X.Y.Z-macos-darwin-arm64.pkg ` or ` directlfq-X.Y.Z-macos-darwin-x64.pkg`. Open the parent folder of the downloaded file in Finder,
+right-click and select *open*. If you receive a warning during installation click *Open*.
+
+In newer MacOS versions, additional steps are required to enable installation of unverified software.
+This is indicated by a dialog telling you `“directlfq. ... .pkg” Not Opened`.
+1. Close this dialog by clicking `Done`.
+2. Choose `Apple menu` > `System Settings`, then `Privacy & Security` in the sidebar. (You may need to scroll down.)
+3. Go to `Security`, locate the line "directlfq.pkg was blocked to protect your Mac" then click `Open Anyway`.
+4. In the dialog windows, click `Open Anyway`.
+
+Older releases remain available on the [release
+page](https://github.com/MannLabs/directlfq/releases), but no
+backwards compatibility is guaranteed.
+
 
 ### Pip installation
 
-directLFQ can be installed in an existing Python 3.9 environment with a single `bash` command.
+directlfq can be installed in an existing Python environment with a
+single `bash` command. *This `bash` command can also be run directly
+from within a Jupyter notebook by prepending it with a `!`*:
 
 ```bash
 pip install "directlfq[dask]"
 ```
 
-This installs the core directLFQ without graphical user interface (GUI). If you want to install with additional dependencies for GUI support, you can do this with:
+Installing directlfq like this avoids conflicts when integrating it in
+other tools, as this does not enforce strict versioning of dependencies.
+However, if new versions of dependencies are released, they are not
+guaranteed to be fully compatible with directlfq. This should only occur
+in rare cases where dependencies are not backwards compatible.
 
-```bash
-pip install "directlfq[gui,dask]"
+You can always force directlfq to use dependency versions
+which are known to be compatible with:
+
+``` bash
+pip install "directlfq[stable,dask-stable]"
 ```
 
-For installation with stable dependencies, use:
+It is also possible to directly install any branch (e.g. `some-branch`) from GitHub with
+``` bash
+pip install "git+https://github.com/MannLabs/directlfq.git@some-branch#egg=directlfq[stable,development-stable]"
+```
 
-```bash
+The GUI version can be installed with
+``` bash
+pip install "directlfq[gui,dask]"
+```
+or
+``` bash
 pip install "directlfq[stable,gui-stable,dask-stable]"
 ```
 
-NOTE: You might need to run `pip install pip==21.0` before installing directlfq like this. Also note the double quotes `"`.
 Note: The 'dask' extra can be omitted for slimmer dependencies, but this comes with a performance penalty for large datasets.
-
-For those who are really adventurous, it is also possible to directly install any branch (e.g. `@development`) with any extras (e.g. `#egg=directlfq[stable,development]`) from GitHub with e.g.
-
-```bash
-pip install "git+https://github.com/MannLabs/directlfq.git@development#egg=directlfq[stable,development]"
-```
 
 ### Developer installation
 
-directlfq can also be installed in editable (i.e. developer) mode with a few `bash` commands. This allows to fully customize the software and even modify the source code to your specific needs. When an editable Python package is installed, its source code is stored in a transparent location of your choice. While optional, it is advised to first (create and) navigate to e.g. a general software folder:
+directlfq can also be installed in "editable" mode. This allows to fully customize the software and
+even modify the source code to your specific needs.
 
-```bash
-mkdir ~/folder/where/to/install/software
-cd ~/folder/where/to/install/software
+First, clone the directlfq repository from GitHub to a new directory
+``` bash
+mkdir -p ~/directlfq/project/folder && cd ~/directlfq/project/folder
+git clone https://github.com/MannLabs/directlfq.git && cd directlfq
 ```
 
-***The following commands assume you do not perform any additional `cd` commands anymore***.
-
-Next, download the directlfq repository from GitHub either directly or with a `git` command. This creates a new directlfq subfolder in your current directory.
-
-```bash
-git clone https://github.com/MannLabs/directlfq.git
-```
-
-For any Python package, it is highly recommended to use a separate [conda virtual environment](https://docs.conda.io/en/latest/), as otherwise *dependancy conflicts can occur with already existing packages*.
-
-```bash
+Next, it is highly recommended to use a separate
+[conda virtual environment](https://docs.conda.io/en/latest/), as
+otherwise dependency conflicts can occur with already existing
+packages
+``` bash
 conda create --name directlfq python=3.9 -y
 conda activate directlfq
 ```
 
-Finally, directlfq and all its [dependencies](requirements) need to be installed. To take advantage of all features and allow development (with the `-e` flag), this is best done by also installing the [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
+Finally, directlfq and all its [dependencies](requirements) need to be
+installed. To take advantage of all features and allow development (with
+the `-e` flag), this is best done by also installing the [development
+dependencies](requirements/requirements_development_loose.txt) instead of only
+the [core dependencies](requirements/requirements_loose.txt):
 
-```bash
-pip install -e "./directlfq[development,gui]"
+``` bash
+pip install -e ".[dask,development]"
 ```
 
-By default this installs loose dependencies (no explicit versioning), although it is also possible to use stable dependencies (e.g. `pip install -e "./directlfq[stable,development]"`).
+By default this installs 'loose' dependencies (no pinned versions),
+although it is also possible to use stable dependencies
+(e.g. `pip install -e ".[stable,dask-stable,development-stable]"`).
 
-***By using the editable flag `-e`, all modifications to the [directlfq source code folder](directlfq) are directly reflected when running directlfq. Note that the directlfq folder cannot be moved and/or renamed if an editable version is installed. In case of confusion, you can always retrieve the location of any Python module with e.g. the command `import module` followed by `module.__file__`.***
+By using the editable flag `-e`, all modifications to the [directlfq
+source code folder](directlfq) are directly reflected when running
+directlfq. Note that the directlfq folder cannot be moved and/or renamed
+if an editable version is installed. In case of confusion, you can
+always retrieve the location of any Python module with e.g. the command
+`import module` followed by `module.__file__`.
 
 
 ### Docker installation
@@ -138,15 +189,15 @@ Set up your data to match the expected folder structure:
 create a folder and store its name in a variable, and specify a port
 ```
 DATA_FOLDER=/home/username/data; mkdir -p $DATA_FOLDER
-PORT=41215
+PORT=5006
 ```
 
 #### 3. Start the container
 ```bash
-docker run -v $DATA_FOLDER:/app/data -p $PORT:41215 mannlabs/directlfq:latest
+docker run -v $DATA_FOLDER:/app/data -p $PORT:5006 mannlabs/directlfq:latest
 ```
 After initial download of the container, directlfq will start running immediately,
-and can be accessed under [localhost:$PORT](http://localhost:41215).
+and can be accessed under [localhost:$PORT](http://localhost:5006).
 
 Note: in the app, the local `$DATA_FOLDER` needs to be referred to as "`/app/data`".
 
@@ -157,7 +208,7 @@ docker build -t directlfq .
 ```
 and run it with
 ```bash
-docker run -p $PORT:8501 -v $DATA_FOLDER:/app/data -t directlfq
+docker run -p $PORT:5006 -v $DATA_FOLDER:/app/data -t directlfq
 ```
 
 ---
@@ -222,13 +273,6 @@ In case of issues, check out the following:
 * [Issues](https://github.com/MannLabs/directlfq/issues): Try a few different search terms to find out if a similar problem has been encountered before
 * [Discussions](https://github.com/MannLabs/directlfq/discussions): Check if your problem or feature requests has been discussed before.
 
----
-## Citations
-
-In the case that directLFQ is useful to you, please consider supporting us by citing the [paper](https://doi.org/10.1016/j.mcpro.2023.100581)
-
-Ammar, C., Schessner, J.P., Willems, S., Michaelis, A.C., and Mann, M. (2023). Accurate label-free quantification by directLFQ to compare unlimited numbers of proteomes.  Molecular & Cellular Proteomics, 100581.
-
 
 
 ---
@@ -248,11 +292,6 @@ This package uses a shared release process defined in the
 [alphashared](https://github.com/MannLabs/alphashared) repository. Please see the instructions
 [there](https://github.com/MannLabs/alphashared/blob/reusable-release-workflow/.github/workflows/README.md#release-a-new-version)
 
----
-
-## License
-
-directLFQ was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/) and is freely available with an [Apache License](LICENSE.txt). External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
 
 ---
 
@@ -324,3 +363,19 @@ If you want to reproduce data analyses presented in the [manuscript](#citations)
 python tests/download_testfiles.py all_tests
 ```
 This will download the underlying datasets into the appropriate location. The notebooks carrying out the analyses themselves are located in the tests directory in the respective subfolders ratio_tests, normalization_tests, runtime_tests and organellar_maps.
+
+---
+
+## Publication
+
+In the case that directLFQ is useful to you, please consider supporting us by citing the [paper](https://doi.org/10.1016/j.mcpro.2023.100581)
+
+> **Accurate label-free quantification by directLFQ to compare unlimited numbers of proteomes.**
+> Ammar, C., Schessner, J.P., Willems, S., Michaelis, A.C., and Mann, M. (2023). 
+> Molecular & Cellular Proteomics, 100581. doi: [10.1016/j.mcpro.2023.100581](https://doi.org/10.1016/j.mcpro.2023.100581)
+
+---
+
+## License
+
+directLFQ was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and the [University of Copenhagen](https://www.cpr.ku.dk/research/proteomics/mann/) and is freely available with an [Apache License](LICENSE.txt). External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.

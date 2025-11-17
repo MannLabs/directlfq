@@ -13,13 +13,14 @@ authors = [
 description = "An open-source Python package of the AlphaPept ecosystem"
 readme = "README.md"
 keywords = [
+    "proteomics",
+    "mass spectrometry",
     "LFQ",
     "label-free quantification",
-    "mass spectrometry",
-    "proteomics",
     "bioinformatics",
     "AlphaPept",
     "AlphaPept ecosystem",
+    "alphapept.org"
 ]
 license = {file = "LICENSE.txt"}
 classifiers = [
@@ -34,13 +35,12 @@ classifiers = [
 ]
 
 [project.urls]
-
-"Paper" = "https://doi.org/10.1016/j.mcpro.2023.100581"
-Repository = "https://github.com/MannLabs/directlfq"
-#Documentation = "https://readthedocs.org"
-#Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
-Issues = "https://github.com/MannLabs/directlfq/issues"
+repository = "https://github.com/MannLabs/directlfq"
+issues = "https://github.com/MannLabs/directlfq/issues"
+download = "https://mannlabs.github.io/directlfq/releases"
+homepage = "https://www.alphapept.org"
 "Mann Labs Homepage" = "https://www.biochem.mpg.de/mann"
+publication = "https://doi.org/10.1016/j.mcpro.2023.100581"
 
 [tool.setuptools.packages]
 find = {}

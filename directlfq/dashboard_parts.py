@@ -261,6 +261,11 @@ class RunPipeline(BaseWidget):
             alert_type="danger",
             margin=(-20, 10, -5, 16),
         )
+        self.run_pipeline_success = pn.pane.Alert(
+            width=600,
+            alert_type="success",
+            margin=(-20, 10, -5, 16),
+        )
 
     def create(self):
         optional_configs = pn.Card(
@@ -310,6 +315,7 @@ class RunPipeline(BaseWidget):
                     align='center',
                 ),
                 self.run_pipeline_progress,
+                self.run_pipeline_success,
                 align='start',
                 sizing_mode='stretch_width',
                 margin=(0, 15, 15, 15)
@@ -330,6 +336,7 @@ class RunPipeline(BaseWidget):
     
     def run_pipeline(self, *args):
         self.run_pipeline_progress.active = True
+        self.run_pipeline_success.object = ""  # Clear any previous success message
         input_file = self.path_analysis_file.value_input
         input_type_to_use = self.dropdown_menu_for_input_type.value
         mq_protein_groups_txt = None if self.path_protein_groups_file.value_input == '' else self.path_protein_groups_file.value_input
@@ -341,18 +348,24 @@ class RunPipeline(BaseWidget):
         if additional_headers is not None: #the user will enter a string with semicolon separated values
             additional_headers = additional_headers.split(';')
 
-        lfq_manager.run_lfq(
-            input_file=input_file,
-            input_type_to_use=input_type_to_use,
-            maximum_number_of_quadratic_ions_to_use_per_protein=10,
-            number_of_quadratic_samples=50,
-            mq_protein_groups_txt=mq_protein_groups_txt,
-            columns_to_add=additional_headers,
-            selected_proteins_file=file_of_proteins_for_normalization,
-            min_nonan=min_nonan,
-            num_cores=num_cores,
-            filter_dict=yaml_filt_dict_path
-        )
+        try:
+            lfq_manager.run_lfq(
+                input_file=input_file,
+                input_type_to_use=input_type_to_use,
+                maximum_number_of_quadratic_ions_to_use_per_protein=10,
+                number_of_quadratic_samples=50,
+                mq_protein_groups_txt=mq_protein_groups_txt,
+                columns_to_add=additional_headers,
+                selected_proteins_file=file_of_proteins_for_normalization,
+                min_nonan=min_nonan,
+                num_cores=num_cores,
+                filter_dict=yaml_filt_dict_path
+            )
+            # Show success message
+            self.run_pipeline_success.object = "✅ **Pipeline completed successfully!** Analysis has finished and output files have been generated."
+        except Exception as e:
+            # Show error message if something goes wrong
+            self.run_pipeline_error.object = f"❌ **Error:** {str(e)}"
 
         self.trigger_dependancy()
         self.run_pipeline_progress.active = False
