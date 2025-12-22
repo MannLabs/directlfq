@@ -13,6 +13,12 @@ def set_log_processed_proteins(log_processed_proteins = True):
     global LOG_PROCESSED_PROTEINS
     LOG_PROCESSED_PROTEINS = log_processed_proteins
 
+##########################
+LOG_INTERVAL = 100
+
+def set_log_interval(log_interval = 100):
+    global LOG_INTERVAL
+    LOG_INTERVAL = log_interval
 
 ##########################
 PROTEIN_ID = 'protein'
