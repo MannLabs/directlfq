@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "directlfq"
+requires-python = ">=3.9"
+dynamic = ["version", "dependencies", "optional-dependencies"]
+
+authors = [
+    {name = "Mann Labs", email = "opensource@alphapept.com"}
+]
+description = "An open-source Python package of the AlphaPept ecosystem"
+readme = "README.md"
+keywords = [
+    "proteomics",
+    "mass spectrometry",
+    "LFQ",
+    "label-free quantification",
+    "bioinformatics",
+    "AlphaPept",
+    "AlphaPept ecosystem",
+    "alphapept.org"
+]
+license = {file = "LICENSE.txt"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    # "Development Status :: 6 - Mature",
+    # "Development Status :: 7 - Inactive"
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+[project.urls]
+repository = "https://github.com/MannLabs/directlfq"
+issues = "https://github.com/MannLabs/directlfq/issues"
+download = "https://mannlabs.github.io/directlfq/releases"
+homepage = "https://www.alphapept.org"
+"Mann Labs Homepage" = "https://www.biochem.mpg.de/mann"
+publication = "https://doi.org/10.1016/j.mcpro.2023.100581"
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.setuptools.dynamic]
+# https://stackoverflow.com/a/73600610
+dependencies = {file = ["requirements/requirements_loose.txt"]}
+optional-dependencies.stable = { file = ["requirements/requirements.txt"] }
+optional-dependencies.gui = { file = [ "requirements/requirements_gui_loose.txt" ] }
+optional-dependencies.gui-stable = { file = [ "requirements/requirements_gui.txt" ] }
+optional-dependencies.dask = { file = [ "requirements/requirements_dask_loose.txt" ] }
+optional-dependencies.dask-stable = { file = [ "requirements/requirements_dask.txt" ] }
+optional-dependencies.tests = { file = [ "requirements/requirements_tests.txt" ] }
+optional-dependencies.development = { file = [
+    "requirements/requirements_development.txt",
+    "requirements/requirements_tests.txt"
+] }
+
+version = {attr = "directlfq.__version__"}
+
+[project.scripts]
+directlfq = "directlfq.cli:run"

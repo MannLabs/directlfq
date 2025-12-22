@@ -177,9 +177,10 @@ def run(ctx, **kwargs):
         click.echo(run.get_help(ctx))
 
 @run.command("gui", help="Start graphical user interface.")
-def gui():
+@click.option("--port", "-p", type=int, default=None, help="Port to run the GUI server on (default: 41215 or PORT environment variable)")
+def gui(port):
     import directlfq.gui
-    directlfq.gui.run()
+    directlfq.gui.run(port=port)
 
 list_of_format_names = ["alphapept_peptides","fragpipe_precursors","maxquant_evidence","maxquant_peptides","diann_fragion_isotopes","diann_precursors","spectronaut_fragion_isotopes","spectronaut_precursor"]
 

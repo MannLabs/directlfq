@@ -43,6 +43,7 @@ class GUI(object):
         github_url,
         run_in_background=False,
         automatic_close=True,
+        port=None,
     ):
         self.name = name
         self.tab_counter = 0
@@ -61,6 +62,7 @@ class GUI(object):
         )
         self.run_in_background = run_in_background
         self.automatic_close = automatic_close
+        self.port = int(port) if port else port
 
     def start_server(self, run_in_background=False):
         if self.automatic_close:
@@ -73,7 +75,9 @@ class GUI(object):
             bokeh_ws_handler.on_close = self.__close_browser_tab(
                 self.bokeh_server_on_close
             )
-        self.server = self.layout.show(threaded=True, title=self.name)
+
+        port_param = {} if self.port is None else {"port": self.port}
+        self.server = self.layout.show(threaded=True, title=self.name, **port_param)
         if not run_in_background:
             self.server.join()
         elif not self.run_in_background:
@@ -105,10 +109,11 @@ class GUI(object):
 
 class AlphaQuantGUI(GUI):
     # TODO: docstring
-    def __init__(self, start_server=False):
+    def __init__(self, start_server=False, port=None):
         super().__init__(
             name="directLFQ",
             github_url='https://github.com/MannLabs/directLFQ',
+            port=port,
         )
         self.project_description = """### directLFQ provides ratio-based normalization and protein intensity estimation for small and very large numbers of proteomes."""
         self.manual_path = os.path.join(
@@ -136,8 +141,8 @@ class AlphaQuantGUI(GUI):
             self.start_server()
 
 
-def run():
-    AlphaQuantGUI(start_server=True)
+def run(port=None):
+    AlphaQuantGUI(start_server=True, port=port)
 
 
 if __name__ == '__main__':

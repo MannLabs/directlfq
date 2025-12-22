@@ -133,7 +133,7 @@ class Cards():
         collapsed=True,
         width=ButtonConfiguration.width,
         align='start',
-        margin=(0, 80, 5, 10),
+        margin=(20, 0, 20, 0),
         css_classes=['spectronaut_instr']
     )
     diann = pn.Card(
