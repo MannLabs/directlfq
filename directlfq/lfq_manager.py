@@ -64,14 +64,14 @@ number_of_quadratic_samples = 50, num_cores = None, filename_suffix = "", deacti
     if not deactivate_normalization:
         LOGGER.info("Performing sample normalization.")
         input_df = lfqnorm.NormalizationManagerSamplesOnSelectedProteins(input_df, num_samples_quadratic=number_of_quadratic_samples, selected_proteins_file=selected_proteins_file).complete_dataframe
-    
+
     LOGGER.info("Estimating lfq intensities.")
     protein_df, ion_df = lfqprot_estimation.estimate_protein_intensities(input_df,min_nonan=min_nonan,num_samples_quadratic=maximum_number_of_quadratic_ions_to_use_per_protein, num_cores = num_cores)
     try:
         protein_df = lfqutils.add_columns_to_lfq_results_table(protein_df, input_file, columns_to_add)
     except:
         LOGGER.info("Could not add additional columns to protein table, printing without additional columns.")
-    
+
     LOGGER.info("Writing results files.")
 
     if input_file is not None:
