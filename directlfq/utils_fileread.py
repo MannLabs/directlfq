@@ -12,9 +12,31 @@ if "__file__" in globals():
 
 LOGGER = logging.getLogger(__name__)
 
+def check_parquet_database(
+    input_file: str,
+) -> bool:
+    """Check parquet database
+    
+    If input_file contains '.parquet', or if input_file is a directory containing .parquet files, it is treated as a parquet database.
+
+    Args:
+        input_file (str): Path to the input file or directory.
+
+    Returns:
+        bool: True if the input is a parquet database, False otherwise.
+    
+    """
+    if input_file.endswith(".parquet"):
+        return True
+    elif os.path.isdir(input_file):
+        for file in os.listdir(input_file):
+            if file.endswith(".parquet"):
+                return True
+    return False
+
 def read_file_with_pandas(input_file, decimal='.', usecols=None, chunksize=None, sep = None):
     filename = str(input_file)
-    if '.parquet' in filename:
+    if check_parquet_database(filename):
         return read_parquet_file(input_file, usecols=usecols, chunksize=chunksize)
     else:
         if sep is None:
@@ -44,5 +66,14 @@ def read_columns_from_file(file, sep="\t"):
     if file.endswith(".parquet"):
         parquet_file = pyarrow.parquet.ParquetFile(file)
         return parquet_file.schema.names
+    elif os.path.isdir(file):
+        # If it's a directory, read schema from first parquet file
+        for filename in os.listdir(file):
+            if filename.endswith(".parquet"):
+                first_parquet = os.path.join(file, filename)
+                parquet_file = pyarrow.parquet.ParquetFile(first_parquet)
+                return parquet_file.schema.names
+        # If no parquet files found, fall back to CSV reading (will fail appropriately)
+        return pd.read_csv(file, sep=sep, nrows=1).columns.tolist()
     else:
         return pd.read_csv(file, sep=sep, nrows=1).columns.tolist()
