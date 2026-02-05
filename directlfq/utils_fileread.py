@@ -4,15 +4,13 @@ import logging
 import pyarrow.parquet
 import pandas as pd
 
+from constants import REQUIRED_D210_COLUMNS, D210_QUAN_COLUMNS
+
 if "__file__" in globals():
     INTABLE_CONFIG = os.path.join(pathlib.Path(__file__).parent.absolute(), "configs", "intable_config.yaml") #the yaml config is located one directory below the python library files
     CONFIG_PATH = os.path.join(pathlib.Path(__file__).parent.absolute(), "configs")
 
 LOGGER = logging.getLogger(__name__)
-
-
-
-
 
 def read_file_with_pandas(input_file, decimal='.', usecols=None, chunksize=None, sep = None):
     filename = str(input_file)
