@@ -68,10 +68,12 @@ def get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(
 
 def get_normed_dfs(normed_df):
     protein_names = normed_df.index.get_level_values(0).to_numpy()
-    ion_names = normed_df.index.get_level_values(1).to_numpy()
     normed_array = normed_df.to_numpy()
+    # Slicing the existing (sorted) MultiIndex avoids re-factorizing the protein/ion
+    # strings into a categorical index for every group, which dominated runtime.
+    full_index = normed_df.index.set_names([config.PROTEIN_ID, config.QUANT_ID])
     indices_of_proteinname_switch = find_nameswitch_indices(protein_names)
-    results_list = [get_subdf(normed_array, indices_of_proteinname_switch, idx, protein_names, ion_names) for idx in range(len(indices_of_proteinname_switch)-1)]
+    results_list = [get_subdf(normed_array, full_index, indices_of_proteinname_switch, idx) for idx in range(len(indices_of_proteinname_switch)-1)]
 
     return results_list
 
@@ -88,14 +90,12 @@ def find_nameswitch_indices(arr):
     return start_indices
 
 
-def get_subdf(normed_array, indices_of_proteinname_switch, idx, protein_names, ion_names):
+def get_subdf(normed_array, full_index, indices_of_proteinname_switch, idx):
     start_switch = indices_of_proteinname_switch[idx]
     end_switch = indices_of_proteinname_switch[idx+1]
     sub_array = normed_array[start_switch:end_switch]
-    index_sub_array = pd.MultiIndex.from_arrays([protein_names[start_switch:end_switch], ion_names[start_switch:end_switch]], names=[config.PROTEIN_ID, config.QUANT_ID])
+    index_sub_array = full_index[start_switch:end_switch]
     return pd.DataFrame(sub_array, index = index_sub_array)
-
-
 
 
 def get_list_with_sequential_processing(input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan):
@@ -124,7 +124,7 @@ def calculate_peptide_and_protein_intensities(idx, peptide_intensity_df, num_sam
 
     if config.LOG_PROCESSED_PROTEINS and (idx % config.LOG_PROCESSED_PROTEINS_INTERVAL == 0):
         LOGGER.info(f"lfq-object {idx}")
-    summed_pepint = np.nansum(2**peptide_intensity_df)
+    summed_pepint = np.nansum(2**peptide_intensity_df.to_numpy())
 
     if(peptide_intensity_df.shape[1]<2):
         shifted_peptides = peptide_intensity_df
