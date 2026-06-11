@@ -31,7 +31,6 @@ jobs:
       - name: Pytest tests
         shell: bash -le {0}
         run: |
-          conda activate directlfq
           pytest tests/pytest
       - name: Run pipeline
         shell: bash -le {0}
