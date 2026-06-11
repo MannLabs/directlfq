@@ -51,7 +51,7 @@ class PeptideProfile():
 
     def _get_single_peptide_profile_template(self):
         rs = RandomState(MT19937(SeedSequence(42312)))
-        return rs.randint(low=self._min_intensity, high=self._max_intensity,size=self._num_samples)
+        return rs.randint(low=self._min_intensity, high=self._max_intensity, size=self._num_samples, dtype=np.int64)
 
     def _scale_profile_vector(self):
         self.peptide_profile_vector = self.peptide_profile_vector*self._systematic_peptide_shift
