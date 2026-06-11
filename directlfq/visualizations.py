@@ -8,7 +8,6 @@ LOGGER = logging.getLogger(__name__)
 a4_dims = (11.7, 8.27)
 a4_width_no_margin = 10.5
 
-# %% ../nbdev_nbs/05_visualizations.ipynb 2
 import seaborn as sns
 import matplotlib
 import matplotlib.cm
@@ -41,7 +40,6 @@ class CmapRegistrator():
         matplotlib.cm.register_cmap(name, linmap)
     
 
-# %% ../nbdev_nbs/05_visualizations.ipynb 3
 import pandas as pd
 import directlfq.normalization as lfq_norm
 import directlfq.protein_intensity_estimation as lfq_protint
@@ -106,7 +104,6 @@ class IonTraceCompararisonPlotterNoDirectLFQTrace(IonTraceCompararisonPlotter):
 
         
 
-# %% ../nbdev_nbs/05_visualizations.ipynb 4
 import seaborn as sns
 import matplotlib.cm
 import numpy as np
@@ -154,7 +151,6 @@ class IonTraceVisualizer():
 
 
 
-# %% ../nbdev_nbs/05_visualizations.ipynb 5
 import seaborn as sns
 
 class MultiOrganismMultiMethodBoxPlot():
@@ -181,7 +177,6 @@ class MultiOrganismMultiMethodBoxPlot():
     
     
 
-# %% ../nbdev_nbs/05_visualizations.ipynb 6
 import matplotlib.pyplot as plt
 import itertools
 
@@ -205,7 +200,6 @@ def plot_withincond_fcs(normed_intensity_df, cut_extremes = True):
 
     plt.show()
 
-# %% ../nbdev_nbs/05_visualizations.ipynb 7
 import matplotlib.pyplot as plt
 import itertools
 

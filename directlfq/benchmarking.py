@@ -1,5 +1,3 @@
-
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -32,7 +30,6 @@ def plot_points(protvals, log = True):
 
     plt.show()
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 2
 import pandas as pd
 def get_tps_fps(result_df, prot2org_file, thresh = 0.05, fc_thresh = 0.3):
     annotated = annotate_dataframe(result_df, prot2org_file)
@@ -71,7 +68,6 @@ def annotate_dataframe(result_df, prot2org_file):
     print(f"df size after {len(annotated.index)}")
     return annotated
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 3
 import pandas as pd
 import matplotlib.pyplot as plt
 def compare_to_reference(result_df, reference_file, condpair):#put in condpair as tuple
@@ -86,7 +82,6 @@ def compare_to_reference(result_df, reference_file, condpair):#put in condpair a
     ax_fdr = merged.plot.scatter(x='fdr_ref',y='fdr')
     plt.show()
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 4
 import pandas as pd
 import matplotlib.pyplot as plt
 def compare_normalization(ref_normalization_file, norm1_df, norm2_df):
@@ -102,7 +97,6 @@ def compare_normalization(ref_normalization_file, norm1_df, norm2_df):
         ax_p = merged.plot.scatter(x=sample1,y=sample2)
         plt.show()
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 5
 def print_nonref_hits(protein_ref, protein_df, peptide_ref, peptide_df, outdir):
     prots_nonref_df =  protein_df[~(protein_df["protein"].isin(protein_ref["protein"].to_list()))]#the tilde inverts the boolean vector
     peps_nonref_df = peptide_df[~(peptide_df["peptide"].isin(peptide_ref["peptide"].to_list()))]
@@ -110,7 +104,6 @@ def print_nonref_hits(protein_ref, protein_df, peptide_ref, peptide_df, outdir):
     peps_nonref_df.to_csv(f"{outdir}/nonref_peptides.tsv", sep = "\t", index = False)
     #display(peps_nonref_df)
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 7
 import pandas as pd
 import functools
 
@@ -204,7 +197,6 @@ class ResultsTableMaxQuant(ResultsTable):
 
 
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 8
 class ResultsTableMerger():
     def __init__(self, method_name2results_df):
         self._method_name2results_df = method_name2results_df
@@ -232,7 +224,6 @@ class ResultsTableMerger():
     def _add_method_column(method, df):
         df["method"] = method
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 10
 from abc import ABC, abstractmethod
 
 class OrganismAnnotator(ABC):
@@ -275,7 +266,6 @@ class OrganismAnnotator(ABC):
         results_table.formated_dataframe = results_table.formated_dataframe[list_indicating_if_protein_matches]
         
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 11
 class OrganismAnnotatorMaxQuant(OrganismAnnotator):
     def __init__(self, mapping_file, protein_column = 'id', organism_column = 'Species'):
         super().__init__(mapping_file=mapping_file, protein_column= protein_column, organism_column= organism_column)
@@ -285,7 +275,6 @@ class OrganismAnnotatorMaxQuant(OrganismAnnotator):
         mapping_df = self._filter_double_mapping_organism(mapping_df)
         return mapping_df
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 12
 class OrganismAnnotatorSpectronaut(OrganismAnnotator):
     def __init__(self, mapping_file,protein_column="PG.ProteinGroups", organism_column="PG.Organisms"):
         super().__init__(mapping_file=mapping_file, protein_column= protein_column, organism_column= organism_column)
@@ -295,7 +284,6 @@ class OrganismAnnotatorSpectronaut(OrganismAnnotator):
         mapping_df = self._filter_double_mapping_organism(mapping_df)
         return mapping_df
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 13
 class OrganismAnnotatorDIANN(OrganismAnnotator):
     def __init__(self, mapping_file, protein_column = 'Protein.Group', organism_column = 'Protein.Names'):
         super().__init__(mapping_file=mapping_file, protein_column= protein_column, organism_column= organism_column)
@@ -314,7 +302,6 @@ class OrganismAnnotatorDIANN(OrganismAnnotator):
         else:
             return split_name[-1]
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 14
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -330,7 +317,6 @@ class PlotConfig():
 
  
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 16
 import pandas as pd
 import directlfq.utils as lfq_utils
 
@@ -360,7 +346,6 @@ class ResultsTableBiological():
             self.cond2samples[cond] = self.cond2samples.get(cond, []) + [sample]
     
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 17
 import numpy as np
 class CVInfoDataset():
     def __init__(self, resultstable_biological, ignore_missing_columns = False):
@@ -396,7 +381,6 @@ class CVInfoDataset():
             return np.nan
         return np.nanstd(x, ddof=1,) / np.nanmean(x) ##ddof ensures that the sample mean std estimate is used
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 18
 import seaborn as sns
 import directlfq.visualizations as lfq_viz
 class CVDistributionPlotter():
@@ -432,7 +416,6 @@ class HistPlotConfig():
         self.density = density
         self.bins = bins
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 22
 import pandas as pd
 import directlfq.lfq_manager as lfqmgr
 import directlfq.normalization as lfqnorm
@@ -565,7 +548,6 @@ class ScaledDFCreatorIQFormat():
         return new_sample_list
     
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 26
 import pandas as pd
 import directlfq.utils as lfq_utils
 
@@ -588,7 +570,6 @@ class LFQTimer():
             formatted_df = ScaledDFCreatorDirectLFQFormat(self._template_df, desired_number_of_samples=samplenumber).scaled_df
             self.timed_lfq_runs.append(TimedLFQRun(formatted_df,self._name).run_from_formatted_df())
 
-# %% ../nbdev_nbs/06_benchmarking.ipynb 27
 class TimedLFQRun():
     def __init__(self, formatted_df, name):
         self.name = name
