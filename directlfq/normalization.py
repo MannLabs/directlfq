@@ -270,7 +270,12 @@ class NormalizationManager():
 
     def _determine_sorted_rows(self):
         rows = self.complete_dataframe.index
-        self._rows_sorted_by_number_valid_values =  sorted(rows, key= lambda idx : self._get_num_nas_in_row(self.complete_dataframe.loc[idx,:].to_numpy()))
+        # Stable-sort row labels by NaN count, computed in one numpy pass instead
+        # of a per-row .loc lookup inside sorted(). np.argsort(kind="stable")
+        # preserves original order for ties, matching Python's stable sorted().
+        nan_counts = np.isnan(self.complete_dataframe.to_numpy()).sum(axis=1)
+        order = np.argsort(nan_counts, kind="stable")
+        self._rows_sorted_by_number_valid_values = [rows[i] for i in order]
 
     def _normalize_quadratic_selection(self):
         quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows]
