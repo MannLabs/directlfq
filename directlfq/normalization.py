@@ -69,10 +69,11 @@ def get_normfacts(samples):##row is the sample column is the features
     #return samples
 
 def set_samples_with_only_single_intensity_to_nan(samples):
-    for idx in range(len(samples)):
-        sample = samples[idx]
-        if sum(~np.isnan(sample)) <2:
-            sample[:] = np.nan
+    # Set every sample (row) that has fewer than 2 finite values to all-NaN.
+    # Vectorized in one pass instead of a per-row Python sum() over the (often
+    # very long) ion axis. Mutates `samples` in place, as before.
+    counts = np.count_nonzero(~np.isnan(samples), axis=1)
+    samples[counts < 2] = np.nan
             
 
 def apply_sampleshifts(samples, sampleidx2shift):
