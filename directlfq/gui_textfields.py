@@ -47,12 +47,12 @@ class Descriptions:
 
     spectronaut = pn.pane.Markdown(
         """
-        directLFQ takes a Spectronaut .tsv table as input. When exporting from Spectronaut, the correct columns need to be selected. 
+        directLFQ takes a Spectronaut .tsv table as input. When exporting from Spectronaut, the correct columns need to be selected.
         These can be obtained by downloading one of the export schemes available below. We provide one export scheme for precursor quantification
         and one export scheme for fragment ion quantification. Fragment ion quantification shows slightly more accuracy, but the files are around 10 times larger.
-        
+
         An export scheme can then simply be loaded into Spectronaut as follows:
-        
+
         Go to the "Report" perspective in Spectronaut, click "Import Schema" and provide the file.
 
         The data needs to be exported in the **normal long** format as .tsv or .csv file.

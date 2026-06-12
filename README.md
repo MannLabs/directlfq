@@ -278,8 +278,8 @@ In case of issues, check out the following:
 ---
 ## How to contribute
 
-If you like this software, you can give us a [star](https://github.com/MannLabs/directlfq/stargazers) to boost our visibility! All direct contributions are also welcome. 
-Feel free to post a new [issue](https://github.com/MannLabs/directlfq/issues) or clone the repository and create a [pull request](https://github.com/MannLabs/directlfq/pulls) with a new branch. 
+If you like this software, you can give us a [star](https://github.com/MannLabs/directlfq/stargazers) to boost our visibility! All direct contributions are also welcome.
+Feel free to post a new [issue](https://github.com/MannLabs/directlfq/issues) or clone the repository and create a [pull request](https://github.com/MannLabs/directlfq/pulls) with a new branch.
 For an even more interactive participation, check out the [discussions](https://github.com/MannLabs/directlfq/discussions) and the [the Contributors License Agreement](misc/CLA.md).
 
 ### Tagging of changes
@@ -315,7 +315,7 @@ directLFQ is started internally via the directlfq.lfq_manager.run_lfq() command.
 
 ## directLFQ output
 directLFQ writes three output files into the directory of the input file:
-1.  The main output file ends with .protein_intensities.tsv and contains the estimated LFQ protein intensities. 
+1.  The main output file ends with .protein_intensities.tsv and contains the estimated LFQ protein intensities.
 2.  The second output file ends with .ion_intensities.tsv and contains the aligned intensity traces of all ions. This allows to compare profiles of different ions to each other. In particular, if you run directLFQ with peptide-level quantification, you can use this file to compare the intensity traces of different peptides of the same protein.
 3.  The third output file ends with .aq_reformat.tsv and contains the reformatted input data in matrix format (ions are rows, samples are columns). The values are identical to the values of the original input file, just the format is different.
 
@@ -350,7 +350,7 @@ Provide the path to the "combined_ion.tsv" output table.
 
 
 ### generic input format
-In the case that you working with a search engine that is not supported by directLFQ, you can use the generic input format. This format is a tab-separated quantity matrix file with the following columns: "protein", "ion", "run_id1", "run_id2", ..,"run_idN". 
+In the case that you working with a search engine that is not supported by directLFQ, you can use the generic input format. This format is a tab-separated quantity matrix file with the following columns: "protein", "ion", "run_id1", "run_id2", ..,"run_idN".
 Each row contains therefore all the ion intensities that were measured for an ion in each run (see examples below). The ion identifier only needs to be unique for each ion and can be on the level you want (peptide, charged peptide, or fragment ion). After reformatting your file into this format, save the file with the ending ".aq_reformat.tsv". Then you can simply give this file as input to directLFQ and it will automatically detect the generic input format.
 <img src="./release/images/example_input_format_mq.png" width="700" />
 <img src="./release/images/example_input_format_sn.png" width="700" />
@@ -371,7 +371,7 @@ This will download the underlying datasets into the appropriate location. The no
 In the case that directLFQ is useful to you, please consider supporting us by citing the [paper](https://doi.org/10.1016/j.mcpro.2023.100581)
 
 > **Accurate label-free quantification by directLFQ to compare unlimited numbers of proteomes.**
-> Ammar, C., Schessner, J.P., Willems, S., Michaelis, A.C., and Mann, M. (2023). 
+> Ammar, C., Schessner, J.P., Willems, S., Michaelis, A.C., and Mann, M. (2023).
 > Molecular & Cellular Proteomics, 100581. doi: [10.1016/j.mcpro.2023.100581](https://doi.org/10.1016/j.mcpro.2023.100581)
 
 ---
