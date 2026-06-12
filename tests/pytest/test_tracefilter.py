@@ -5,6 +5,29 @@ import numpy as np
 import directlfq.tracefilter as lfq_trace_filter
 
 
+# check_connected_traces gains @njit(cache=True) in optimization step 7; caching
+# is numerically inert, so the recursive DFS must keep marking the same nodes.
+
+
+def test_check_connected_traces_marks_reachable_nodes():
+    # given - a path 0-1-2 (edges are non-inf entries) and an isolated node 3
+    matrix = np.array(
+        [
+            [np.inf, 1.0, np.inf, np.inf],
+            [1.0, np.inf, 1.0, np.inf],
+            [np.inf, 1.0, np.inf, np.inf],
+            [np.inf, np.inf, np.inf, np.inf],
+        ]
+    )
+    visited = np.zeros(4, dtype=np.bool_)
+
+    # when - traverse from node 0
+    lfq_trace_filter.check_connected_traces(matrix, 0, visited)
+
+    # then - 0,1,2 reachable; isolated node 3 stays unvisited
+    assert visited.tolist() == [True, True, True, False]
+
+
 def test_empty_matrix():
     lower_matrix = np.array([[]])
     expected = np.array([[]])

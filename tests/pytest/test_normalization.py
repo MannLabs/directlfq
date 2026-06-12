@@ -25,6 +25,23 @@ def _generate_randarrays(number_arrays, size_of_array):
     return np.array(randarray)
 
 
+# ============================================================================
+# calc_nanmedian / calc_nanvar numba kernels (optimization step 7)
+# ============================================================================
+# These kernels gain @njit(cache=True) in step 7 (persisting the one-time JIT).
+# Caching is numerically inert, so the kernels must keep matching numpy.
+
+
+def test_calc_nanmedian_matches_numpy_skipping_nans():
+    arr = np.array([1.0, np.nan, 3.0, 5.0])
+    assert lfq_norm.calc_nanmedian(arr) == np.nanmedian(arr)
+
+
+def test_calc_nanvar_matches_numpy_skipping_nans():
+    arr = np.array([1.0, np.nan, 3.0, 5.0])
+    assert lfq_norm.calc_nanvar(arr) == pytest.approx(np.nanvar(arr))
+
+
 def test_merged_distribs():
     anchor_distrib = np.array([1, 1, 1, 1, 1])
     shift_distrib = np.array([2, 2, 2, 2, 2])
