@@ -9,6 +9,7 @@ __all__ = ['get_normfacts', 'set_samples_with_only_single_intensity_to_nan', 'ap
 import numpy as np
 import pandas as pd
 import time
+import warnings
 import directlfq.tracefilter as tracefilter
 import logging
 import directlfq.config as config
@@ -391,10 +392,15 @@ class SampleShifterLinear():
             self._ion_dataframe_values = self.ion_dataframe.to_numpy()
 
     def _shift_columns_to_reference_sample(self):
-        num_rows = self._ion_dataframe_values.shape[0]
-        for row_idx in range(num_rows):
-            self._shift_to_reference_sample(row_idx)
-    
+        # Per-row shift = nanmedian(reference - row). Computed for all rows at once
+        # and applied with a single full-block assignment, instead of a per-row
+        # pandas .iloc[row,:] += scalar (which triggered Series alignment per row).
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN rows -> NaN
+            distances = np.nanmedian(self._reference_intensities - self._ion_dataframe_values, axis=1)
+        shifted = self.ion_dataframe.to_numpy() + distances[:, None]
+        self.ion_dataframe.iloc[:, :] = shifted
+
     def _shift_to_reference_sample(self, row_idx):
         distance_to_reference = self._calc_distance(samples_1=self._reference_intensities, samples_2=self._ion_dataframe_values[row_idx,:]) #reference-sample = distance
         self.ion_dataframe.iloc[row_idx, :] += distance_to_reference
