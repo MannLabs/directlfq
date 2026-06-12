@@ -103,10 +103,8 @@ def get_normfacts(samples):  ##row is the sample column is the features
 
 
 def set_samples_with_only_single_intensity_to_nan(samples):
-    for idx in range(len(samples)):
-        sample = samples[idx]
-        if sum(~np.isnan(sample)) < 2:
-            sample[:] = np.nan
+    counts = np.count_nonzero(~np.isnan(samples), axis=1)
+    samples[counts < 2] = np.nan
 
 
 def apply_sampleshifts(samples, sampleidx2shift):
