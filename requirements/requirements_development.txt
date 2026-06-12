@@ -7,3 +7,4 @@ bump-my-version
 pipdeptree
 ipykernel
 notebook
+pre-commit

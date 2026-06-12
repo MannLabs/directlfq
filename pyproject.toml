@@ -63,3 +63,21 @@ version = {attr = "directlfq.__version__"}
 
 [project.scripts]
 directlfq = "directlfq.cli:run"
+
+[tool.ruff]
+extend-exclude = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle
+    "F",    # Pyflakes
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "I",    # isort
+]
+ignore = [
+    "E501",  # line too long (formatter handles wrapping)
+    "B028",  # no explicit stacklevel in warnings
+    "B905",  # zip() without strict= (numba compatibility)
+]
