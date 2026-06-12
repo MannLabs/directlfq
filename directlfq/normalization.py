@@ -504,6 +504,32 @@ class NormalizationManagerProtein(NormalizationManager):
         self._rows_sorted_by_number_valid_values = None
         self._run_normalization()
 
+    def _normalize_quadratic_and_linear(self):
+        df = self.complete_dataframe
+        arr = df.to_numpy(dtype=float, copy=True)
+        k = self._num_samples_quadratic
+
+        nan_counts = np.isnan(arr).sum(axis=1)
+        order = np.argsort(nan_counts, kind="stable")
+        q_pos = order[:k]
+        linear_mask = np.ones(arr.shape[0], dtype=bool)
+        linear_mask[q_pos] = False
+        lin_pos = np.flatnonzero(linear_mask)  # original order
+
+        q_vals = arr[q_pos].copy()
+        sample2shift = get_normfacts(q_vals)  # mutates single-intensity rows -> NaN
+        q_normed = apply_sampleshifts(q_vals, sample2shift)
+        arr[q_pos] = q_normed
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN slices -> NaN
+            reference = np.nanmedian(q_normed, axis=0)
+            if lin_pos.size:
+                shifts = np.nanmedian(reference - arr[lin_pos], axis=1)
+                arr[lin_pos] = arr[lin_pos] + shifts[:, None]
+
+        self.complete_dataframe = pd.DataFrame(arr, index=df.index, columns=df.columns)
+
 
 class SampleShifterLinearToMedian:
     def __init__(self, ion_dataframe):
