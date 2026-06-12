@@ -1,4 +1,4 @@
-__all__ = ['TestFolderDownloader', 'DownloadLinkConverter']
+__all__ = ["TestFolderDownloader", "DownloadLinkConverter"]
 
 import yaml
 import glob
@@ -10,13 +10,12 @@ import tarfile
 from zipfile import ZipFile
 
 
-
-
-
-class TestFolderDownloader():
+class TestFolderDownloader:
     def __init__(self, test_folder, links_yaml):
         self._test_folder = test_folder
-        self._path2link = DownloadLinkConverter(links_yaml).get_path2link_from_yaml_file()
+        self._path2link = DownloadLinkConverter(
+            links_yaml
+        ).get_path2link_from_yaml_file()
 
     def download_missing_files(self):
         missing_paths = self.__get_missing_paths__()
@@ -34,19 +33,19 @@ class TestFolderDownloader():
         download_link = self.__get_download_link_from_path__(path)
         absolute_path = self.__convert_relative_to_absolute_path__(path)
         self.__prepare_download_directory__(absolute_path)
-        #download a file from a web server
+        # download a file from a web server
         wget.download(download_link, absolute_path)
 
-        with ZipFile(absolute_path, 'r') as zipObj:
-        # Extract all the contents of zip file in current directory
+        with ZipFile(absolute_path, "r") as zipObj:
+            # Extract all the contents of zip file in current directory
             zipObj.extractall(path=os.path.dirname(absolute_path))
-
-            
 
     def __get_existing_paths__(self):
         all_elements = self.__get_all_elements_in_all_subdirs__(self._test_folder)
         all_filepaths = self.__filter_for_files__(all_elements)
-        all_filepaths_relative = self.__convert_to_relative_paths__(all_filepaths, self._test_folder)
+        all_filepaths_relative = self.__convert_to_relative_paths__(
+            all_filepaths, self._test_folder
+        )
         return all_filepaths_relative
 
     def __get_download_link_from_path__(self, path):
@@ -62,11 +61,10 @@ class TestFolderDownloader():
         if not os.path.exists(parent_directory):
             os.makedirs(parent_directory)
 
-
     @staticmethod
     def __get_all_elements_in_all_subdirs__(base_dir):
         return glob.glob(f"{base_dir}/**", recursive=True)
-    
+
     @staticmethod
     def __filter_for_files__(list_of_paths):
         return (x for x in list_of_paths if os.path.isfile(x))
@@ -74,49 +72,49 @@ class TestFolderDownloader():
     @staticmethod
     def __convert_to_relative_paths__(list_of_absolute_paths, base_dir):
         return {x.replace(base_dir, ".") for x in list_of_absolute_paths}
-    
 
 
-class DownloadLinkConverter():
+class DownloadLinkConverter:
     def __init__(self, links_yaml):
         self._links_yaml = links_yaml
 
     def get_path2link_from_yaml_file(self):
         yaml_dict = self.__load_dict_from_yaml_file__(self._links_yaml)
-        path2link_generator = self.__convert_nested_dict_to_relpath_dict__(nested_dict=yaml_dict)
-        path2link_dict = {path : link for path, link in path2link_generator}
+        path2link_generator = self.__convert_nested_dict_to_relpath_dict__(
+            nested_dict=yaml_dict
+        )
+        path2link_dict = {path: link for path, link in path2link_generator}
         return path2link_dict
 
     @staticmethod
     def __load_dict_from_yaml_file__(yaml_file):
-        stream = open(yaml_file, 'r')
+        stream = open(yaml_file, "r")
         return yaml.safe_load(stream)
 
-    def __convert_nested_dict_to_relpath_dict__(self, nested_dict , rel_path_so_far = "."):
+    def __convert_nested_dict_to_relpath_dict__(self, nested_dict, rel_path_so_far="."):
         for path, value in nested_dict.items():
             updated_path = self.__get_updated_relpath__(rel_path_so_far, path)
             is_dict = self.__check_if_value_is_dict__(value)
             if is_dict:
-                yield from self.__convert_nested_dict_to_relpath_dict__(value, updated_path)
+                yield from self.__convert_nested_dict_to_relpath_dict__(
+                    value, updated_path
+                )
             else:
-                yield updated_path , value
+                yield updated_path, value
 
     def __recursively_call_sub_dictionary__(self, sub_dictionary, updated_path):
-        yield from self.__convert_nested_dict_to_relpath_dict__(sub_dictionary, updated_path) #yield from allows to recursively trigger the generator
-    
+        yield from self.__convert_nested_dict_to_relpath_dict__(
+            sub_dictionary, updated_path
+        )  # yield from allows to recursively trigger the generator
+
     @staticmethod
     def __get_updated_relpath__(rel_path_so_far, new_path):
         return f"{rel_path_so_far}/{new_path}"
-    
+
     @staticmethod
     def __check_if_value_is_dict__(value):
         return isinstance(value, dict)
 
     @staticmethod
     def __yield_path2link_pair__(updated_path, link):
-        yield updated_path , link
-
-
-
-
-
+        yield updated_path, link

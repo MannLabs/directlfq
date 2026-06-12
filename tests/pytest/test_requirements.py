@@ -95,27 +95,25 @@ def test_requirements(extra_name):
 
     set_loose = set(req_loose_names)
     set_strict = set(req_strict_names)
-    assert (
-        set_strict == set_loose
-    ), f"Requirements in do not match. only in strict: {set_strict-set_loose}; only in loose: {set_loose-set_strict}"
+    assert set_strict == set_loose, (
+        f"Requirements in do not match. only in strict: {set_strict - set_loose}; only in loose: {set_loose - set_strict}"
+    )
 
     for _, (req, comment) in reqs_strict.items():
-        assert (
-            len(req.specifier) == 1
-        ), f"Requirement '{req}' does not have one defined version in '{file_name_strict}'"
+        assert len(req.specifier) == 1, (
+            f"Requirement '{req}' does not have one defined version in '{file_name_strict}'"
+        )
 
         if TOLERATE_VERSION_COMMENT not in comment:
-            assert str(
-                list(req.specifier)[0]
-            ).startswith(
-                "=="
-            ), f"Requirement '{req}' does not have a fixed version ('==') in '{file_name_strict}'"
+            assert str(list(req.specifier)[0]).startswith("=="), (
+                f"Requirement '{req}' does not have a fixed version ('==') in '{file_name_strict}'"
+            )
 
     for req_name, (req, comment) in reqs_loose.items():
         if TOLERATE_VERSION_COMMENT not in comment:
-            assert (
-                len(req.specifier) == 0
-            ), f"Requirement '{req}' must not have a defined version in '{file_name_loose}'"
+            assert len(req.specifier) == 0, (
+                f"Requirement '{req}' must not have a defined version in '{file_name_loose}'"
+            )
         else:
             if reqs_strict[req_name][0] == req:
                 logging.info(f"Tolerating {req} as it's the same in both files")
@@ -126,6 +124,6 @@ def test_requirements(extra_name):
             version_strict = str(list(specifier_strict)[0]).replace("==", "")
 
             specifier_loose = req.specifier
-            assert specifier_loose.contains(
-                version_strict
-            ), f"Requirement '{req}' is too strict in '{file_name_loose}'"
+            assert specifier_loose.contains(version_strict), (
+                f"Requirement '{req}' is too strict in '{file_name_loose}'"
+            )

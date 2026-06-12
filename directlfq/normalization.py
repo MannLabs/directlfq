@@ -1,10 +1,29 @@
-__all__ = ['get_normfacts', 'set_samples_with_only_single_intensity_to_nan', 'apply_sampleshifts', 'get_bestmatch_pair',
-           'create_distance_matrix', 'calc_distance', 'calc_nanvar', 'calc_nanmedian', 'update_distance_matrix',
-           'get_fcdistrib', 'determine_anchor_and_shift_sample', 'shift_samples', 'get_total_shift', 'merge_distribs',
-           'normalize_dataframe_between_samples', 'normalize_ion_profiles', 'drop_nas_if_possible',
-           'calculate_fraction_with_no_NAs', 'NormalizationManager', 'NormalizationManagerSamples',
-           'NormalizationManagerSamplesOnSelectedProteins', 'NormalizationManagerProtein',
-           'SampleShifterLinearToMedian', 'SampleShifterLinear']
+__all__ = [
+    "get_normfacts",
+    "set_samples_with_only_single_intensity_to_nan",
+    "apply_sampleshifts",
+    "get_bestmatch_pair",
+    "create_distance_matrix",
+    "calc_distance",
+    "calc_nanvar",
+    "calc_nanmedian",
+    "update_distance_matrix",
+    "get_fcdistrib",
+    "determine_anchor_and_shift_sample",
+    "shift_samples",
+    "get_total_shift",
+    "merge_distribs",
+    "normalize_dataframe_between_samples",
+    "normalize_ion_profiles",
+    "drop_nas_if_possible",
+    "calculate_fraction_with_no_NAs",
+    "NormalizationManager",
+    "NormalizationManagerSamples",
+    "NormalizationManagerSamplesOnSelectedProteins",
+    "NormalizationManagerProtein",
+    "SampleShifterLinearToMedian",
+    "SampleShifterLinear",
+]
 
 import numpy as np
 import pandas as pd
@@ -16,170 +35,219 @@ import directlfq.config as config
 config.setup_logging()
 LOGGER = logging.getLogger(__name__)
 
-def get_normfacts(samples):##row is the sample column is the features
 
-    "finds optimal scaling factors for samples measured in the same condition and corrects the samples by these scaling factors. Takes a 2d numpy array as input  "
+def get_normfacts(samples):  ##row is the sample column is the features
+    "finds optimal scaling factors for samples measured in the same condition and corrects the samples by these scaling factors. Takes a 2d numpy array as input"
     set_samples_with_only_single_intensity_to_nan(samples)
     num_samples = samples.shape[0]
-    mergedsamples = np.copy(samples) #the virtual "merged" samples will be stored in this array
-    sampleidx2shift = dict(zip(range(num_samples), np.zeros(num_samples))) #the scaling factors applied to the samples are stored here
-    sampleidx2counts = dict(zip(range(num_samples), np.ones(num_samples)))#keeps track of how many distributions are merged
-    sampleidx2anchoridx = {} #keeps track of the shifted samples
-    exclusion_set = set() #already clustered samples are stored here
+    mergedsamples = np.copy(
+        samples
+    )  # the virtual "merged" samples will be stored in this array
+    sampleidx2shift = dict(
+        zip(range(num_samples), np.zeros(num_samples))
+    )  # the scaling factors applied to the samples are stored here
+    sampleidx2counts = dict(
+        zip(range(num_samples), np.ones(num_samples))
+    )  # keeps track of how many distributions are merged
+    sampleidx2anchoridx = {}  # keeps track of the shifted samples
+    exclusion_set = set()  # already clustered samples are stored here
     distance_matrix = create_distance_matrix(samples)
-    variance_matrix = create_distance_matrix(samples, metric = 'variance')
+    variance_matrix = create_distance_matrix(samples, metric="variance")
     tracefilter.exclude_unconnected_samples(distance_matrix)
     tracefilter.exclude_unconnected_samples(variance_matrix)
-    #print(f"distance matrix start\n{distance_matrix}")
+    # print(f"distance matrix start\n{distance_matrix}")
 
-    for rep in range(num_samples-1):
-        #anchor_idx, shift_idx, min_distance = get_bestmatch_pair(mergedsamples, exclusion_set, sampleidx2counts)
-        anchor_idx, shift_idx, min_distance = get_bestmatch_pair(distance_matrix,variance_matrix, sampleidx2counts)
-        
+    for rep in range(num_samples - 1):
+        # anchor_idx, shift_idx, min_distance = get_bestmatch_pair(mergedsamples, exclusion_set, sampleidx2counts)
+        anchor_idx, shift_idx, min_distance = get_bestmatch_pair(
+            distance_matrix, variance_matrix, sampleidx2counts
+        )
+
         # #determine the closest pair of samples (one "shift" sample to be shifted and one "anchor sample which stays the same") and the distance between this pair
-        #update the sets
+        # update the sets
 
-        if(anchor_idx == None):
+        if anchor_idx == None:
             break
-        sampleidx2anchoridx.update({shift_idx : anchor_idx})
-        sampleidx2shift.update({shift_idx : min_distance })
+        sampleidx2anchoridx.update({shift_idx: anchor_idx})
+        sampleidx2shift.update({shift_idx: min_distance})
         exclusion_set.add(shift_idx)
 
         anchor_sample = mergedsamples[anchor_idx]
         shift_sample = samples[shift_idx]
         shifted_sample = shift_sample + min_distance
-        
-        merged_sample = merge_distribs(anchor_sample, shifted_sample, sampleidx2counts[anchor_idx], sampleidx2counts[shift_idx])
+
+        merged_sample = merge_distribs(
+            anchor_sample,
+            shifted_sample,
+            sampleidx2counts[anchor_idx],
+            sampleidx2counts[shift_idx],
+        )
         mergedsamples[anchor_idx] = merged_sample
 
-
-        update_distance_matrix(variance_matrix, mergedsamples, anchor_idx, shift_idx, metric='variance')
+        update_distance_matrix(
+            variance_matrix, mergedsamples, anchor_idx, shift_idx, metric="variance"
+        )
         update_distance_matrix(distance_matrix, mergedsamples, anchor_idx, shift_idx)
 
-        #print(f"distance matrix after\n{distance_matrix}")
-        sampleidx2counts[anchor_idx]+=1
+        # print(f"distance matrix after\n{distance_matrix}")
+        sampleidx2counts[anchor_idx] += 1
 
     sampleidx2totalshift = {}
     for i in exclusion_set:
         shift = get_total_shift(sampleidx2anchoridx, sampleidx2shift, i)
         sampleidx2totalshift[i] = shift
-        #samples[i] = samples[i]+shift
+        # samples[i] = samples[i]+shift
     return sampleidx2totalshift
-    #return samples
+    # return samples
+
 
 def set_samples_with_only_single_intensity_to_nan(samples):
     for idx in range(len(samples)):
         sample = samples[idx]
-        if sum(~np.isnan(sample)) <2:
+        if sum(~np.isnan(sample)) < 2:
             sample[:] = np.nan
-            
+
 
 def apply_sampleshifts(samples, sampleidx2shift):
     for idx in sampleidx2shift.keys():
         samples[idx] = samples[idx] + sampleidx2shift.get(idx)
     return samples
 
+
 def get_bestmatch_pair(distance_matrix, variance_matrix, sample2counts):
-    
-    i,j = np.unravel_index(np.argmin(variance_matrix, axis=None), variance_matrix.shape)
-    min_distance = distance_matrix[i,j]
-    #print(f"idxs are {i}, {j} median is {distance_matrix[i][j]} variance is {variance_matrix[i][j]}")
-    if(min_distance == np.inf):
+    i, j = np.unravel_index(
+        np.argmin(variance_matrix, axis=None), variance_matrix.shape
+    )
+    min_distance = distance_matrix[i, j]
+    # print(f"idxs are {i}, {j} median is {distance_matrix[i][j]} variance is {variance_matrix[i][j]}")
+    if min_distance == np.inf:
         return None, None, None
-    anchor_idx, shift_idx, min_distance = determine_anchor_and_shift_sample(sample2counts,i, j, min_distance) #direction flip of distance if necessary
+    anchor_idx, shift_idx, min_distance = determine_anchor_and_shift_sample(
+        sample2counts, i, j, min_distance
+    )  # direction flip of distance if necessary
     return anchor_idx, shift_idx, min_distance
 
-def create_distance_matrix(samples, metric = 'median'):
+
+def create_distance_matrix(samples, metric="median"):
     num_samples = samples.shape[0]
     distance_matrix = np.full((num_samples, num_samples), np.inf)
     for i in range(num_samples):
-        for j in range(i+1, num_samples):#do every comparison once
-            distance_matrix[i,j] = calc_distance(metric, samples[i], samples[j]) #the median of the shifted distribution is taken as the distance measure
-            
+        for j in range(i + 1, num_samples):  # do every comparison once
+            distance_matrix[i, j] = calc_distance(
+                metric, samples[i], samples[j]
+            )  # the median of the shifted distribution is taken as the distance measure
+
     return distance_matrix
 
+
 from numba import njit
+
 
 def calc_distance(metric, samples_1, samples_2):
     res = None
 
-    if metric == 'median':
-        res = calc_nanmedian(get_fcdistrib(samples_1, samples_2))#the median of the shifted distribution is taken as the distance measure
-    if(metric == 'variance'):
+    if metric == "median":
+        res = calc_nanmedian(
+            get_fcdistrib(samples_1, samples_2)
+        )  # the median of the shifted distribution is taken as the distance measure
+    if metric == "variance":
         fcdist = get_fcdistrib(samples_1, samples_2)
-        #if sum(~np.isnan(fcdist))<3:
-         #   return 1000.0
+        # if sum(~np.isnan(fcdist))<3:
+        #   return 1000.0
         res = calc_nanvar(fcdist)
-    if metric == 'overlap':
+    if metric == "overlap":
         fcdist = get_fcdistrib(samples_1, samples_2)
         res = sum(~np.isnan(fcdist))
     if res == None:
         raise Exception(f"distance metric {metric} not implemented")
-    if(np.isnan(res)):
+    if np.isnan(res):
         return np.inf
     else:
         return res
+
 
 @njit
 def calc_nanvar(fcdist):
     return np.nanvar(fcdist)
 
+
 @njit
 def calc_nanmedian(fcdist):
     return np.nanmedian(fcdist)
 
-def update_distance_matrix(distance_matrix, merged_samples, merged_sample_idx, shift_idx,metric ='median'):
+
+def update_distance_matrix(
+    distance_matrix, merged_samples, merged_sample_idx, shift_idx, metric="median"
+):
     "determine the distances to the newly merged sample"
-    for i in range(0, merged_sample_idx):#update rows of distance matrix
-        if distance_matrix[i, merged_sample_idx]==np.inf:#do not compare already merged samples
+    for i in range(0, merged_sample_idx):  # update rows of distance matrix
+        if (
+            distance_matrix[i, merged_sample_idx] == np.inf
+        ):  # do not compare already merged samples
             continue
-        distance = calc_distance(metric,merged_samples[i], merged_samples[merged_sample_idx])
+        distance = calc_distance(
+            metric, merged_samples[i], merged_samples[merged_sample_idx]
+        )
         distance_matrix[i, merged_sample_idx] = distance
-    
-    for j in range(merged_sample_idx+1, merged_samples.shape[0]):#update columns of distance matrix
+
+    for j in range(
+        merged_sample_idx + 1, merged_samples.shape[0]
+    ):  # update columns of distance matrix
         if distance_matrix[merged_sample_idx, j] == np.inf:
             continue
-        distance = calc_distance(metric,merged_samples[merged_sample_idx], merged_samples[j])
+        distance = calc_distance(
+            metric, merged_samples[merged_sample_idx], merged_samples[j]
+        )
         distance_matrix[merged_sample_idx, j] = distance
-    
-    distance_matrix[shift_idx] = np.inf #shifted samples are excluded by setting distance to infinity
+
+    distance_matrix[shift_idx] = (
+        np.inf
+    )  # shifted samples are excluded by setting distance to infinity
     distance_matrix[:, shift_idx] = np.inf
-        
+
 
 def get_fcdistrib(logvals_rep1, logvals_rep2):
     "generates difference distribution between two samples"
     dist = np.subtract(logvals_rep1, logvals_rep2)
     return dist
 
+
 def determine_anchor_and_shift_sample(sample2counts, i_min, j_min, min_distance):
     "given two samples, declare the sample with fewer merges as the shift"
     counts_i = sample2counts[i_min]
     counts_j = sample2counts[j_min]
-    anchor_idx = i_min if counts_i>=counts_j else j_min
+    anchor_idx = i_min if counts_i >= counts_j else j_min
     shift_idx = j_min if anchor_idx == i_min else i_min
     flip = 1 if anchor_idx == i_min else -1
-    return anchor_idx, shift_idx, flip*min_distance
+    return anchor_idx, shift_idx, flip * min_distance
+
 
 def shift_samples(samples, sampleidx2anchoridx, sample2shift):
     for sample_idx in range(samples.shape[0]):
-        samples[sample_idx] = samples[sample_idx]+get_total_shift(sampleidx2anchoridx, sample2shift, sample_idx)
+        samples[sample_idx] = samples[sample_idx] + get_total_shift(
+            sampleidx2anchoridx, sample2shift, sample_idx
+        )
 
-def get_total_shift(sampleidx2anchoridx, sample2shift,sample_idx):
 
+def get_total_shift(sampleidx2anchoridx, sample2shift, sample_idx):
     total_shift = 0.0
 
-    while(True):
-        total_shift +=sample2shift[sample_idx]
-        if sample_idx not in sampleidx2anchoridx: #every shifted sample has an anchor
+    while True:
+        total_shift += sample2shift[sample_idx]
+        if sample_idx not in sampleidx2anchoridx:  # every shifted sample has an anchor
             break
         sample_idx = sampleidx2anchoridx[sample_idx]
 
     return total_shift
 
+
 import time
 import numpy as np
 
-def merge_distribs(anchor_distrib, shifted_distrib,counts_anchor_distrib, counts_shifted_distrib):
+
+def merge_distribs(
+    anchor_distrib, shifted_distrib, counts_anchor_distrib, counts_shifted_distrib
+):
     "Calculate the average peptide intensities to merge two peptide distributions"
 
     t_alt = time.time()
@@ -189,7 +257,7 @@ def merge_distribs(anchor_distrib, shifted_distrib,counts_anchor_distrib, counts
     nans_shifted = np.isnan(shifted_distrib)
     nans_anchor_and_shifted = nans_anchor & nans_shifted
     nans_only_anchor = nans_anchor & ~nans_shifted
-    nans_only_shifted = nans_shifted &~nans_anchor
+    nans_only_shifted = nans_shifted & ~nans_anchor
     no_nans = ~nans_anchor & ~nans_shifted
 
     idx_anchor_and_shifted = np.where(nans_anchor_and_shifted)
@@ -200,20 +268,36 @@ def merge_distribs(anchor_distrib, shifted_distrib,counts_anchor_distrib, counts
     res[idx_anchor_and_shifted] = np.nan
     res[idx_only_anchor] = shifted_distrib[idx_only_anchor]
     res[idx_only_shifted] = anchor_distrib[idx_only_shifted]
-    res[idx_no_nans] = (anchor_distrib[idx_no_nans] *counts_anchor_distrib + shifted_distrib[idx_no_nans]*counts_shifted_distrib)/(counts_anchor_distrib+counts_shifted_distrib)
+    res[idx_no_nans] = (
+        anchor_distrib[idx_no_nans] * counts_anchor_distrib
+        + shifted_distrib[idx_no_nans] * counts_shifted_distrib
+    ) / (counts_anchor_distrib + counts_shifted_distrib)
     return res
+
 
 import pandas as pd
 
+
 def normalize_dataframe_between_samples(ion_dataframe):
     sample2shift = get_normfacts(drop_nas_if_possible(ion_dataframe).to_numpy())
-    df_c_normed = pd.DataFrame(apply_sampleshifts(ion_dataframe.to_numpy(), sample2shift), index = ion_dataframe.index, columns = ion_dataframe.columns)
+    df_c_normed = pd.DataFrame(
+        apply_sampleshifts(ion_dataframe.to_numpy(), sample2shift),
+        index=ion_dataframe.index,
+        columns=ion_dataframe.columns,
+    )
     return df_c_normed
 
+
 def normalize_ion_profiles(protein_profile_df):
-    protein_profile_numpy = protein_profile_df.to_numpy(copy = config.COPY_NUMPY_ARRAYS_DERIVED_FROM_PANDAS)
+    protein_profile_numpy = protein_profile_df.to_numpy(
+        copy=config.COPY_NUMPY_ARRAYS_DERIVED_FROM_PANDAS
+    )
     sample2shift = get_normfacts(protein_profile_numpy)
-    df_normed = pd.DataFrame(apply_sampleshifts(protein_profile_numpy, sample2shift), index = protein_profile_df.index, columns = protein_profile_df.columns)
+    df_normed = pd.DataFrame(
+        apply_sampleshifts(protein_profile_numpy, sample2shift),
+        index=protein_profile_df.index,
+        columns=protein_profile_df.columns,
+    )
     return df_normed
 
 
@@ -221,26 +305,30 @@ def drop_nas_if_possible(df):
     df_nonans = df.dropna(axis=1)
     fraction_nonans = calculate_fraction_with_no_NAs(df, df_nonans)
     num_nonans = len(df_nonans.columns)
-    if num_nonans<1000 or fraction_nonans<0.001:
-        LOGGER.info('to few values for normalization without missing values. Including missing values')
+    if num_nonans < 1000 or fraction_nonans < 0.001:
+        LOGGER.info(
+            "to few values for normalization without missing values. Including missing values"
+        )
         return df
     else:
         return df_nonans
 
+
 def calculate_fraction_with_no_NAs(df, df_nonnans):
-    return len(df_nonnans.columns)/len(df.columns)
+    return len(df_nonnans.columns) / len(df.columns)
 
 
 import logging
 
-class NormalizationManager():
-    def __init__(self, complete_dataframe, num_samples_quadratic = 100):
+
+class NormalizationManager:
+    def __init__(self, complete_dataframe, num_samples_quadratic=100):
         self.complete_dataframe = complete_dataframe
         self._num_samples_quadratic = num_samples_quadratic
         self._rows_sorted_by_number_valid_values = None
         self._quadratic_subset_rows = None
         self._linear_subset_rows = None
-        self._merged_reference_sample = None #pd.Series with mean intensity
+        self._merged_reference_sample = None  # pd.Series with mean intensity
         self.normalization_function = None
 
     def _run_normalization(self):
@@ -252,11 +340,13 @@ class NormalizationManager():
 
     def _check_that_there_are_no_duplicate_rows(self):
         if self.complete_dataframe.index.duplicated().any():
-            raise ValueError("There are duplicate rows in the input dataframe. Ensure that there are no duplicate quant_id/ion values.")
-    
+            raise ValueError(
+                "There are duplicate rows in the input dataframe. Ensure that there are no duplicate quant_id/ion values."
+            )
+
     def _normalize_complete_input_quadratic(self):
-        self.complete_dataframe =  self.normalization_function(self.complete_dataframe)
-    
+        self.complete_dataframe = self.normalization_function(self.complete_dataframe)
+
     def _normalize_quadratic_and_linear(self):
         self._determine_subset_rows()
         self._normalize_quadratic_selection()
@@ -265,27 +355,46 @@ class NormalizationManager():
 
     def _determine_subset_rows(self):
         self._determine_sorted_rows()
-        self._quadratic_subset_rows = self._rows_sorted_by_number_valid_values[:self._num_samples_quadratic]
-        self._linear_subset_rows = [x for x in self.complete_dataframe.index if x not in self._quadratic_subset_rows]
+        self._quadratic_subset_rows = self._rows_sorted_by_number_valid_values[
+            : self._num_samples_quadratic
+        ]
+        self._linear_subset_rows = [
+            x
+            for x in self.complete_dataframe.index
+            if x not in self._quadratic_subset_rows
+        ]
 
     def _determine_sorted_rows(self):
         rows = self.complete_dataframe.index
-        self._rows_sorted_by_number_valid_values =  sorted(rows, key= lambda idx : self._get_num_nas_in_row(self.complete_dataframe.loc[idx,:].to_numpy()))
+        self._rows_sorted_by_number_valid_values = sorted(
+            rows,
+            key=lambda idx: self._get_num_nas_in_row(
+                self.complete_dataframe.loc[idx, :].to_numpy()
+            ),
+        )
 
     def _normalize_quadratic_selection(self):
-        quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows]
-        self.complete_dataframe.loc[self._quadratic_subset_rows,:] = self.normalization_function(quadratic_subset_dataframe)
-    
+        quadratic_subset_dataframe = self.complete_dataframe.loc[
+            self._quadratic_subset_rows
+        ]
+        self.complete_dataframe.loc[self._quadratic_subset_rows, :] = (
+            self.normalization_function(quadratic_subset_dataframe)
+        )
+
     def _create_reference_sample(self):
-        quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows]
+        quadratic_subset_dataframe = self.complete_dataframe.loc[
+            self._quadratic_subset_rows
+        ]
         self._merged_reference_sample = quadratic_subset_dataframe.median(axis=0)
-    
+
     def _shift_remaining_dataframe_to_reference_sample(self):
         linear_subset_dataframe = self.complete_dataframe.loc[self._linear_subset_rows]
-        linear_shifted_dataframe = SampleShifterLinear(linear_subset_dataframe, self._merged_reference_sample).ion_dataframe
-        self.complete_dataframe.loc[ self._linear_subset_rows, :] = linear_shifted_dataframe
-    
-
+        linear_shifted_dataframe = SampleShifterLinear(
+            linear_subset_dataframe, self._merged_reference_sample
+        ).ion_dataframe
+        self.complete_dataframe.loc[self._linear_subset_rows, :] = (
+            linear_shifted_dataframe
+        )
 
     @staticmethod
     @njit
@@ -293,20 +402,24 @@ class NormalizationManager():
         sum = 0
         isnans = np.isnan(row)
         for is_nan in isnans:
-            sum+=is_nan
+            sum += is_nan
         return sum
+
 
 class NormalizationManagerSamples(NormalizationManager):
     def __init__(self, complete_dataframe, num_samples_quadratic):
-        complete_dataframe = complete_dataframe.T #the samples to shift are in each row, therefore the df needs to be transposed
+        complete_dataframe = complete_dataframe.T  # the samples to shift are in each row, therefore the df needs to be transposed
         super().__init__(complete_dataframe, num_samples_quadratic)
         self.normalization_function = normalize_dataframe_between_samples
         self._run_normalization()
         self.complete_dataframe = complete_dataframe.T
 
+
 class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
-    def __init__(self, complete_dataframe, num_samples_quadratic, selected_proteins_file = None):
-        complete_dataframe = complete_dataframe.T #the samples to shift are in each row, therefore the df needs to be transposed
+    def __init__(
+        self, complete_dataframe, num_samples_quadratic, selected_proteins_file=None
+    ):
+        complete_dataframe = complete_dataframe.T  # the samples to shift are in each row, therefore the df needs to be transposed
         super().__init__(complete_dataframe, num_samples_quadratic)
         self.normalization_function = self._normalization_function
         self._selected_proteins_file = selected_proteins_file
@@ -314,43 +427,77 @@ class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
         self._adapt_selected_proteins_to_protein_groups()
         self._run_normalization()
         self.complete_dataframe = complete_dataframe.T
-    
+
     def _adapt_selected_proteins_to_protein_groups(self):
         if self._selected_proteins_file is not None:
-            logging.info('Normalizing only selected proteins')
-            selected_proteins = pd.read_csv(self._selected_proteins_file, header=None, sep='\t')[0].to_list()
+            logging.info("Normalizing only selected proteins")
+            selected_proteins = pd.read_csv(
+                self._selected_proteins_file, header=None, sep="\t"
+            )[0].to_list()
             protein2proteingroup_mapping = self._get_protein2proteingroup_mapping()
-            existing_selected_proteins = [protein for protein in selected_proteins if protein in protein2proteingroup_mapping.keys()]
-            self._selected_protein_groups = [protein2proteingroup_mapping[protein] for protein in existing_selected_proteins]
-    
+            existing_selected_proteins = [
+                protein
+                for protein in selected_proteins
+                if protein in protein2proteingroup_mapping.keys()
+            ]
+            self._selected_protein_groups = [
+                protein2proteingroup_mapping[protein]
+                for protein in existing_selected_proteins
+            ]
+
     def _get_protein2proteingroup_mapping(self):
         protein_groups = self.complete_dataframe.columns.get_level_values(0).to_list()
-        protein2proteingroup_mapping = {protein : protein_group for protein_group in protein_groups for protein in protein_group.split(';')}
+        protein2proteingroup_mapping = {
+            protein: protein_group
+            for protein_group in protein_groups
+            for protein in protein_group.split(";")
+        }
         return protein2proteingroup_mapping
-   
+
     def _normalization_function(self, ion_dataframe):
         if self._selected_protein_groups is not None:
-            ion_dataframe_selected = ion_dataframe.loc[:,self._selected_protein_groups]
+            ion_dataframe_selected = ion_dataframe.loc[:, self._selected_protein_groups]
             sample2shift = get_normfacts(ion_dataframe_selected.to_numpy())
         else:
             ion_dataframe_selected = ion_dataframe
-            sample2shift = get_normfacts(drop_nas_if_possible(ion_dataframe_selected).to_numpy())
+            sample2shift = get_normfacts(
+                drop_nas_if_possible(ion_dataframe_selected).to_numpy()
+            )
 
-        df_c_normed = pd.DataFrame(apply_sampleshifts(ion_dataframe.to_numpy(copy = config.COPY_NUMPY_ARRAYS_DERIVED_FROM_PANDAS), sample2shift), index = ion_dataframe.index, columns = ion_dataframe.columns)
+        df_c_normed = pd.DataFrame(
+            apply_sampleshifts(
+                ion_dataframe.to_numpy(
+                    copy=config.COPY_NUMPY_ARRAYS_DERIVED_FROM_PANDAS
+                ),
+                sample2shift,
+            ),
+            index=ion_dataframe.index,
+            columns=ion_dataframe.columns,
+        )
         return df_c_normed
-    
+
     def _create_reference_sample(self):
         if self._selected_protein_groups is not None:
-            quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows, self._selected_protein_groups]
+            quadratic_subset_dataframe = self.complete_dataframe.loc[
+                self._quadratic_subset_rows, self._selected_protein_groups
+            ]
         else:
-            quadratic_subset_dataframe = self.complete_dataframe.loc[self._quadratic_subset_rows, :]
+            quadratic_subset_dataframe = self.complete_dataframe.loc[
+                self._quadratic_subset_rows, :
+            ]
         self._merged_reference_sample = quadratic_subset_dataframe.median(axis=0)
-    
+
     def _shift_remaining_dataframe_to_reference_sample(self):
         linear_subset_dataframe = self.complete_dataframe.loc[self._linear_subset_rows]
-        linear_shifted_dataframe = SampleShifterLinear(linear_subset_dataframe, self._merged_reference_sample, protein_subset = self._selected_protein_groups).ion_dataframe
-        self.complete_dataframe.loc[ self._linear_subset_rows, :] = linear_shifted_dataframe
-    
+        linear_shifted_dataframe = SampleShifterLinear(
+            linear_subset_dataframe,
+            self._merged_reference_sample,
+            protein_subset=self._selected_protein_groups,
+        ).ion_dataframe
+        self.complete_dataframe.loc[self._linear_subset_rows, :] = (
+            linear_shifted_dataframe
+        )
+
 
 class NormalizationManagerProtein(NormalizationManager):
     def __init__(self, complete_dataframe, num_samples_quadratic):
@@ -359,29 +506,34 @@ class NormalizationManagerProtein(NormalizationManager):
         self._rows_sorted_by_number_valid_values = None
         self._run_normalization()
 
-class SampleShifterLinearToMedian():
+
+class SampleShifterLinearToMedian:
     def __init__(self, ion_dataframe):
         self.ion_dataframe = ion_dataframe
         self._merged_reference_sample = ion_dataframe.median(axis=0)
         self._shift_to_median()
-    
+
     def _shift_to_median(self):
-        self.ion_dataframe = SampleShifterLinear(self.ion_dataframe, self._merged_reference_sample).ion_dataframe
+        self.ion_dataframe = SampleShifterLinear(
+            self.ion_dataframe, self._merged_reference_sample
+        ).ion_dataframe
 
 
-class SampleShifterLinear():
-    def __init__(self, ion_dataframe, reference_intensities, protein_subset = None):
+class SampleShifterLinear:
+    def __init__(self, ion_dataframe, reference_intensities, protein_subset=None):
         self.ion_dataframe = ion_dataframe
         self._protein_subset = protein_subset
         self._ion_dataframe_values = None
         self._reference_intensities = reference_intensities.to_numpy()
         self._define_ion_dataframe_values()
         self._shift_columns_to_reference_sample()
-        #self._update_ion_dataframe()
+        # self._update_ion_dataframe()
 
     def _define_ion_dataframe_values(self):
         if self._protein_subset is not None:
-            self._ion_dataframe_values = self.ion_dataframe.loc[: , self._protein_subset].to_numpy()
+            self._ion_dataframe_values = self.ion_dataframe.loc[
+                :, self._protein_subset
+            ].to_numpy()
         else:
             self._ion_dataframe_values = self.ion_dataframe.to_numpy()
 
@@ -389,9 +541,12 @@ class SampleShifterLinear():
         num_rows = self._ion_dataframe_values.shape[0]
         for row_idx in range(num_rows):
             self._shift_to_reference_sample(row_idx)
-    
+
     def _shift_to_reference_sample(self, row_idx):
-        distance_to_reference = self._calc_distance(samples_1=self._reference_intensities, samples_2=self._ion_dataframe_values[row_idx,:]) #reference-sample = distance
+        distance_to_reference = self._calc_distance(
+            samples_1=self._reference_intensities,
+            samples_2=self._ion_dataframe_values[row_idx, :],
+        )  # reference-sample = distance
         self.ion_dataframe.iloc[row_idx, :] += distance_to_reference
 
     @staticmethod
@@ -402,7 +557,6 @@ class SampleShifterLinear():
             return np.nan
         else:
             return np.nanmedian(distrib)
-        
-    
+
     def _update_ion_dataframe(self):
-        self.ion_dataframe.loc[:,:] = self._ion_dataframe_values
+        self.ion_dataframe.loc[:, :] = self._ion_dataframe_values
