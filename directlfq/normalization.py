@@ -122,11 +122,11 @@ def calc_distance(metric, samples_1, samples_2):
     else:
         return res
 
-@njit
+@njit(cache=True)
 def calc_nanvar(fcdist):
     return np.nanvar(fcdist)
 
-@njit
+@njit(cache=True)
 def calc_nanmedian(fcdist):
     return np.nanmedian(fcdist)
 

@@ -26,7 +26,7 @@ def convert_lower_to_full_matrix(lower_matrix):
     full_matrix[cols, rows] = lower_matrix[rows, cols]
     return full_matrix
 
-@njit
+@njit(cache=True)
 def check_connected_traces(matrix, trace_idx, visited):
     neighbors = np.where(matrix[trace_idx] != np.inf)[0]
     for neighbor in neighbors:
