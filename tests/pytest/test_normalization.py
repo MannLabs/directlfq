@@ -38,6 +38,40 @@ def test_merged_distribs():
     ).any()
 
 
+# ============================================================================
+# set_samples_with_only_single_intensity_to_nan (optimization step 6)
+# ============================================================================
+# Contract locked in before replacing the per-row Python sum() loop with
+# np.count_nonzero(axis=1): in place, any row with fewer than 2 finite values is
+# set entirely to NaN; a row with exactly 2 finite values is kept.
+
+
+def test_set_samples_with_only_single_intensity_to_nan_masks_rows_below_two():
+    # given - rows with 3, 1, 0 and exactly 2 finite values
+    samples = np.array(
+        [
+            [1.0, 2.0, 3.0],
+            [1.0, np.nan, np.nan],
+            [np.nan, np.nan, np.nan],
+            [1.0, 2.0, np.nan],
+        ]
+    )
+
+    # when - mutates in place
+    lfq_norm.set_samples_with_only_single_intensity_to_nan(samples)
+
+    # then - only the single-/zero-intensity rows are blanked
+    expected = np.array(
+        [
+            [1.0, 2.0, 3.0],
+            [np.nan, np.nan, np.nan],
+            [np.nan, np.nan, np.nan],
+            [1.0, 2.0, np.nan],
+        ]
+    )
+    assert np.array_equal(samples, expected, equal_nan=True)
+
+
 def test_order_of_shifts():
     vals1 = [1, np.nan, 1.5]
     vals2 = [1, 1, np.nan]
