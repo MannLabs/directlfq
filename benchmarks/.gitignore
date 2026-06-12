@@ -1,0 +1,3 @@
+# Reference data for optbench.py is large (~70 MB) and regenerable via
+# `python optbench.py save`. Keep it out of git history.
+*.npz
