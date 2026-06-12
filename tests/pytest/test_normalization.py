@@ -155,6 +155,63 @@ def test_that_profiles_with_noise_are_close():
     )
 
 
+# ============================================================================
+# NormalizationManager._determine_sorted_rows (optimization step 2)
+# ============================================================================
+# Contract locked in before replacing the per-row .loc sort key with a numpy
+# nan-count + stable argsort: index labels ordered by ascending NaN-count, with
+# ties broken stably (original order preserved for equal counts).
+
+
+def _norm_manager_with_rows(rows):
+    """NormalizationManager over rows (ions) with a (protein, ion) MultiIndex."""
+    index = pd.MultiIndex.from_tuples(
+        [("P", f"ion{i}") for i in range(len(rows))], names=["protein", "ion"]
+    )
+    df = pd.DataFrame(rows, index=index)
+    return lfq_norm.NormalizationManager(df, num_samples_quadratic=100)
+
+
+def test_determine_sorted_rows_orders_by_ascending_nan_count_stably():
+    # given - rows with nan-counts 0, 2, 1, 3, 1 (the two 1s are a tie)
+    rows = [
+        [1.0, 2.0, 3.0],
+        [1.0, np.nan, np.nan],
+        [1.0, 2.0, np.nan],
+        [np.nan, np.nan, np.nan],
+        [4.0, 5.0, np.nan],
+    ]
+    mgr = _norm_manager_with_rows(rows)
+
+    # when
+    mgr._determine_sorted_rows()
+
+    # then - ascending nan-count; ion2 before ion4 (stable tie-break)
+    assert mgr._rows_sorted_by_number_valid_values == [
+        ("P", "ion0"),
+        ("P", "ion2"),
+        ("P", "ion4"),
+        ("P", "ion1"),
+        ("P", "ion3"),
+    ]
+
+
+def test_determine_sorted_rows_preserves_original_order_when_no_nans():
+    # given - all rows fully finite (all keys equal -> stable order is identity)
+    rows = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]
+    mgr = _norm_manager_with_rows(rows)
+
+    # when
+    mgr._determine_sorted_rows()
+
+    # then
+    assert mgr._rows_sorted_by_number_valid_values == [
+        ("P", "ion0"),
+        ("P", "ion1"),
+        ("P", "ion2"),
+    ]
+
+
 def _calc_distance(samples_1, samples_2):
     distrib = lfq_norm.get_fcdistrib(samples_1, samples_2)
     is_all_nan = np.all(np.isnan(distrib))
