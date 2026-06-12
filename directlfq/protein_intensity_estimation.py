@@ -59,8 +59,24 @@ def get_list_of_tuple_w_protein_profiles_and_shifted_peptides(normed_df, num_sam
 
 
 def get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(normed_df, num_samples_quadratic, min_nonan):
-    list_of_normed_dfs = get_normed_dfs(normed_df)
-    return zip(range(len(list_of_normed_dfs)),list_of_normed_dfs, itertools.repeat(num_samples_quadratic), itertools.repeat(min_nonan))
+    # Yield lightweight per-protein work items (protein name, ion-name slice, value
+    # slice) instead of constructing one pandas DataFrame per protein. The value
+    # slices are contiguous views over the already-sorted matrix, so building the
+    # work list is just slicing, and what gets pickled to workers is small numpy
+    # arrays rather than DataFrames (cheaper to serialize and to rebuild).
+    protein_names = normed_df.index.get_level_values(0).to_numpy()
+    ion_names = normed_df.index.get_level_values(1).to_numpy()
+    normed_array = normed_df.to_numpy()
+    switch = find_nameswitch_indices(protein_names)
+    n_proteins = len(switch) - 1
+    return zip(
+        range(n_proteins),
+        (protein_names[switch[i]] for i in range(n_proteins)),
+        (ion_names[switch[i]:switch[i + 1]] for i in range(n_proteins)),
+        (normed_array[switch[i]:switch[i + 1]] for i in range(n_proteins)),
+        itertools.repeat(num_samples_quadratic),
+        itertools.repeat(min_nonan),
+    )
 
 
 def get_normed_dfs(normed_df):
@@ -115,26 +131,76 @@ def get_configured_multiprocessing_pool(num_cores):
     return pool
 
 
-def calculate_peptide_and_protein_intensities(idx, peptide_intensity_df, num_samples_quadratic, min_nonan):
-    if len(peptide_intensity_df.index) > 1:
-        peptide_intensity_df = ProtvalCutter(peptide_intensity_df, maximum_df_length=100).get_dataframe()
+def calculate_peptide_and_protein_intensities(idx, protein_name, ion_names, peptide_values, num_samples_quadratic, min_nonan):
+    # Operates on the protein's ion x sample numpy matrix directly. Returns
+    # (protein_profile, protein_name, ion_names, shifted_values) so that result
+    # assembly and ion-table compilation no longer need a per-protein DataFrame.
+    if peptide_values.shape[0] > 1:
+        peptide_values, ion_names = _cut_peptide_values(peptide_values, ion_names, maximum=100)
 
     if config.LOG_PROCESSED_PROTEINS and (idx % config.LOG_PROCESSED_PROTEINS_INTERVAL == 0):
         LOGGER.info(f"lfq-object {idx}")
-    summed_pepint = np.nansum(2**peptide_intensity_df)
+    # asfortranarray reproduces the column-major summation order of the previous
+    # np.nansum(2**peptide_intensity_df) path (a homogeneous float DataFrame is
+    # stored column-major), keeping summed_pepint bit-identical.
+    summed_pepint = np.nansum(np.asfortranarray(2**peptide_values))
 
-    if(peptide_intensity_df.shape[1]<2):
-        shifted_peptides = peptide_intensity_df
-    else:
-        shifted_peptides = lfqnorm.NormalizationManagerProtein(peptide_intensity_df, num_samples_quadratic = num_samples_quadratic).complete_dataframe
+    shifted_values = _normalize_protein_values(peptide_values, num_samples_quadratic)
+    protein_profile = get_protein_profile_from_shifted_peptides(shifted_values, summed_pepint, min_nonan)
 
-    protein_profile = get_protein_profile_from_shifted_peptides(shifted_peptides, summed_pepint, min_nonan)
-
-    return protein_profile, shifted_peptides
+    return protein_profile, protein_name, ion_names, shifted_values
 
 
-def get_protein_profile_from_shifted_peptides(normalized_peptide_profile_df, summed_pepints, min_nonan):
-    intens_vec = get_list_with_protein_value_for_each_sample(normalized_peptide_profile_df, min_nonan)
+def _cut_peptide_values(peptide_values, ion_names, maximum=100):
+    """Numpy equivalent of ProtvalCutter: keep at most `maximum` ions, sorted
+    primarily by NaN count (ascending) then summed intensity (descending). Only
+    reorders when there are more than `maximum` ions (matching ProtvalCutter,
+    which leaves shorter tables untouched)."""
+    if peptide_values.shape[0] <= maximum:
+        return peptide_values, ion_names
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        neg_summed = -np.nansum(peptide_values, axis=1)
+    nan_counts = np.isnan(peptide_values).sum(axis=1)
+    # lexsort: last key is primary -> nan_counts asc, then neg_summed asc
+    # (= summed desc); stable, so full ties keep original order like sorted().
+    order = np.lexsort((neg_summed, nan_counts))[:maximum]
+    return peptide_values[order], ion_names[order]
+
+
+def _normalize_protein_values(peptide_values, num_samples_quadratic):
+    """Numpy equivalent of NormalizationManagerProtein (kept as a class for
+    visualizations.py / API stability). Rows are ions, columns are samples."""
+    if peptide_values.shape[0] <= num_samples_quadratic:
+        values = peptide_values.copy()
+        sample2shift = lfqnorm.get_normfacts(values)
+        return lfqnorm.apply_sampleshifts(values, sample2shift)
+
+    arr = peptide_values.copy()
+    k = num_samples_quadratic
+    nan_counts = np.isnan(arr).sum(axis=1)
+    order = np.argsort(nan_counts, kind="stable")
+    q_pos = order[:k]
+    linear_mask = np.ones(arr.shape[0], dtype=bool)
+    linear_mask[q_pos] = False
+    lin_pos = np.flatnonzero(linear_mask)
+
+    q_vals = arr[q_pos].copy()
+    sample2shift = lfqnorm.get_normfacts(q_vals)
+    q_normed = lfqnorm.apply_sampleshifts(q_vals, sample2shift)
+    arr[q_pos] = q_normed
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN slices -> NaN
+        reference = np.nanmedian(q_normed, axis=0)
+        if lin_pos.size:
+            shifts = np.nanmedian(reference - arr[lin_pos], axis=1)
+            arr[lin_pos] = arr[lin_pos] + shifts[:, None]
+    return arr
+
+
+def get_protein_profile_from_shifted_peptides(shifted_values, summed_pepints, min_nonan):
+    intens_vec = get_list_with_protein_value_for_each_sample(shifted_values, min_nonan)
     intens_vec = np.array(intens_vec)
     summed_intensity = np.nansum(2**intens_vec)
     if summed_intensity == 0: #this means all elements in intens vec are nans
@@ -143,15 +209,13 @@ def get_protein_profile_from_shifted_peptides(normalized_peptide_profile_df, sum
     scaled_vec = intens_vec+np.log2(intens_conversion_factor)
     return scaled_vec
 
-def get_list_with_protein_value_for_each_sample(normalized_peptide_profile_df, min_nonan):
-    # vectorized: column-wise nanmedian over the ion x sample matrix, with samples
-    # that have fewer than min_nonan finite ions set to NaN (identical to the
-    # previous per-column loop, but without building one pandas Series per sample).
-    arr = normalized_peptide_profile_df.to_numpy()
-    nonan_counts = np.sum(~np.isnan(arr), axis=0)
+def get_list_with_protein_value_for_each_sample(shifted_values, min_nonan):
+    # column-wise nanmedian over the ion x sample matrix, with samples that have
+    # fewer than min_nonan finite ions set to NaN.
+    nonan_counts = np.sum(~np.isnan(shifted_values), axis=0)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN columns -> NaN
-        intens_vec = np.nanmedian(arr, axis=0)
+        intens_vec = np.nanmedian(shifted_values, axis=0)
     intens_vec[nonan_counts < min_nonan] = np.nan
     return intens_vec
 
@@ -213,12 +277,10 @@ def get_ion_intensity_dataframe_from_list_of_shifted_peptides(list_of_tuple_w_pr
     ion_names = []
     ion_vals = []
     protein_names = []
-    for idx in range(len(list_of_tuple_w_protein_profiles_and_shifted_peptides)):
-        ion_df = list_of_tuple_w_protein_profiles_and_shifted_peptides[idx][1]
-        protein_name = ion_df.index.get_level_values(0)[0]
-        ion_names += ion_df.index.get_level_values(1).tolist()
-        ion_vals.append(ion_df.to_numpy())
-        protein_names.extend([protein_name]*len(ion_df.index))
+    for _, protein_name, inames, shifted_values in list_of_tuple_w_protein_profiles_and_shifted_peptides:
+        ion_names.extend(inames.tolist())
+        ion_vals.append(shifted_values)
+        protein_names.extend([protein_name] * len(inames))
     merged_ions = 2**np.concatenate(ion_vals)
     merged_ions = np.nan_to_num(merged_ions)
     ion_df = pd.DataFrame(merged_ions)
@@ -245,7 +307,7 @@ def get_protein_dataframe_from_list_of_protein_profiles(list_of_tuple_w_protein_
     profile_list = []
 
     list_of_protein_profiles = [x[0] for x in list_of_tuple_w_protein_profiles_and_shifted_peptides]
-    allprots = [x[1].index.get_level_values(0)[0] for x in list_of_tuple_w_protein_profiles_and_shifted_peptides]
+    allprots = [x[1] for x in list_of_tuple_w_protein_profiles_and_shifted_peptides]
 
     for idx in range(len(allprots)):
         if list_of_protein_profiles[idx] is None:
