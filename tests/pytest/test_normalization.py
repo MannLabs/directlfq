@@ -247,3 +247,40 @@ def test_calc_distance():
     samples_1 = np.array([])
     samples_2 = np.array([])
     assert np.isnan(lfq_norm.SampleShifterLinear._calc_distance(samples_1, samples_2))
+
+
+# ============================================================================
+# SampleShifterLinear._shift_columns_to_reference_sample (optimization step 3)
+# ============================================================================
+# Contract locked in before replacing the per-row `iloc[r,:] +=` shift with a
+# single numpy block write: every row is shifted by nanmedian(reference - row),
+# and an all-NaN row stays all-NaN.
+
+
+def test_sample_shifter_shifts_each_row_by_nanmedian_distance():
+    # given - rows that are fully finite, partially NaN, and fully NaN
+    ion_dataframe = pd.DataFrame(
+        [[1.0, 2.0, 3.0], [5.0, np.nan, 5.0], [np.nan, np.nan, np.nan]]
+    )
+    reference = pd.Series([10.0, 20.0, 30.0])
+
+    # when
+    shifted = lfq_norm.SampleShifterLinear(ion_dataframe, reference).ion_dataframe
+
+    # then - row shifts are nanmedian([9,18,27])=18, nanmedian([5,25])=15, NaN
+    expected = np.array(
+        [[19.0, 20.0, 21.0], [20.0, np.nan, 20.0], [np.nan, np.nan, np.nan]]
+    )
+    assert np.array_equal(shifted.to_numpy(), expected, equal_nan=True)
+
+
+def test_sample_shifter_leaves_row_unchanged_when_already_on_reference():
+    # given - a row identical to the reference (distance 0)
+    ion_dataframe = pd.DataFrame([[10.0, 20.0, 30.0]])
+    reference = pd.Series([10.0, 20.0, 30.0])
+
+    # when
+    shifted = lfq_norm.SampleShifterLinear(ion_dataframe, reference).ion_dataframe
+
+    # then
+    assert np.array_equal(shifted.to_numpy(), np.array([[10.0, 20.0, 30.0]]))
