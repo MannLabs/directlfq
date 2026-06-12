@@ -28,6 +28,7 @@ __all__ = [
 import numpy as np
 import pandas as pd
 import time
+import warnings
 import directlfq.tracefilter as tracefilter
 import logging
 import directlfq.config as config
@@ -535,9 +536,13 @@ class SampleShifterLinear:
             self._ion_dataframe_values = self.ion_dataframe.to_numpy()
 
     def _shift_columns_to_reference_sample(self):
-        num_rows = self._ion_dataframe_values.shape[0]
-        for row_idx in range(num_rows):
-            self._shift_to_reference_sample(row_idx)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN rows -> NaN
+            distances = np.nanmedian(
+                self._reference_intensities - self._ion_dataframe_values, axis=1
+            )
+        shifted = self.ion_dataframe.to_numpy() + distances[:, None]
+        self.ion_dataframe.iloc[:, :] = shifted
 
     def _shift_to_reference_sample(self, row_idx):
         distance_to_reference = self._calc_distance(
