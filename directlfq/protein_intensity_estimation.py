@@ -14,6 +14,7 @@ import directlfq.normalization as lfqnorm
 import multiprocess
 import itertools
 import logging
+import warnings
 import directlfq.config as config
 
 config.setup_logging()
@@ -143,14 +144,15 @@ def get_protein_profile_from_shifted_peptides(normalized_peptide_profile_df, sum
     return scaled_vec
 
 def get_list_with_protein_value_for_each_sample(normalized_peptide_profile_df, min_nonan):
-    intens_vec = []
-    for sample in normalized_peptide_profile_df.columns:
-        reps = normalized_peptide_profile_df.loc[:,sample].to_numpy()
-        nonan_elems = sum(~np.isnan(reps))
-        if(nonan_elems>=min_nonan):
-            intens_vec.append(np.nanmedian(reps))
-        else:
-            intens_vec.append(np.nan)
+    # vectorized: column-wise nanmedian over the ion x sample matrix, with samples
+    # that have fewer than min_nonan finite ions set to NaN (identical to the
+    # previous per-column loop, but without building one pandas Series per sample).
+    arr = normalized_peptide_profile_df.to_numpy()
+    nonan_counts = np.sum(~np.isnan(arr), axis=0)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN columns -> NaN
+        intens_vec = np.nanmedian(arr, axis=0)
+    intens_vec[nonan_counts < min_nonan] = np.nan
     return intens_vec
 
 
