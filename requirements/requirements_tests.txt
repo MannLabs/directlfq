@@ -4,6 +4,7 @@ matplotlib
 wget
 seaborn
 alphabase>=1.5.0
+certifi
 progressbar
 pytest
 nbmake==1.5.3
