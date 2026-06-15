@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+import pytest
 
 import directlfq.protein_intensity_estimation as lfq_protint
 import directlfq.test_utils as lfq_testutils
@@ -157,3 +158,68 @@ def test_nameswitch_indices_are_recovered_correctly():
 
     assert (array[start_indices[3] : start_indices[4]] == "d").all()
     assert len(array[start_indices[3] : start_indices[4]]) == 1
+
+
+# ============================================================================
+# get_list_with_protein_value_for_each_sample (optimization step 1)
+# ============================================================================
+# Contract locked in before vectorizing the per-sample Series loop into a single
+# numpy column-nanmedian pass: for each sample (column) return the nanmedian of
+# its ion values when at least ``min_nonan`` are finite, otherwise NaN.
+
+
+def _profile_df(rows):
+    """Build an ion-profile DataFrame (rows = ions, columns = samples)."""
+    return pd.DataFrame(rows)
+
+
+def test_protein_value_per_sample_returns_column_nanmedians_when_all_finite():
+    # given - three samples, all values finite
+    df = _profile_df([[1.0, 4.0, 10.0], [3.0, 6.0, 20.0], [5.0, 8.0, 30.0]])
+
+    # when
+    result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan=1)
+
+    # then - per-column median, in column order
+    assert np.array_equal(np.asarray(result), np.array([3.0, 6.0, 20.0]))
+
+
+def test_protein_value_per_sample_skips_nans_in_median():
+    # given - a column with an even number of finite values (median is averaged)
+    df = _profile_df([[4.0], [np.nan], [6.0]])
+
+    # when
+    result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan=1)
+
+    # then - nanmedian over {4, 6}
+    assert np.array_equal(np.asarray(result), np.array([5.0]))
+
+
+def test_protein_value_per_sample_all_nan_column_is_nan():
+    # given - one all-NaN sample alongside a finite one
+    df = _profile_df([[1.0, np.nan], [3.0, np.nan]])
+
+    # when
+    result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan=1)
+
+    # then - finite column keeps its median, all-NaN column -> NaN
+    assert np.array_equal(np.asarray(result), np.array([2.0, np.nan]), equal_nan=True)
+
+
+@pytest.mark.parametrize(
+    "min_nonan,expected",
+    [
+        (1, [3.0, 5.0, np.nan]),
+        (2, [3.0, 5.0, np.nan]),
+        (3, [3.0, np.nan, np.nan]),
+    ],
+)
+def test_protein_value_per_sample_applies_min_nonan_threshold(min_nonan, expected):
+    # given - sample finite-counts of 3, 2 and 0 respectively
+    df = _profile_df([[1.0, 4.0, np.nan], [3.0, np.nan, np.nan], [5.0, 6.0, np.nan]])
+
+    # when
+    result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan)
+
+    # then - a column is NaN-ed out only when its finite count < min_nonan
+    assert np.array_equal(np.asarray(result), np.array(expected), equal_nan=True)
