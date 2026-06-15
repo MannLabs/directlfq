@@ -30,8 +30,12 @@ def test_merged_distribs():
     shift_distrib = np.array([2, 2, 2, 2, 2])
     counts_anchor_distrib = 4
     counts_shifted_distib = 1
-    assert (lfq_norm.merge_distribs(anchor_distrib, shift_distrib, counts_anchor_distrib, counts_shifted_distib)
-            == np.array([1.2, 1.2, 1.2, 1.2, 1.2])).any()
+    assert (
+        lfq_norm.merge_distribs(
+            anchor_distrib, shift_distrib, counts_anchor_distrib, counts_shifted_distib
+        )
+        == np.array([1.2, 1.2, 1.2, 1.2, 1.2])
+    ).any()
 
 
 def test_order_of_shifts():
@@ -69,7 +73,9 @@ def _assert_that_results_scatter_around_zero(input_df_normalized):
 @pytest.mark.parametrize("num_samples_quadratic", [100, 3, 1])
 def test_normalizing_between_samples(test_data_dir, num_samples_quadratic):
     input_file = os.path.join(
-        test_data_dir, "unit_tests", "protein_normalization",
+        test_data_dir,
+        "unit_tests",
+        "protein_normalization",
         "peptides.txt.maxquant_peptides_benchmarking.aq_reformat.tsv",
     )
     input_df = pd.read_csv(input_file, sep="\t")
@@ -82,25 +88,71 @@ def test_normalizing_between_samples(test_data_dir, num_samples_quadratic):
 
 
 def test_that_profiles_without_noise_are_shifted_exactly_on_top_of_each_other():
-    peptide1 = lfq_test_utils.PeptideProfile(protein_name="protA", fraction_zeros_in_profile=0.1, systematic_peptide_shift=3000, add_noise=False)
-    peptide2 = lfq_test_utils.PeptideProfile(protein_name="protA", fraction_zeros_in_profile=0.9, systematic_peptide_shift=3, add_noise=False)
-    peptide3 = lfq_test_utils.PeptideProfile(protein_name="protA", fraction_zeros_in_profile=0.1, systematic_peptide_shift=0.1, add_noise=False)
-    peptide4 = lfq_test_utils.PeptideProfile(protein_name="protA", fraction_zeros_in_profile=0.9, systematic_peptide_shift=100, add_noise=False)
-    protein_df = lfq_test_utils.ProteinProfileGenerator([peptide1, peptide2, peptide3, peptide4]).protein_profile_dataframe
+    peptide1 = lfq_test_utils.PeptideProfile(
+        protein_name="protA",
+        fraction_zeros_in_profile=0.1,
+        systematic_peptide_shift=3000,
+        add_noise=False,
+    )
+    peptide2 = lfq_test_utils.PeptideProfile(
+        protein_name="protA",
+        fraction_zeros_in_profile=0.9,
+        systematic_peptide_shift=3,
+        add_noise=False,
+    )
+    peptide3 = lfq_test_utils.PeptideProfile(
+        protein_name="protA",
+        fraction_zeros_in_profile=0.1,
+        systematic_peptide_shift=0.1,
+        add_noise=False,
+    )
+    peptide4 = lfq_test_utils.PeptideProfile(
+        protein_name="protA",
+        fraction_zeros_in_profile=0.9,
+        systematic_peptide_shift=100,
+        add_noise=False,
+    )
+    protein_df = lfq_test_utils.ProteinProfileGenerator(
+        [peptide1, peptide2, peptide3, peptide4]
+    ).protein_profile_dataframe
     normed_ion_profile = lfq_norm.normalize_ion_profiles(protein_df)
     column_from_shifted = normed_ion_profile.iloc[:, 11].dropna().to_numpy()
     assert np.allclose(column_from_shifted, column_from_shifted[0])
 
 
 def test_that_profiles_with_noise_are_close():
-    peptide1 = lfq_test_utils.PeptideProfile(protein_name="protA", fraction_zeros_in_profile=0, systematic_peptide_shift=3000, add_noise=True)
-    peptide2 = lfq_test_utils.PeptideProfile(protein_name="protA", fraction_zeros_in_profile=0, systematic_peptide_shift=3, add_noise=True)
-    peptide3 = lfq_test_utils.PeptideProfile(protein_name="protA", fraction_zeros_in_profile=0, systematic_peptide_shift=0.1, add_noise=True)
-    peptide4 = lfq_test_utils.PeptideProfile(protein_name="protA", fraction_zeros_in_profile=0, systematic_peptide_shift=100, add_noise=True)
-    protein_df = lfq_test_utils.ProteinProfileGenerator([peptide1, peptide2, peptide3, peptide4]).protein_profile_dataframe
+    peptide1 = lfq_test_utils.PeptideProfile(
+        protein_name="protA",
+        fraction_zeros_in_profile=0,
+        systematic_peptide_shift=3000,
+        add_noise=True,
+    )
+    peptide2 = lfq_test_utils.PeptideProfile(
+        protein_name="protA",
+        fraction_zeros_in_profile=0,
+        systematic_peptide_shift=3,
+        add_noise=True,
+    )
+    peptide3 = lfq_test_utils.PeptideProfile(
+        protein_name="protA",
+        fraction_zeros_in_profile=0,
+        systematic_peptide_shift=0.1,
+        add_noise=True,
+    )
+    peptide4 = lfq_test_utils.PeptideProfile(
+        protein_name="protA",
+        fraction_zeros_in_profile=0,
+        systematic_peptide_shift=100,
+        add_noise=True,
+    )
+    protein_df = lfq_test_utils.ProteinProfileGenerator(
+        [peptide1, peptide2, peptide3, peptide4]
+    ).protein_profile_dataframe
     normed_ion_profile = lfq_norm.normalize_ion_profiles(protein_df)
     column_from_shifted = normed_ion_profile.iloc[:, 9].dropna().to_numpy()
-    assert np.allclose(column_from_shifted, column_from_shifted[0], rtol=0.01, atol=0.01)
+    assert np.allclose(
+        column_from_shifted, column_from_shifted[0], rtol=0.01, atol=0.01
+    )
 
 
 def _calc_distance(samples_1, samples_2):

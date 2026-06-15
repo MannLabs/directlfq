@@ -45,14 +45,7 @@ def parse_cli_settings(command_name: str, **kwargs):
         print("Something went wrong, execution incomplete!")
 
 
-
-
-
-def cli_option(
-    parameter_name: str,
-    as_argument: bool = False,
-    **kwargs
-):
+def cli_option(parameter_name: str, as_argument: bool = False, **kwargs):
     """A wrapper for click.options and click.arguments using local defaults.
     Parameters
     ----------
@@ -76,9 +69,7 @@ def cli_option(
     : click.option, click.argument
         A click.option or click.argument decorator.
     """
-    parameters = copy.deepcopy(
-        INTERFACE_PARAMETERS[parameter_name]
-    )
+    parameters = copy.deepcopy(INTERFACE_PARAMETERS[parameter_name])
     parameters.update(kwargs)
     if "type" in parameters:
         if parameters["type"] == "int":
@@ -93,15 +84,11 @@ def cli_option(
                 parameters["type"] = click.Path(**parameters["type"])
                 if ("default" in parameters) and (parameters["default"]):
                     parameters["default"] = os.path.join(
-                        os.path.dirname(__file__),
-                        parameters["default"]
+                        os.path.dirname(__file__), parameters["default"]
                     )
             elif parameter_type == "choice":
                 options = parameters["type"].pop("options")
-                parameters["type"] = click.Choice(
-                    options,
-                    **parameters["type"]
-                )
+                parameters["type"] = click.Choice(options, **parameters["type"])
     if "default" in parameters:
         if "is_flag" in parameters:
             parameters["show_default"] = False
@@ -140,19 +127,15 @@ def cli_option(
             )
 
 
-
-
 @click.group(
     context_settings=dict(
-        help_option_names=['-h', '--help'],
+        help_option_names=["-h", "--help"],
     ),
-    invoke_without_command=True
+    invoke_without_command=True,
 )
 @click.pass_context
 @click.version_option(directlfq.__version__, "-v", "--version")
 def run(ctx, **kwargs):
-
-
     name = f"directLFQ {directlfq.__version__}"
     ascii_art_name = """
      _ _               _   _     ______ _____
@@ -165,7 +148,7 @@ def run(ctx, **kwargs):
 
 """
     width = 47
-    centered_name = " "*13 +f"* {name} *"
+    centered_name = " " * 13 + f"* {name} *"
 
     click.echo("\n")
     click.echo("*" * (width))
@@ -176,31 +159,125 @@ def run(ctx, **kwargs):
     if ctx.invoked_subcommand is None:
         click.echo(run.get_help(ctx))
 
+
 @run.command("gui", help="Start graphical user interface.")
-@click.option("--port", "-p", type=int, default=None, help="Port to run the GUI server on (default: 41215 or PORT environment variable)")
+@click.option(
+    "--port",
+    "-p",
+    type=int,
+    default=None,
+    help="Port to run the GUI server on (default: 41215 or PORT environment variable)",
+)
 def gui(port):
     import directlfq.gui
+
     directlfq.gui.run(port=port)
 
-list_of_format_names = ["alphapept_peptides","fragpipe_precursors","maxquant_evidence","maxquant_peptides","diann_fragion_isotopes","diann_precursors","spectronaut_fragion_isotopes","spectronaut_precursor"]
 
-@run.command("lfq", help="Run directLFQ normalization on proteomics input table.", no_args_is_help=True)
-@click.option("--input_file", "-i", type=click.Path(exists=True), required=True, help="The input file containing the ion intensities. Usually the output of a search engine.")
-@click.option("--columns_to_add", "-ca", type=list, default=[], multiple=True, help="Additional columns to add to the LFQ intensity output table. They are extraced from the input file.")
-@click.option("--selected_proteins_file", "-sp", type=click.Path(exists=True),
-default=None, help="If you want to perform normalization only on a subset of proteins, you can pass a .txt file containing the protein IDs, separeted by line breaks. No header expected.")
-@click.option("--mq_protein_groups_txt", "-mp", type=click.Path(exists=True), default=None,
-help="In the case of using MaxQuant data, the proteinGroups.txt table is needed in order to map IDs analogous to MaxQuant. Adding this table improves protein mapping, but is not necessary.")
-@click.option("--min_nonan", "-mn", type=int, default=1, help="Min number of ion intensities necessary in order to derive a protein intensity. Increasing the number results in more reliable protein quantification at the cost of losing IDs.")
-@click.option("--input_type_to_use", "-it", type=click.Choice(list_of_format_names), default=None, help="The type of input file to use. This is used to determine the column names of the input file. Only change this if you want to use non-default settings.")
-@click.option("--maximum_number_of_quadratic_ions_to_use_per_protein", "-mn", type= int, default = 10,  help="How many ions are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime.")
-@click.option("--number_of_quadratic_samples", "-nq", type = int, default = 50, help="How many samples are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime.")
-@click.option("--filename_suffix", "-fs", type=str, default="", help="A suffix to add to the output file name.")
-@click.option("--num_cores",  "-nc", type = int, default = None, help="The number of cores to use (default is to use multiprocessing).")
-@click.option("--deactivate_normalization",  "-dn", type = bool, default = False, help="If you want to deactivate the normalization step, you can set this flag to True.")
-@click.option("--filter_dict",  "-fd", type = str, default = None, help="In case you want to define specific filters in addition to the standard filters, you can add a yaml file where the filters are defined (see GitHub docu for example).")
+list_of_format_names = [
+    "alphapept_peptides",
+    "fragpipe_precursors",
+    "maxquant_evidence",
+    "maxquant_peptides",
+    "diann_fragion_isotopes",
+    "diann_precursors",
+    "spectronaut_fragion_isotopes",
+    "spectronaut_precursor",
+]
 
+
+@run.command(
+    "lfq",
+    help="Run directLFQ normalization on proteomics input table.",
+    no_args_is_help=True,
+)
+@click.option(
+    "--input_file",
+    "-i",
+    type=click.Path(exists=True),
+    required=True,
+    help="The input file containing the ion intensities. Usually the output of a search engine.",
+)
+@click.option(
+    "--columns_to_add",
+    "-ca",
+    type=list,
+    default=[],
+    multiple=True,
+    help="Additional columns to add to the LFQ intensity output table. They are extraced from the input file.",
+)
+@click.option(
+    "--selected_proteins_file",
+    "-sp",
+    type=click.Path(exists=True),
+    default=None,
+    help="If you want to perform normalization only on a subset of proteins, you can pass a .txt file containing the protein IDs, separeted by line breaks. No header expected.",
+)
+@click.option(
+    "--mq_protein_groups_txt",
+    "-mp",
+    type=click.Path(exists=True),
+    default=None,
+    help="In the case of using MaxQuant data, the proteinGroups.txt table is needed in order to map IDs analogous to MaxQuant. Adding this table improves protein mapping, but is not necessary.",
+)
+@click.option(
+    "--min_nonan",
+    "-mn",
+    type=int,
+    default=1,
+    help="Min number of ion intensities necessary in order to derive a protein intensity. Increasing the number results in more reliable protein quantification at the cost of losing IDs.",
+)
+@click.option(
+    "--input_type_to_use",
+    "-it",
+    type=click.Choice(list_of_format_names),
+    default=None,
+    help="The type of input file to use. This is used to determine the column names of the input file. Only change this if you want to use non-default settings.",
+)
+@click.option(
+    "--maximum_number_of_quadratic_ions_to_use_per_protein",
+    "-mn",
+    type=int,
+    default=10,
+    help="How many ions are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime.",
+)
+@click.option(
+    "--number_of_quadratic_samples",
+    "-nq",
+    type=int,
+    default=50,
+    help="How many samples are used to create the anchor intensity trace (see paper). Increasing might marginally increase performance at the cost of runtime.",
+)
+@click.option(
+    "--filename_suffix",
+    "-fs",
+    type=str,
+    default="",
+    help="A suffix to add to the output file name.",
+)
+@click.option(
+    "--num_cores",
+    "-nc",
+    type=int,
+    default=None,
+    help="The number of cores to use (default is to use multiprocessing).",
+)
+@click.option(
+    "--deactivate_normalization",
+    "-dn",
+    type=bool,
+    default=False,
+    help="If you want to deactivate the normalization step, you can set this flag to True.",
+)
+@click.option(
+    "--filter_dict",
+    "-fd",
+    type=str,
+    default=None,
+    help="In case you want to define specific filters in addition to the standard filters, you can add a yaml file where the filters are defined (see GitHub docu for example).",
+)
 def run_directlfq(**kwargs):
     print("starting directLFQ")
     import directlfq.lfq_manager
+
     directlfq.lfq_manager.run_lfq(**kwargs)

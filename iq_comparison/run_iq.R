@@ -28,9 +28,9 @@ quant_df2$quant <- convert_to_array(quant_df$quant)
 
 system.time({
   iq_norm_data <- iq::fast_preprocess(quant_df2, pdf_out = NULL)
-  
-  result_fastest <- iq::fast_MaxLFQ(iq_norm_data, 
-                                    row_names = protein_df$PG.ProteinGroups, 
+
+  result_fastest <- iq::fast_MaxLFQ(iq_norm_data,
+                                    row_names = protein_df$PG.ProteinGroups,
                                     col_names = sample_df$sample_list)
 })
 
@@ -38,21 +38,5 @@ system.time({
 
 write.table(cbind(protein = rownames(result_fastest$estimate),
                   MaxLFQ_annotation = result_fastest$annotation,
-                  result_fastest$estimate), 
+                  result_fastest$estimate),
             "iq-MaxLFQ-fast.txt", sep = "\t", row.names = FALSE)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,5 +1,13 @@
 # How to contribute
 
+## How to get started
+
+After cloning, install the pre-commit hooks that auto-format/lint code and strip notebook metadata:
+```
+pip install pre-commit
+pre-commit install
+```
+
 ## Did you find a bug?
 
 * Ensure the bug was not already reported by searching on GitHub under Issues.
@@ -23,4 +31,3 @@
 ## Do you want to contribute to the documentation?
 
 * Docs are automatically created from the notebooks in the nbs folder.
-
