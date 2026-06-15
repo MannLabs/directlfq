@@ -258,7 +258,9 @@ def _normalize_protein_values(peptide_values, num_samples_quadratic):
     return arr
 
 
-def get_protein_profile_from_shifted_peptides(shifted_values, summed_pepints, min_nonan):
+def get_protein_profile_from_shifted_peptides(
+    shifted_values, summed_pepints, min_nonan
+):
     intens_vec = get_list_with_protein_value_for_each_sample(shifted_values, min_nonan)
     intens_vec = np.array(intens_vec)
     summed_intensity = np.nansum(2**intens_vec)
@@ -278,7 +280,9 @@ def get_list_with_protein_value_for_each_sample(
     """
     nonan_counts = np.sum(~np.isnan(shifted_values), axis=0)
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN columns -> NaN
+        warnings.simplefilter(
+            "ignore", category=RuntimeWarning
+        )  # all-NaN columns -> NaN
         intens_vec = np.nanmedian(shifted_values, axis=0)
     intens_vec[nonan_counts < min_nonan] = np.nan
     return intens_vec
