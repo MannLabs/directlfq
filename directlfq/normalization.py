@@ -364,14 +364,16 @@ class NormalizationManager:
             if x not in self._quadratic_subset_rows
         ]
 
-    def _determine_sorted_rows(self):
+    def _determine_sorted_rows(self) -> None:
+        """Order the dataframe's index labels by ascending number of NaNs per row.
+
+        Stores the result in ``self._rows_sorted_by_number_valid_values``. Ties are
+        broken stably, so rows with equal NaN counts keep their original order.
+        """
         rows = self.complete_dataframe.index
-        self._rows_sorted_by_number_valid_values = sorted(
-            rows,
-            key=lambda idx: self._get_num_nas_in_row(
-                self.complete_dataframe.loc[idx, :].to_numpy()
-            ),
-        )
+        nan_counts = np.isnan(self.complete_dataframe.to_numpy()).sum(axis=1)
+        order = np.argsort(nan_counts, kind="stable")
+        self._rows_sorted_by_number_valid_values = [rows[i] for i in order]
 
     def _normalize_quadratic_selection(self):
         quadratic_subset_dataframe = self.complete_dataframe.loc[
@@ -395,15 +397,6 @@ class NormalizationManager:
         self.complete_dataframe.loc[self._linear_subset_rows, :] = (
             linear_shifted_dataframe
         )
-
-    @staticmethod
-    @njit
-    def _get_num_nas_in_row(row):
-        sum = 0
-        isnans = np.isnan(row)
-        for is_nan in isnans:
-            sum += is_nan
-        return sum
 
 
 class NormalizationManagerSamples(NormalizationManager):

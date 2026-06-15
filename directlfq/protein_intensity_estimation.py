@@ -256,7 +256,6 @@ def get_list_with_protein_value_for_each_sample(
 
 
 import pandas as pd
-from numba import njit
 
 
 class ProtvalCutter:
@@ -293,15 +292,6 @@ class ProtvalCutter:
                 ),  # Then by sum of intensities (descending)
             ),
         )
-
-    @staticmethod
-    @njit
-    def _get_num_nas_in_row(row):
-        sum = 0
-        isnans = np.isnan(row)
-        for is_nan in isnans:
-            sum += is_nan
-        return sum
 
     def get_dataframe(self):
         if self._dataframe_too_long:
