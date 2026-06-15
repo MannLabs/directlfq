@@ -364,7 +364,12 @@ class NormalizationManager:
             if x not in self._quadratic_subset_rows
         ]
 
-    def _determine_sorted_rows(self):
+    def _determine_sorted_rows(self) -> None:
+        """Order the dataframe's index labels by ascending number of NaNs per row.
+
+        Stores the result in ``self._rows_sorted_by_number_valid_values``. Ties are
+        broken stably, so rows with equal NaN counts keep their original order.
+        """
         rows = self.complete_dataframe.index
         nan_counts = np.isnan(self.complete_dataframe.to_numpy()).sum(axis=1)
         order = np.argsort(nan_counts, kind="stable")
