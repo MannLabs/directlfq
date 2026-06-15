@@ -6,7 +6,7 @@
 [![GitHub downloads](https://img.shields.io/github/downloads/mannlabs/directlfq/total?label=github%20downloads)](https://github.com/MannLabs/directlfq/releases)
 ![Python](https://img.shields.io/pypi/pyversions/directlfq)
 <!-- ![Pip installation](https://github.com/MannLabs/directlfq/workflows/Default%20installation%20and%20tests/badge.svg) -->
-![Unit tests](https://github.com/MannLabs/directlfq/actions/workflows/nbdev_tests.yml/badge.svg)
+![Unit tests](https://github.com/MannLabs/directlfq/actions/workflows/quick_tests.yml/badge.svg)
 ![System tests](https://github.com/MannLabs/directlfq/actions/workflows/quick_tests.yml/badge.svg)
 
 <!-- [![Downloads](https://pepy.tech/badge/directlfq)](https://pepy.tech/project/directlfq)
@@ -263,7 +263,7 @@ lfq_manager.run_lfq(example_input_file_diann)
 
 Several use cases for applying directLFQ can be found as Jupyter Notebooks in the tests folder. See for example the [quicktests notebook](tests/quicktests/run_pipeline_w_different_input_formats.ipynb).
 
-Note that the nbdev_nbs folder contains the source code as Jupyter notebooks. These notebooks are automatically converted to Python scripts using the nbdev package and stored in the directlfq folder. The notebooks contain additional documentation and comments as well as unit tests that can be executed directly from the notebooks themselves.
+The source code lives directly in the Python modules in the `directlfq` folder. Unit tests are located in `tests/pytest`.
 
 ---
 ## Troubleshooting

@@ -1,4 +1,3 @@
-
 import os
 import pathlib
 if "__file__" in globals():#only run in the translated python file, as __file__ is not defined with ipython
@@ -33,7 +32,6 @@ def get_samples_used_from_samplemap_df(samplemap_df, cond1, cond2):
 def get_all_samples_from_samplemap_df(samplemap_df):
     return list(samplemap_df["sample"])
 
-# %% ../nbdev_nbs/04_utils.ipynb 6
 import pandas as pd
 
 def get_samplenames_from_input_df(data):
@@ -43,7 +41,6 @@ def get_samplenames_from_input_df(data):
     names.remove(config.QUANT_ID)
     return names
 
-# %% ../nbdev_nbs/04_utils.ipynb 7
 import numpy as np
 def filter_df_to_minrep(quant_df_wideformat, samples_c1, samples_c2, minrep):
     """filters dataframe in directlfq format such that each column has a minimum number of replicates
@@ -55,11 +52,9 @@ def filter_df_to_minrep(quant_df_wideformat, samples_c1, samples_c2, minrep):
     quant_df_reduced = quant_df_wideformat.iloc[idxs_both].reset_index()
     return quant_df_reduced
 
-# %% ../nbdev_nbs/04_utils.ipynb 8
 def get_condpairname(condpair):
     return f"{condpair[0]}_VS_{condpair[1]}"
 
-# %% ../nbdev_nbs/04_utils.ipynb 9
 def get_quality_score_column(acquisition_info_df):
     if "FG.ShapeQualityScore" in acquisition_info_df.columns:
         param = "FG.ShapeQualityScore"
@@ -67,21 +62,18 @@ def get_quality_score_column(acquisition_info_df):
         param = "Quantity.Quality"
     return param
 
-# %% ../nbdev_nbs/04_utils.ipynb 10
 import os
 
 def make_dir_w_existcheck(dir):
     if not os.path.exists(dir):
         os.makedirs(dir)
 
-# %% ../nbdev_nbs/04_utils.ipynb 11
 import os
 def get_results_plot_dir_condpair(results_dir, condpair):
     results_dir_plots = f"{results_dir}/{condpair}_plots"
     make_dir_w_existcheck(results_dir_plots)
     return results_dir_plots
 
-# %% ../nbdev_nbs/04_utils.ipynb 12
 def get_middle_elem(sorted_list):
     nvals = len(sorted_list)
     if nvals==1:
@@ -91,7 +83,6 @@ def get_middle_elem(sorted_list):
         return sorted_list[middle_idx]
     return 0.5* (sorted_list[middle_idx] + sorted_list[middle_idx-1])
 
-# %% ../nbdev_nbs/04_utils.ipynb 13
 import numpy as np
 def get_nonna_array(array_w_nas):
     res = []
@@ -108,8 +99,6 @@ def get_nonna_array(array_w_nas):
     return np.array(res)
 
 
-# %% ../nbdev_nbs/04_utils.ipynb 15
-# %% ../nbdev_nbs/04_utils.ipynb 16
 def invert_dictionary(my_map):
     inv_map = {}
     for k, v in my_map.items():
@@ -117,14 +106,12 @@ def invert_dictionary(my_map):
     return inv_map
 
 
-# %% ../nbdev_nbs/04_utils.ipynb 18
 def count_fraction_outliers_from_expected_fc(result_df, threshold, expected_log2fc):
     num_outliers = sum([abs(x-expected_log2fc)> threshold for x in result_df["log2fc"]])
     fraction_outliers = num_outliers/len(result_df["log2fc"])
     LOGGER.info(f"{round(fraction_outliers, 2)} outliers")
     return fraction_outliers
 
-# %% ../nbdev_nbs/04_utils.ipynb 19
 import os
 import shutil
 def create_or_replace_folder(folder):
@@ -132,7 +119,6 @@ def create_or_replace_folder(folder):
         shutil.rmtree(folder)
     os.makedirs(folder)
 
-# %% ../nbdev_nbs/04_utils.ipynb 20
 def add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(mq_file, input_type_to_use ,mq_protein_group_file, columns_to_add):
     try:
         input_type = _get_input_type(mq_file, input_type_to_use)
@@ -209,7 +195,6 @@ def save_annotated_mq_df(annotated_mq_df, annotated_mq_file):
 
 
 
-# %% ../nbdev_nbs/04_utils.ipynb 21
 
 
 def add_columns_to_lfq_results_table(lfq_results_df, input_file, columns_to_add):
@@ -309,7 +294,6 @@ def sort_input_df_by_protein_and_quant_id(data_df):
 
 
 
-# %% ../nbdev_nbs/04_utils.ipynb 29
 import yaml
 import itertools
 
@@ -376,7 +360,6 @@ def get_type2relevant_cols(config_all):
         type2relcols[type] = relevant_cols
     return type2relcols
 
-# %% ../nbdev_nbs/04_utils.ipynb 31
 def filter_input(filter_dict, input):
     if filter_dict == None:
         return input
@@ -413,7 +396,6 @@ def filter_input(filter_dict, input):
 
     return input
 
-# %% ../nbdev_nbs/04_utils.ipynb 32
 def merge_protein_and_ion_cols(input_df, config_dict):
     protein_cols =  config_dict.get("protein_cols")
     ion_cols = config_dict.get("ion_cols")
@@ -423,7 +405,6 @@ def merge_protein_and_ion_cols(input_df, config_dict):
     input_df = input_df.rename(columns = {config_dict.get('quant_ID') : "quant_val"})
     return input_df
 
-# %% ../nbdev_nbs/04_utils.ipynb 33
 import copy
 def merge_protein_cols_and_ion_dict(input_df, config_dict):
     """[summary]
@@ -564,7 +545,6 @@ def add_merged_ionnames(df_subset, ion_hierarchy_local, ion_headers_grouped, qua
         df_subset = df_subset.rename(columns = {quant_id_dict.get(hierarchy_type) : "quant_val"})
     return df_subset
 
-# %% ../nbdev_nbs/04_utils.ipynb 34
 import os.path
 def reformat_and_write_longtable_according_to_config(input_file, outfile_name, config_dict_for_type, sep = "\t",decimal = ".", enforce_largefile_processing = False, chunksize =1000_000):
     """Reshape a long format proteomics results table (e.g. Spectronaut or DIA-NN) to a wide format table.
@@ -609,7 +589,6 @@ def adapt_subtable(input_df_subset, config_dict):
     else:
         return merge_protein_and_ion_cols(input_df_subset, config_dict)
 
-# %% ../nbdev_nbs/04_utils.ipynb 35
 import pandas as pd
 import glob
 import os
@@ -664,7 +643,6 @@ def extend_sample_allcolumns_for_plexdia_case(allcols_samples, config_dict_for_t
     else:
         return allcols_samples
 
-# %% ../nbdev_nbs/04_utils.ipynb 36
 #PLEXDIA case
 
 def adapt_input_df_columns_in_case_of_plexDIA(input_df,config_dict_for_type):
@@ -722,7 +700,6 @@ def merge_sample_id_and_channels(input_df, channels, config_dict_for_type):
 def merge_channel_and_sample_string(sample, channel):
     return f"{sample}_{channel}"
 
-# %% ../nbdev_nbs/04_utils.ipynb 38
 def reformat_and_write_wideformat_table(peptides_tsv, outfile_name, config_dict):
     input_df = pd.read_csv(peptides_tsv,sep="\t", encoding ='latin1')
     filter_dict = config_dict.get("filters")
@@ -820,7 +797,6 @@ def adapt_table_for_alphabaseformat_backward_compatibility(file_is_already_forma
 
 
 
-# %% ../nbdev_nbs/04_utils.ipynb 45
 import pandas as pd
 import os.path
 import pathlib
@@ -863,12 +839,10 @@ def get_original_file_from_aq_reformat(input_file):
     matched = re.match("(.*)(\..*\.)(aq_reformat\.tsv)",input_file)
     return matched.group(1)
 
-# %% ../nbdev_nbs/04_utils.ipynb 47
 def import_config_dict():
     config_dict = load_config(INTABLE_CONFIG)
     return config_dict
 
-# %% ../nbdev_nbs/04_utils.ipynb 48
 import pandas as pd
 
 def load_samplemap(samplemap_file):
@@ -884,7 +858,6 @@ def load_samplemap(samplemap_file):
 
     return pd.read_csv(samplemap_file, sep = sep, encoding ='latin1', dtype='str')
 
-# %% ../nbdev_nbs/04_utils.ipynb 49
 def prepare_loaded_tables(data_df, samplemap_df):
     """
     Integrates information from the peptide/ion data and the samplemap, selects the relevant columns and log2 transforms intensities.
@@ -898,7 +871,6 @@ def prepare_loaded_tables(data_df, samplemap_df):
         data_df[sample] = np.log2(data_df[sample].replace(0, np.nan))
     return data_df[headers], samplemap_df
 
-# %% ../nbdev_nbs/04_utils.ipynb 50
 class LongTableReformater():
     """Generic class to reformat tabular files in chunks. For the specific cases you can inherit the class and specify reformat and iterate function
     """

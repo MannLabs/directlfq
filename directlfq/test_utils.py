@@ -51,13 +51,17 @@ class PeptideProfile():
 
     def _get_single_peptide_profile_template(self):
         rs = RandomState(MT19937(SeedSequence(42312)))
-        return rs.randint(low=self._min_intensity, high=self._max_intensity,size=self._num_samples)
+        return rs.randint(low=self._min_intensity, high=self._max_intensity, size=self._num_samples, dtype=np.int64)
 
     def _scale_profile_vector(self):
         self.peptide_profile_vector = self.peptide_profile_vector*self._systematic_peptide_shift
 
     def _apply_poisson_noise_to_profilevector(self):
-        self.peptide_profile_vector = np.random.poisson(lam=self.peptide_profile_vector, size=len(self.peptide_profile_vector))
+        # Use the Generator API rather than the legacy np.random.poisson: the legacy
+        # sampler caps lam at a limit derived from the C long type, which is int32 on
+        # Windows and rejects the large intensities used here ("lam value too large").
+        rng = np.random.default_rng()
+        self.peptide_profile_vector = rng.poisson(lam=self.peptide_profile_vector, size=len(self.peptide_profile_vector))
 
     def _add_zeros_to_profilevector(self):
         num_elements_to_set_zero = int(self._num_samples*self._fraction_zeros_in_profile)
