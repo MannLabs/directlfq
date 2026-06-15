@@ -537,7 +537,9 @@ class SampleShifterLinear:
 
     def _shift_columns_to_reference_sample(self):
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN rows -> NaN
+            warnings.simplefilter(
+                "ignore", category=RuntimeWarning
+            )  # all-NaN rows -> NaN
             distances = np.nanmedian(
                 self._reference_intensities - self._ion_dataframe_values, axis=1
             )
