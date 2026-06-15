@@ -522,7 +522,9 @@ class NormalizationManagerProtein(NormalizationManager):
         arr[q_pos] = q_normed
 
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN slices -> NaN
+            warnings.simplefilter(
+                "ignore", category=RuntimeWarning
+            )  # all-NaN slices -> NaN
             reference = np.nanmedian(q_normed, axis=0)
             if lin_pos.size:
                 shifts = np.nanmedian(reference - arr[lin_pos], axis=1)
