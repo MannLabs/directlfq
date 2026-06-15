@@ -227,8 +227,23 @@ def get_protein_profile_from_shifted_peptides(
 
 
 def get_list_with_protein_value_for_each_sample(
-    normalized_peptide_profile_df, min_nonan
-):
+    normalized_peptide_profile_df: pd.DataFrame, min_nonan: int
+) -> np.ndarray:
+    """Collapse a protein's peptide profiles into one value per sample.
+
+    For each sample (column), the protein value is the median across its peptide
+    ion values, ignoring NaNs. A sample whose number of finite peptide values is
+    below ``min_nonan`` is set to NaN.
+
+    Args:
+        normalized_peptide_profile_df: Peptide ions (rows) by samples (columns)
+            of normalized log-space intensities.
+        min_nonan: Minimum number of finite peptide values a sample must have to
+            receive a protein value.
+
+    Returns:
+        One protein value per sample, in the column order of the input.
+    """
     arr = normalized_peptide_profile_df.to_numpy()
     nonan_counts = np.sum(~np.isnan(arr), axis=0)
     with warnings.catch_warnings():
