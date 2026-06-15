@@ -232,7 +232,9 @@ def get_list_with_protein_value_for_each_sample(
     arr = normalized_peptide_profile_df.to_numpy()
     nonan_counts = np.sum(~np.isnan(arr), axis=0)
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN columns -> NaN
+        warnings.simplefilter(
+            "ignore", category=RuntimeWarning
+        )  # all-NaN columns -> NaN
         intens_vec = np.nanmedian(arr, axis=0)
     intens_vec[nonan_counts < min_nonan] = np.nan
     return intens_vec
