@@ -31,7 +31,9 @@ def main() -> None:
     num_cores = int(sys.argv[1]) if len(sys.argv) > 1 else 1
 
     config.set_global_protein_and_ion_id(protein_id="protein", quant_id="ion")
-    config.set_log_processed_proteins(log_processed_proteins=False)  # cut per-protein log noise
+    config.set_log_processed_proteins(
+        log_processed_proteins=False
+    )  # cut per-protein log noise
     config.set_compile_normalized_ion_table(compile_normalized_ion_table=True)
     config.check_wether_to_copy_numpy_arrays_derived_from_pandas()
 

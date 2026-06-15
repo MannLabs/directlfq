@@ -47,7 +47,9 @@ def main() -> None:
 
     n_dupe = out["ion"].duplicated().sum()
     if n_dupe:
-        print(f"WARNING: {n_dupe} duplicate ion ids (Peptide+z); directLFQ will drop these")
+        print(
+            f"WARNING: {n_dupe} duplicate ion ids (Peptide+z); directLFQ will drop these"
+        )
 
     out = out.dropna(subset=["protein"])
     out.to_csv(OUTPUT_TSV, sep="\t", index=False)

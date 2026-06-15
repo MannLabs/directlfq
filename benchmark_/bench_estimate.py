@@ -30,7 +30,9 @@ def main() -> None:
     config.set_compile_normalized_ion_table(compile_normalized_ion_table=True)
     config.check_wether_to_copy_numpy_arrays_derived_from_pandas()
 
-    inp = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(INPUT, None, None, [])
+    inp = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(
+        INPUT, None, None, []
+    )
     df = lfqutils.import_data(input_file=inp, input_type_to_use=None, filter_dict=None)
     df = lfqutils.sort_input_df_by_protein_and_quant_id(df)
     df = lfqutils.remove_potential_quant_id_duplicates(df)
@@ -42,7 +44,11 @@ def main() -> None:
 
     # 1. build per-protein sub-DataFrames (this is what gets pickled to workers)
     t = time.perf_counter()
-    spec = list(lfqprot.get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(normed_df, 10, 1))
+    spec = list(
+        lfqprot.get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(
+            normed_df, 10, 1
+        )
+    )
     t_build = time.perf_counter() - t
     n = len(spec)
 
@@ -57,13 +63,16 @@ def main() -> None:
     # 3. assemble protein dataframe
     t = time.perf_counter()
     protein_df = lfqprot.get_protein_dataframe_from_list_of_protein_profiles(
-        list_of_tuple_w_protein_profiles_and_shifted_peptides=results, normed_df=normed_df
+        list_of_tuple_w_protein_profiles_and_shifted_peptides=results,
+        normed_df=normed_df,
     )
     t_prot = time.perf_counter() - t
 
     # 4. compile ion dataframe
     t = time.perf_counter()
-    _ = lfqprot.get_ion_intensity_dataframe_from_list_of_shifted_peptides(results, column_names=normed_df.columns)
+    _ = lfqprot.get_ion_intensity_dataframe_from_list_of_shifted_peptides(
+        results, column_names=normed_df.columns
+    )
     t_ion = time.perf_counter() - t
 
     print(

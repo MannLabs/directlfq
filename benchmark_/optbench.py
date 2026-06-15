@@ -36,7 +36,9 @@ def prep():
     config.set_log_processed_proteins(log_processed_proteins=False)
     config.set_compile_normalized_ion_table(compile_normalized_ion_table=True)
     config.check_wether_to_copy_numpy_arrays_derived_from_pandas()
-    inp = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(INPUT, None, None, [])
+    inp = lfqutils.add_mq_protein_group_ids_if_applicable_and_obtain_annotated_file(
+        INPUT, None, None, []
+    )
     df = lfqutils.import_data(input_file=inp, input_type_to_use=None, filter_dict=None)
     df = lfqutils.sort_input_df_by_protein_and_quant_id(df)
     df = lfqutils.remove_potential_quant_id_duplicates(df)
@@ -79,7 +81,9 @@ def compare(path, df, name):
     d = np.abs(vals - rvals)
     d[np.isnan(d)] = 0
     maxabs = float(np.max(d)) if d.size else 0.0
-    print(f"  [{name}] exact={exact} nan_pattern_ok={nan_ok} max_abs_diff={maxabs:.3e} n={len(ids)}")
+    print(
+        f"  [{name}] exact={exact} nan_pattern_ok={nan_ok} max_abs_diff={maxabs:.3e} n={len(ids)}"
+    )
     return exact
 
 
