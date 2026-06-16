@@ -15,6 +15,7 @@ __all__ = [
     "merge_distribs",
     "normalize_dataframe_between_samples",
     "normalize_ion_profiles",
+    "normalize_protein_ion_values",
     "drop_nas_if_possible",
     "calculate_fraction_with_no_NAs",
     "NormalizationManager",
@@ -496,7 +497,6 @@ class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
             linear_shifted_dataframe
         )
 
-
 class NormalizationManagerProtein(NormalizationManager):
     def __init__(self, complete_dataframe, num_samples_quadratic):
         super().__init__(complete_dataframe, num_samples_quadratic)
@@ -510,40 +510,58 @@ class NormalizationManagerProtein(NormalizationManager):
         The ``num_samples_quadratic`` rows with the fewest NaNs are normalized with the
         quadratic pairwise-shift procedure; every remaining row is shifted onto the median
         profile of those normalized rows.
-
-        Numpy mirror of the base class's four-step ``.loc``-based pipeline, dropping the
-        label-based MultiIndex round-trips that dominate the estimate stage.
         """
         df = self.complete_dataframe
-        arr = df.to_numpy(dtype=float, copy=True)  # copy as arr is mutated in-place
-        k = self._num_samples_quadratic
-
-        # cf. _determine_subset_rows(): positional k-fewest-NaN quadratic split, linear in original order
-        nan_counts = np.isnan(arr).sum(axis=1)
-        order = np.argsort(nan_counts, kind="stable")
-        q_pos = order[:k]
-        linear_mask = np.ones(arr.shape[0], dtype=bool)
-        linear_mask[q_pos] = False
-        lin_pos = np.flatnonzero(linear_mask)
-
-        # cf. _normalize_quadratic_selection()
-        q_vals = arr[q_pos].copy()
-        sample2shift = get_normfacts(q_vals)  # mutates single-intensity rows -> NaN
-        q_normed = apply_sampleshifts(q_vals, sample2shift)
-        arr[q_pos] = q_normed
-
-        with warnings.catch_warnings():
-            warnings.simplefilter(
-                "ignore", category=RuntimeWarning
-            )  # all-NaN slices -> NaN
-            # cf. _create_reference_sample()
-            reference = np.nanmedian(q_normed, axis=0)
-            # cf. _shift_remaining_dataframe_to_reference_sample()
-            if lin_pos.size:
-                shifts = np.nanmedian(reference - arr[lin_pos], axis=1)
-                arr[lin_pos] = arr[lin_pos] + shifts[:, None]
-
+        arr = normalize_protein_ion_values(
+            df.to_numpy(dtype=float), self._num_samples_quadratic
+        )
         self.complete_dataframe = pd.DataFrame(arr, index=df.index, columns=df.columns)
+
+def normalize_protein_ion_values(
+    peptide_values: np.ndarray, num_samples_quadratic: int
+) -> np.ndarray:
+    """Normalize one protein's ion rows (rows are ions, columns are samples).
+
+    Proteins with at most ``num_samples_quadratic`` ions are normalized purely with the
+    quadratic pairwise-shift procedure. For larger proteins the ``num_samples_quadratic``
+    rows with the fewest NaNs are normalized quadratically and every remaining row is
+    shifted onto the median profile of those normalized rows.
+
+    Numpy implementation of the base class's four-step ``.loc``-based pipeline, dropping
+    the label-based MultiIndex round-trips that dominate the estimate stage. The input
+    array is not mutated.
+    """
+    if peptide_values.shape[0] <= num_samples_quadratic:
+        values = peptide_values.copy()
+        sample2shift = get_normfacts(values)
+        return apply_sampleshifts(values, sample2shift)
+
+    arr = peptide_values.copy()
+    k = num_samples_quadratic
+
+    # positional k-fewest-NaN quadratic split, linear rows kept in original order
+    nan_counts = np.isnan(arr).sum(axis=1)
+    order = np.argsort(nan_counts, kind="stable")
+    q_pos = order[:k]
+    linear_mask = np.ones(arr.shape[0], dtype=bool)
+    linear_mask[q_pos] = False
+    lin_pos = np.flatnonzero(linear_mask)
+
+    q_vals = arr[q_pos].copy()
+    sample2shift = get_normfacts(q_vals)  # mutates single-intensity rows -> NaN
+    q_normed = apply_sampleshifts(q_vals, sample2shift)
+    arr[q_pos] = q_normed
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN slices -> NaN
+        reference = np.nanmedian(q_normed, axis=0)
+        if lin_pos.size:
+            shifts = np.nanmedian(reference - arr[lin_pos], axis=1)
+            arr[lin_pos] = arr[lin_pos] + shifts[:, None]
+    return arr
+
+
+
 
 
 class SampleShifterLinearToMedian:

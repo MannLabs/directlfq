@@ -206,10 +206,11 @@ def test_protein_value_per_sample_applies_min_nonan_threshold(min_nonan, expecte
 # ============================================================================
 # Per-protein numpy helpers (optimization step 5)
 # ============================================================================
-# Step 5 ships numpy slices to workers instead of per-protein DataFrames. The
-# normalization helper is validated against the retained NormalizationManagerProtein
-# that it replaces on the hot path; the cutting helper is checked against hardcoded
-# expectations (the old ProtvalCutter has been removed).
+# Step 5 ships numpy slices to workers instead of per-protein DataFrames. The hot
+# path and NormalizationManagerProtein now share one implementation
+# (normalize_protein_ion_values); these tests check it against the DataFrame-based
+# manager wiring, and the cutting helper against hardcoded expectations (the old
+# ProtvalCutter has been removed).
 # Gotcha 1 (Fortran-order summed_pepint on >100-ion proteins) is covered by the
 # bit-exact reference check (optbench), which the unit data is too small to show.
 
@@ -271,7 +272,7 @@ def test_normalize_protein_values_matches_manager_quadratic_linear():
     ).complete_dataframe.to_numpy()
 
     # when
-    result = lfq_protint._normalize_protein_values(
+    result = lfq_norm.normalize_protein_ion_values(
         values.copy(), num_samples_quadratic=3
     )
 
@@ -288,7 +289,7 @@ def test_normalize_protein_values_matches_manager_quadratic_only():
     ).complete_dataframe.to_numpy()
 
     # when
-    result = lfq_protint._normalize_protein_values(
+    result = lfq_norm.normalize_protein_ion_values(
         values.copy(), num_samples_quadratic=5
     )
 
@@ -313,7 +314,7 @@ def test_calculate_peptide_and_protein_intensities_returns_named_numpy_tuple():
     assert list(names_out) == ["i0", "i1"]
     assert np.array_equal(
         shifted,
-        lfq_protint._normalize_protein_values(peptide_values, num_samples_quadratic=10),
+        lfq_norm.normalize_protein_ion_values(peptide_values, num_samples_quadratic=10),
         equal_nan=True,
     )
     assert profile.shape == (3,)

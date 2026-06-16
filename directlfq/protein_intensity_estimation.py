@@ -217,7 +217,9 @@ def calculate_peptide_and_protein_intensities(
     # frame column-major) -> keeps summed_pepint bit-identical.
     summed_pepint = np.nansum(np.asfortranarray(2**peptide_values))
 
-    shifted_values = _normalize_protein_values(peptide_values, num_samples_quadratic)
+    shifted_values = lfqnorm.normalize_protein_ion_values(
+        peptide_values, num_samples_quadratic
+    )
     protein_profile = get_protein_profile_from_shifted_peptides(
         shifted_values, summed_pepint, min_nonan
     )
@@ -239,38 +241,6 @@ def _cut_peptide_values(
     # original (ion-name) order -> deterministic tie-breaking.
     order = np.lexsort((neg_summed, nan_counts))[:maximum]
     return peptide_values[order], ion_names[order]
-
-
-def _normalize_protein_values(
-    peptide_values: np.ndarray, num_samples_quadratic: int
-) -> np.ndarray:
-    """Numpy equivalent of NormalizationManagerProtein. Rows are ions, cols samples."""
-    if peptide_values.shape[0] <= num_samples_quadratic:
-        values = peptide_values.copy()
-        sample2shift = lfqnorm.get_normfacts(values)
-        return lfqnorm.apply_sampleshifts(values, sample2shift)
-
-    arr = peptide_values.copy()
-    k = num_samples_quadratic
-    nan_counts = np.isnan(arr).sum(axis=1)
-    order = np.argsort(nan_counts, kind="stable")
-    q_pos = order[:k]
-    linear_mask = np.ones(arr.shape[0], dtype=bool)
-    linear_mask[q_pos] = False
-    lin_pos = np.flatnonzero(linear_mask)
-
-    q_vals = arr[q_pos].copy()
-    sample2shift = lfqnorm.get_normfacts(q_vals)
-    q_normed = lfqnorm.apply_sampleshifts(q_vals, sample2shift)
-    arr[q_pos] = q_normed
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=RuntimeWarning)
-        reference = np.nanmedian(q_normed, axis=0)
-        if lin_pos.size:
-            shifts = np.nanmedian(reference - arr[lin_pos], axis=1)
-            arr[lin_pos] = arr[lin_pos] + shifts[:, None]
-    return arr
 
 
 def get_protein_profile_from_shifted_peptides(
