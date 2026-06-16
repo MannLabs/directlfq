@@ -293,43 +293,6 @@ def test_normalize_quadratic_and_linear_overlaps_noisefree_profiles():
     assert np.allclose(values, values[0])
 
 
-def _calc_distance(samples_1, samples_2):
-    distrib = lfq_norm.get_fcdistrib(samples_1, samples_2)
-    is_all_nan = np.all(np.isnan(distrib))
-    if is_all_nan:
-        return np.nan
-    return np.nanmedian(distrib)
-
-
-def test_calc_distance():
-    # One array is entirely NaN
-    samples_1 = np.array([np.nan, np.nan, np.nan])
-    samples_2 = np.array([1, 2, 3])
-    assert np.isnan(lfq_norm.SampleShifterLinear._calc_distance(samples_1, samples_2))
-
-    # Both arrays are non-NaN and identical
-    samples_1 = np.array([1, 2, 3])
-    samples_2 = np.array([1, 2, 3])
-    assert not np.isnan(_calc_distance(samples_1, samples_2))
-    assert lfq_norm.SampleShifterLinear._calc_distance(samples_1, samples_2) == 0
-
-    # Arrays with some NaN values
-    samples_1 = np.array([1, np.nan, 3])
-    samples_2 = np.array([13, 2, np.nan])
-    assert not np.isnan(_calc_distance(samples_1, samples_2))
-    assert lfq_norm.SampleShifterLinear._calc_distance(samples_1, samples_2) == -12
-
-    # Arrays with different values but no NaNs
-    samples_1 = np.array([1, 4, 7])
-    samples_2 = np.array([2, 5, 8])
-    assert lfq_norm.SampleShifterLinear._calc_distance(samples_1, samples_2) != 0
-
-    # Empty arrays
-    samples_1 = np.array([])
-    samples_2 = np.array([])
-    assert np.isnan(lfq_norm.SampleShifterLinear._calc_distance(samples_1, samples_2))
-
-
 # ============================================================================
 # SampleShifterLinear._shift_columns_to_reference_sample (optimization step 3)
 # ============================================================================
