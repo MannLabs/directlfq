@@ -515,7 +515,7 @@ class NormalizationManagerProtein(NormalizationManager):
         label-based MultiIndex round-trips that dominate the estimate stage.
         """
         df = self.complete_dataframe
-        arr = df.to_numpy(dtype=float, copy=True) # copy as arr is mutated in-place
+        arr = df.to_numpy(dtype=float, copy=True)  # copy as arr is mutated in-place
         k = self._num_samples_quadratic
 
         # cf. _determine_subset_rows(): positional k-fewest-NaN quadratic split, linear in original order
