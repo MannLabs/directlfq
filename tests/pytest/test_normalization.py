@@ -365,3 +365,21 @@ def test_sample_shifter_leaves_row_unchanged_when_already_on_reference():
 
     # then
     assert np.array_equal(shifted.to_numpy(), np.array([[10.0, 20.0, 30.0]]))
+
+
+def test_sample_shifter_distance_from_subset_columns_shift_applied_to_all():
+    # given - column "C" is excluded from the protein subset, so it must not
+    # influence each row's distance but must still receive the shift
+    ion_dataframe = pd.DataFrame(
+        [[1.0, 2.0, 100.0], [5.0, 6.0, 200.0]], columns=["A", "B", "C"]
+    )
+    reference = pd.Series([11.0, 22.0], index=["A", "B"])
+
+    # when
+    shifted = lfq_norm.SampleShifterLinear(
+        ion_dataframe, reference, protein_subset=["A", "B"]
+    ).ion_dataframe
+
+    # then - shifts are nanmedian([10,20])=15 and nanmedian([6,16])=11
+    expected = np.array([[16.0, 17.0, 115.0], [16.0, 17.0, 211.0]])
+    assert np.array_equal(shifted.to_numpy(), expected)
