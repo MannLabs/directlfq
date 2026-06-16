@@ -4,7 +4,7 @@ __all__ = [
     "get_list_with_sequential_processing",
     "get_list_with_multiprocessing",
     "get_configured_multiprocessing_pool",
-    "get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan",
+    "get_protein_workitems",
     "get_normed_dfs",
     "get_ion_intensity_dataframe_from_list_of_shifted_peptides",
     "add_protein_names_to_ion_ints",
@@ -75,39 +75,33 @@ def estimate_protein_intensities(
 def get_list_of_tuple_w_protein_profiles_and_shifted_peptides(
     normed_df, num_samples_quadratic, min_nonan, num_cores
 ):
-    input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan = (
-        get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(
-            normed_df, num_samples_quadratic, min_nonan
-        )
+    protein_workitems = get_protein_workitems(
+        normed_df, num_samples_quadratic, min_nonan
     )
 
     if num_cores is not None and num_cores <= 1:
         list_of_tuple_w_protein_profiles_and_shifted_peptides = (
-            get_list_with_sequential_processing(
-                input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan
-            )
+            get_list_with_sequential_processing(protein_workitems)
         )
     else:
         list_of_tuple_w_protein_profiles_and_shifted_peptides = (
-            get_list_with_multiprocessing(
-                input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan,
-                num_cores,
-            )
+            get_list_with_multiprocessing(protein_workitems, num_cores)
         )
     return list_of_tuple_w_protein_profiles_and_shifted_peptides
 
 
-def get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(
+def get_protein_workitems(
     normed_df: pd.DataFrame, num_samples_quadratic: int, min_nonan: int
 ) -> Iterator[tuple[int, str, np.ndarray, np.ndarray, int, int]]:
     """Yield one work item per protein for the intensity-estimation workers.
 
     The normalized frame is split into contiguous numpy slices (one per protein,
     detected via ``find_nameswitch_indices`` on the protein-level index) so the
-    hot path ships raw arrays instead of per-protein DataFrames. Each item is
-    ``(idx, protein_name, ion_names, peptide_values, num_samples_quadratic,
-    min_nonan)``, where ``peptide_values`` has rows for ions and columns for
-    samples.
+    hot path ships raw arrays instead of per-protein DataFrames. Each item is a
+    6-tuple ``(idx, protein_name, ion_names, peptide_values,
+    num_samples_quadratic, min_nonan)`` matching the positional parameters of
+    ``calculate_peptide_and_protein_intensities``, where ``peptide_values`` has
+    rows for ions and columns for samples.
     """
     protein_names = normed_df.index.get_level_values(0).to_numpy()
     ion_names = normed_df.index.get_level_values(1).to_numpy()
@@ -164,25 +158,21 @@ def get_subdf(
     return pd.DataFrame(sub_array, index=index_sub_array)
 
 
-def get_list_with_sequential_processing(
-    input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan,
-):
+def get_list_with_sequential_processing(protein_workitems):
     list_of_tuple_w_protein_profiles_and_shifted_peptides = list(
         map(
             lambda x: calculate_peptide_and_protein_intensities(*x),
-            input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan,
+            protein_workitems,
         )
     )
     return list_of_tuple_w_protein_profiles_and_shifted_peptides
 
 
-def get_list_with_multiprocessing(
-    input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan, num_cores
-):
+def get_list_with_multiprocessing(protein_workitems, num_cores):
     pool = get_configured_multiprocessing_pool(num_cores)
     list_of_tuple_w_protein_profiles_and_shifted_peptides = pool.starmap(
         calculate_peptide_and_protein_intensities,
-        input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan,
+        protein_workitems,
     )
     pool.close()
     return list_of_tuple_w_protein_profiles_and_shifted_peptides
