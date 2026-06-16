@@ -504,18 +504,29 @@ class NormalizationManagerProtein(NormalizationManager):
         self._rows_sorted_by_number_valid_values = None
         self._run_normalization()
 
-    def _normalize_quadratic_and_linear(self):
+    def _normalize_quadratic_and_linear(self) -> None:
+        """Normalize ion rows in two tiers and write the result back to ``complete_dataframe``.
+
+        The ``num_samples_quadratic`` rows with the fewest NaNs are normalized with the
+        quadratic pairwise-shift procedure; every remaining row is shifted onto the median
+        profile of those normalized rows.
+
+        Numpy mirror of the base class's four-step ``.loc``-based pipeline, dropping the
+        label-based MultiIndex round-trips that dominate the estimate stage.
+        """
         df = self.complete_dataframe
-        arr = df.to_numpy(dtype=float, copy=True)
+        arr = df.to_numpy(dtype=float, copy=True) # copy as arr is mutated in-place
         k = self._num_samples_quadratic
 
+        # cf. _determine_subset_rows(): positional k-fewest-NaN quadratic split, linear in original order
         nan_counts = np.isnan(arr).sum(axis=1)
         order = np.argsort(nan_counts, kind="stable")
         q_pos = order[:k]
         linear_mask = np.ones(arr.shape[0], dtype=bool)
         linear_mask[q_pos] = False
-        lin_pos = np.flatnonzero(linear_mask)  # original order
+        lin_pos = np.flatnonzero(linear_mask)
 
+        # cf. _normalize_quadratic_selection()
         q_vals = arr[q_pos].copy()
         sample2shift = get_normfacts(q_vals)  # mutates single-intensity rows -> NaN
         q_normed = apply_sampleshifts(q_vals, sample2shift)
@@ -525,7 +536,9 @@ class NormalizationManagerProtein(NormalizationManager):
             warnings.simplefilter(
                 "ignore", category=RuntimeWarning
             )  # all-NaN slices -> NaN
+            # cf. _create_reference_sample()
             reference = np.nanmedian(q_normed, axis=0)
+            # cf. _shift_remaining_dataframe_to_reference_sample()
             if lin_pos.size:
                 shifts = np.nanmedian(reference - arr[lin_pos], axis=1)
                 arr[lin_pos] = arr[lin_pos] + shifts[:, None]
