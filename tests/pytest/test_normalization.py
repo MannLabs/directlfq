@@ -213,6 +213,87 @@ def test_determine_sorted_rows_preserves_original_order_when_no_nans():
 
 
 # ============================================================================
+# NormalizationManagerProtein._normalize_quadratic_and_linear (optimization step 4)
+# ============================================================================
+# Contract locked in before replacing the label-based .loc[tuples,:]=df
+# round-trips with numpy. For proteins with more than num_samples_quadratic
+# ions: the k rows with fewest NaNs (stable) are the quadratic subset normalized
+# via get_normfacts/apply_sampleshifts; the remaining rows are each shifted onto
+# the column-median of the normalized subset by nanmedian(reference - row).
+
+
+def _normalize_quadratic_and_linear_oracle(complete_dataframe, num_samples_quadratic):
+    """Executable spec via the public primitives. Validated against the baseline
+    pandas implementation, then used to guard the numpy override."""
+    arr = complete_dataframe.to_numpy(dtype=float, copy=True)
+    k = num_samples_quadratic
+    nan_counts = np.isnan(arr).sum(axis=1)
+    order = np.argsort(nan_counts, kind="stable")
+    q_pos = order[:k]
+    linear_mask = np.ones(arr.shape[0], dtype=bool)
+    linear_mask[q_pos] = False
+    lin_pos = np.flatnonzero(linear_mask)
+    q_vals = arr[q_pos].copy()
+    sample2shift = lfq_norm.get_normfacts(q_vals)
+    q_normed = lfq_norm.apply_sampleshifts(q_vals, sample2shift)
+    arr[q_pos] = q_normed
+    reference = np.nanmedian(q_normed, axis=0)
+    shifts = np.nanmedian(reference - arr[lin_pos], axis=1)
+    arr[lin_pos] = arr[lin_pos] + shifts[:, None]
+    return arr
+
+
+def test_normalize_quadratic_and_linear_matches_spec_on_mixed_nan_rows():
+    # given - 5 ions x 4 samples; nan-counts 0,0,1,0,2 -> quadratic = rows 0,1,3
+    df = _create_input_df_from_input_vals(
+        [
+            [1.0, 2.0, 3.0, 4.0],
+            [2.0, 3.0, 4.0, 5.0],
+            [10.0, np.nan, 12.0, 13.0],
+            [3.0, 4.0, 5.0, 6.0],
+            [np.nan, np.nan, 20.0, 21.0],
+        ]
+    )
+    expected = _normalize_quadratic_and_linear_oracle(df, num_samples_quadratic=3)
+
+    # when
+    result = lfq_norm.NormalizationManagerProtein(
+        df.copy(), num_samples_quadratic=3
+    ).complete_dataframe
+
+    # then - values match the spec exactly and index/columns are preserved
+    assert np.array_equal(result.to_numpy(), expected, equal_nan=True)
+    assert list(result.index) == list(df.index)
+    assert list(result.columns) == list(df.columns)
+
+
+def test_normalize_quadratic_and_linear_overlaps_noisefree_profiles():
+    # given - 6 noise-free peptides (exact scaled copies) forcing the
+    # quadratic+linear path with num_samples_quadratic=3
+    peptides = [
+        lfq_test_utils.PeptideProfile(
+            protein_name="protA",
+            fraction_zeros_in_profile=0,
+            systematic_peptide_shift=shift,
+            add_noise=False,
+        )
+        for shift in [1, 4, 16, 64, 256, 1024]
+    ]
+    protein_df = lfq_test_utils.ProteinProfileGenerator(
+        peptides
+    ).protein_profile_dataframe
+
+    # when
+    normed = lfq_norm.NormalizationManagerProtein(
+        protein_df, num_samples_quadratic=3
+    ).complete_dataframe
+
+    # then - all ions collapse onto a single profile (each column constant)
+    values = normed.to_numpy()
+    assert np.allclose(values, values[0])
+
+
+# ============================================================================
 # SampleShifterLinear._shift_columns_to_reference_sample (optimization step 3)
 # ============================================================================
 # Contract locked in before replacing the per-row `iloc[r,:] +=` shift with a
