@@ -27,6 +27,7 @@ import itertools
 import logging
 import warnings
 import directlfq.config as config
+from typing import Iterator, Optional
 
 config.setup_logging()
 
@@ -97,8 +98,17 @@ def get_list_of_tuple_w_protein_profiles_and_shifted_peptides(
 
 
 def get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(
-    normed_df, num_samples_quadratic, min_nonan
-):
+    normed_df: pd.DataFrame, num_samples_quadratic: int, min_nonan: int
+) -> Iterator[tuple[int, str, np.ndarray, np.ndarray, int, int]]:
+    """Yield one work item per protein for the intensity-estimation workers.
+
+    The normalized frame is split into contiguous numpy slices (one per protein,
+    detected via ``find_nameswitch_indices`` on the protein-level index) so the
+    hot path ships raw arrays instead of per-protein DataFrames. Each item is
+    ``(idx, protein_name, ion_names, peptide_values, num_samples_quadratic,
+    min_nonan)``, where ``peptide_values`` has rows for ions and columns for
+    samples.
+    """
     protein_names = normed_df.index.get_level_values(0).to_numpy()
     ion_names = normed_df.index.get_level_values(1).to_numpy()
     normed_array = normed_df.to_numpy()
@@ -190,8 +200,20 @@ def get_configured_multiprocessing_pool(num_cores):
 
 
 def calculate_peptide_and_protein_intensities(
-    idx, protein_name, ion_names, peptide_values, num_samples_quadratic, min_nonan
-):
+    idx: int,
+    protein_name: str,
+    ion_names: np.ndarray,
+    peptide_values: np.ndarray,
+    num_samples_quadratic: int,
+    min_nonan: int,
+) -> tuple[Optional[np.ndarray], str, np.ndarray, np.ndarray]:
+    """Compute one protein's profile and its shifted peptide values from numpy slices.
+
+    Rows of ``peptide_values`` are ions, columns are samples. Proteins with more
+    than 100 ions are first reduced via ``_cut_peptide_values``. Returns
+    ``(protein_profile, protein_name, ion_names, shifted_values)``; the protein
+    profile is ``None`` when every sample collapses to NaN.
+    """
     if peptide_values.shape[0] > 1:
         peptide_values, ion_names = _cut_peptide_values(
             peptide_values, ion_names, maximum=100
@@ -213,7 +235,9 @@ def calculate_peptide_and_protein_intensities(
     return protein_profile, protein_name, ion_names, shifted_values
 
 
-def _cut_peptide_values(peptide_values, ion_names, maximum=100):
+def _cut_peptide_values(
+    peptide_values: np.ndarray, ion_names: np.ndarray, maximum: int = 100
+) -> tuple[np.ndarray, np.ndarray]:
     """Numpy equivalent of ProtvalCutter: keep at most ``maximum`` ions, sorted by
     NaN count asc then summed intensity desc. Only reorders when > maximum ions."""
     if peptide_values.shape[0] <= maximum:
@@ -228,7 +252,9 @@ def _cut_peptide_values(peptide_values, ion_names, maximum=100):
     return peptide_values[order], ion_names[order]
 
 
-def _normalize_protein_values(peptide_values, num_samples_quadratic):
+def _normalize_protein_values(
+    peptide_values: np.ndarray, num_samples_quadratic: int
+) -> np.ndarray:
     """Numpy equivalent of NormalizationManagerProtein. Rows are ions, cols samples."""
     if peptide_values.shape[0] <= num_samples_quadratic:
         values = peptide_values.copy()
@@ -259,8 +285,14 @@ def _normalize_protein_values(peptide_values, num_samples_quadratic):
 
 
 def get_protein_profile_from_shifted_peptides(
-    shifted_values, summed_pepints, min_nonan
-):
+    shifted_values: np.ndarray, summed_pepints: float, min_nonan: int
+) -> Optional[np.ndarray]:
+    """Collapse shifted peptide values into a per-sample protein profile.
+
+    The per-sample nanmedian profile is rescaled so its summed linear intensity
+    matches ``summed_pepints`` (the protein's total peptide intensity). Returns
+    ``None`` when every sample is NaN.
+    """
     intens_vec = get_list_with_protein_value_for_each_sample(shifted_values, min_nonan)
     intens_vec = np.array(intens_vec)
     summed_intensity = np.nansum(2**intens_vec)
@@ -348,8 +380,17 @@ class ProtvalCutter:
 
 
 def get_ion_intensity_dataframe_from_list_of_shifted_peptides(
-    list_of_tuple_w_protein_profiles_and_shifted_peptides, column_names
-):
+    list_of_tuple_w_protein_profiles_and_shifted_peptides: list[
+        tuple[Optional[np.ndarray], str, np.ndarray, np.ndarray]
+    ],
+    column_names: list[str],
+) -> pd.DataFrame:
+    """Assemble the per-ion intensity table from the workers' result tuples.
+
+    Reads the ``(protein_profile, protein_name, ion_names, shifted_values)`` shape,
+    converts the shifted log2 values back to linear space (NaNs to 0), and returns
+    a DataFrame indexed by ``(protein, ion)`` with one column per sample.
+    """
     ion_names = []
     ion_vals = []
     protein_names = []
@@ -385,8 +426,18 @@ def add_protein_name_to_ion_df(ion_df, protein):
 
 
 def get_protein_dataframe_from_list_of_protein_profiles(
-    list_of_tuple_w_protein_profiles_and_shifted_peptides, normed_df
-):
+    list_of_tuple_w_protein_profiles_and_shifted_peptides: list[
+        tuple[Optional[np.ndarray], str, np.ndarray, np.ndarray]
+    ],
+    normed_df: pd.DataFrame,
+) -> pd.DataFrame:
+    """Assemble the per-protein intensity table from the workers' result tuples.
+
+    Reads the ``(protein_profile, protein_name, ion_names, shifted_values)`` shape,
+    drops proteins whose profile is ``None``, converts the log2 profiles back to
+    linear space (NaNs to 0), and returns a DataFrame with a ``protein`` column and
+    one column per sample.
+    """
     index_list = []
     profile_list = []
 
