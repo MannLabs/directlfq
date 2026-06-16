@@ -1,6 +1,4 @@
 import numpy as np, optbench
-import directlfq.protein_intensity_estimation as lfqprot
-import pandas as pd
 
 normed = optbench.prep()
 pn = normed.index.get_level_values(0).to_numpy()
@@ -12,9 +10,8 @@ target = [p for p, c in counts.items() if c == 102][0]
 sub = normed[pn == target]
 vals = sub.to_numpy()
 ion_names = sub.index.get_level_values(1).to_numpy()
-# ProtvalCutter order
-pc = lfqprot.ProtvalCutter(sub.copy(), maximum_df_length=100)
-pc_idx = pc._sorted_idx[:100]
+# old ProtvalCutter sort order
+pc_idx = optbench.protvalcutter_reference_sorted_index(sub)[:100]
 pc_ions = [t[1] for t in pc_idx]
 # my lexsort order
 with np.errstate(all="ignore"):

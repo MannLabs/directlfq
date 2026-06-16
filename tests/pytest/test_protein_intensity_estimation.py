@@ -9,32 +9,6 @@ import directlfq.protein_intensity_estimation as lfq_protint
 import directlfq.test_utils as lfq_testutils
 
 
-def test_sorting_by_num_nans():
-    vals1 = np.array([9, np.nan, np.nan, np.nan])
-    vals2 = np.array([5, 6, np.nan, np.nan])
-    vals3 = np.array([1, 2, 3, np.nan])
-
-    df = pd.DataFrame([vals1, vals2, vals3], index=[["P", "P", "P"], ["A", "B", "C"]])
-    pcutter = lfq_protint.ProtvalCutter(df, maximum_df_length=2)
-    sorted_idx = pcutter._sorted_idx
-    df_sorted = df.loc[sorted_idx]
-
-    assert np.allclose(df_sorted.iloc[2].to_numpy(), vals1, equal_nan=True)
-    assert np.allclose(df_sorted.iloc[0].to_numpy(), vals3, equal_nan=True)
-
-
-def test_cutting_of_df():
-    vals1 = np.array([9, np.nan, np.nan, np.nan])
-    vals2 = np.array([5, 6, np.nan, np.nan])
-    vals3 = np.array([1, 2, 3, np.nan])
-
-    df = pd.DataFrame([vals1, vals2, vals3], index=[["A", "B", "C"]])
-    pcutter = lfq_protint.ProtvalCutter(df, maximum_df_length=2)
-    cut_df = pcutter.get_dataframe()
-    ion_idx = [x[0] for x in cut_df.index]
-    assert ion_idx == ["C", "B"]
-
-
 def test_that_protein_intensities_are_retained():
     peptide1 = lfq_testutils.PeptideProfile(
         protein_name="protA",
@@ -233,8 +207,9 @@ def test_protein_value_per_sample_applies_min_nonan_threshold(min_nonan, expecte
 # Per-protein numpy helpers (optimization step 5)
 # ============================================================================
 # Step 5 ships numpy slices to workers instead of per-protein DataFrames. The
-# new helpers are validated against the retained pandas implementations
-# (ProtvalCutter, NormalizationManagerProtein) that they replace on the hot path.
+# normalization helper is validated against the retained NormalizationManagerProtein
+# that it replaces on the hot path; the cutting helper is checked against hardcoded
+# expectations (the old ProtvalCutter has been removed).
 # Gotcha 1 (Fortran-order summed_pepint on >100-ion proteins) is covered by the
 # bit-exact reference check (optbench), which the unit data is too small to show.
 
@@ -246,24 +221,22 @@ def _multiindex_df(values, n_ions):
     return pd.DataFrame(values, index=index)
 
 
-def test_cut_peptide_values_matches_protvalcutter_including_ties():
+def test_cut_peptide_values_including_ties():
     # given - 4 ions, two of which tie on both nan-count and summed intensity
     ion_names = np.array(["i0", "i1", "i2", "i3"])
     values = np.array(
         [[2.0, 2.0], [2.0, 2.0], [10.0, 10.0], [np.nan, 5.0]]
     )  # nan-counts 0,0,0,1; sums 4,4,20,5
-    df = pd.DataFrame(values, index=pd.Index(list(ion_names), name="ion"))
-    cut_df = lfq_protint.ProtvalCutter(df, maximum_df_length=3).get_dataframe()
 
     # when
     cut_values, cut_names = lfq_protint._cut_peptide_values(
         values, ion_names, maximum=3
     )
 
-    # then - same kept ions, same order (highest-sum first; tie keeps i0 before i1)
-    assert list(cut_names) == list(cut_df.index)
+    # then - lowest nan-count + highest-sum first; full tie keeps i0 before i1
     assert list(cut_names) == ["i2", "i0", "i1"]
-    assert np.array_equal(cut_values, cut_df.to_numpy(), equal_nan=True)
+    expected_values = values[[2, 0, 1]]
+    assert np.array_equal(cut_values, expected_values, equal_nan=True)
 
 
 def test_cut_peptide_values_is_noop_within_limit():

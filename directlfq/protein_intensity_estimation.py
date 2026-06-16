@@ -13,7 +13,6 @@ __all__ = [
     "calculate_peptide_and_protein_intensities",
     "get_protein_profile_from_shifted_peptides",
     "get_list_with_protein_value_for_each_sample",
-    "ProtvalCutter",
     "OrphanIonRemover",
     "OrphanIonsForDeletionSelector",
     "IonCheckedForOrphan",
@@ -228,8 +227,8 @@ def calculate_peptide_and_protein_intensities(
 def _cut_peptide_values(
     peptide_values: np.ndarray, ion_names: np.ndarray, maximum: int = 100
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Numpy equivalent of ProtvalCutter: keep at most ``maximum`` ions, sorted by
-    NaN count asc then summed intensity desc. Only reorders when > maximum ions."""
+    """Keep at most ``maximum`` ions, sorted by NaN count asc then summed intensity
+    desc. Only reorders when > maximum ions."""
     if peptide_values.shape[0] <= maximum:
         return peptide_values, ion_names
     with warnings.catch_warnings():
@@ -237,7 +236,7 @@ def _cut_peptide_values(
         neg_summed = -np.nansum(peptide_values, axis=1)
     nan_counts = np.isnan(peptide_values).sum(axis=1)
     # lexsort's last key is primary and the sort is stable, so full ties keep
-    # original order -> reproduces ProtvalCutter's sorted() tie-breaking.
+    # original (ion-name) order -> deterministic tie-breaking.
     order = np.lexsort((neg_summed, nan_counts))[:maximum]
     return peptide_values[order], ion_names[order]
 
@@ -308,65 +307,6 @@ def get_list_with_protein_value_for_each_sample(
         intens_vec = np.nanmedian(shifted_values, axis=0)
     intens_vec[nonan_counts < min_nonan] = np.nan
     return intens_vec
-
-
-import pandas as pd
-from numba import njit
-
-
-class ProtvalCutter:
-    def __init__(self, protvals_df, maximum_df_length=100):
-        self._protvals_df = protvals_df
-        self._maximum_df_length = maximum_df_length
-        self._dataframe_too_long = None
-        self._sorted_idx = None
-        self._check_if_df_too_long_and_sort_index_if_so()
-
-    def _check_if_df_too_long_and_sort_index_if_so(self):
-        self._dataframe_too_long = (
-            len(self._protvals_df.index) > self._maximum_df_length
-        )
-        if self._dataframe_too_long:
-            self._determine_nansorted_df_index()
-
-    def _determine_nansorted_df_index(self):
-        """Sorts the dataframe index primarily by number of NaN values (ascending) and secondarily by summed intensity (descending). Sorting by intensties in case multiple ions have identical missing value counts. We expect initial sorting by ion name (which is done in the run_lfq module) to be deterministic.
-
-        The sorting prioritizes:
-        1. Rows with fewer NaN values come first
-        2. For rows with equal number of NaNs, higher intensity sums come first
-        """
-        idxs = self._protvals_df.index
-        self._sorted_idx = sorted(
-            idxs,
-            key=lambda idx: (
-                sum(
-                    np.isnan(self._protvals_df.loc[idx].to_numpy())
-                ),  # First by number of NaNs (ascending)
-                -np.nansum(
-                    self._protvals_df.loc[idx].to_numpy()
-                ),  # Then by sum of intensities (descending)
-            ),
-        )
-
-    @staticmethod
-    @njit
-    def _get_num_nas_in_row(row):
-        sum = 0
-        isnans = np.isnan(row)
-        for is_nan in isnans:
-            sum += is_nan
-        return sum
-
-    def get_dataframe(self):
-        if self._dataframe_too_long:
-            return self._get_shortened_dataframe()
-        else:
-            return self._protvals_df
-
-    def _get_shortened_dataframe(self):
-        shortened_index = self._sorted_idx[: self._maximum_df_length]
-        return self._protvals_df.loc[shortened_index]
 
 
 def get_ion_intensity_dataframe_from_list_of_shifted_peptides(

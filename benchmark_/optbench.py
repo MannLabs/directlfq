@@ -49,6 +49,27 @@ def prep():
     ).complete_dataframe
 
 
+def protvalcutter_reference_sorted_index(df):
+    """Old ProtvalCutter sort order (removed from the package): nan-count asc, then
+    summed intensity desc, with Python's stable sort keeping the original ion order
+    on full ties. Kept here so the probes can still compare new-vs-old behavior."""
+    idxs = df.index
+    return sorted(
+        idxs,
+        key=lambda idx: (
+            int(np.isnan(df.loc[idx].to_numpy()).sum()),
+            -np.nansum(df.loc[idx].to_numpy()),
+        ),
+    )
+
+
+def protvalcutter_reference_cut(df, maximum=100):
+    """Old ProtvalCutter.get_dataframe(): cut to ``maximum`` ions only when over it."""
+    if len(df.index) <= maximum:
+        return df
+    return df.loc[protvalcutter_reference_sorted_index(df)[:maximum]]
+
+
 def df_to_arrays(df):
     """Stable representation: id strings (from protein/ion id cols) + sorted float matrix."""
     df = df.reset_index()
