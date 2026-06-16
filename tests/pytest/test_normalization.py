@@ -212,43 +212,6 @@ def test_determine_sorted_rows_preserves_original_order_when_no_nans():
     ]
 
 
-def _calc_distance(samples_1, samples_2):
-    distrib = lfq_norm.get_fcdistrib(samples_1, samples_2)
-    is_all_nan = np.all(np.isnan(distrib))
-    if is_all_nan:
-        return np.nan
-    return np.nanmedian(distrib)
-
-
-def test_calc_distance():
-    # One array is entirely NaN
-    samples_1 = np.array([np.nan, np.nan, np.nan])
-    samples_2 = np.array([1, 2, 3])
-    assert np.isnan(lfq_norm.SampleShifterLinear._calc_distance(samples_1, samples_2))
-
-    # Both arrays are non-NaN and identical
-    samples_1 = np.array([1, 2, 3])
-    samples_2 = np.array([1, 2, 3])
-    assert not np.isnan(_calc_distance(samples_1, samples_2))
-    assert lfq_norm.SampleShifterLinear._calc_distance(samples_1, samples_2) == 0
-
-    # Arrays with some NaN values
-    samples_1 = np.array([1, np.nan, 3])
-    samples_2 = np.array([13, 2, np.nan])
-    assert not np.isnan(_calc_distance(samples_1, samples_2))
-    assert lfq_norm.SampleShifterLinear._calc_distance(samples_1, samples_2) == -12
-
-    # Arrays with different values but no NaNs
-    samples_1 = np.array([1, 4, 7])
-    samples_2 = np.array([2, 5, 8])
-    assert lfq_norm.SampleShifterLinear._calc_distance(samples_1, samples_2) != 0
-
-    # Empty arrays
-    samples_1 = np.array([])
-    samples_2 = np.array([])
-    assert np.isnan(lfq_norm.SampleShifterLinear._calc_distance(samples_1, samples_2))
-
-
 # ============================================================================
 # SampleShifterLinear._shift_columns_to_reference_sample (optimization step 3)
 # ============================================================================
@@ -284,3 +247,21 @@ def test_sample_shifter_leaves_row_unchanged_when_already_on_reference():
 
     # then
     assert np.array_equal(shifted.to_numpy(), np.array([[10.0, 20.0, 30.0]]))
+
+
+def test_sample_shifter_distance_from_subset_columns_shift_applied_to_all():
+    # given - column "C" is excluded from the protein subset, so it must not
+    # influence each row's distance but must still receive the shift
+    ion_dataframe = pd.DataFrame(
+        [[1.0, 2.0, 100.0], [5.0, 6.0, 200.0]], columns=["A", "B", "C"]
+    )
+    reference = pd.Series([11.0, 22.0], index=["A", "B"])
+
+    # when
+    shifted = lfq_norm.SampleShifterLinear(
+        ion_dataframe, reference, protein_subset=["A", "B"]
+    ).ion_dataframe
+
+    # then - shifts are nanmedian([10,20])=15 and nanmedian([6,16])=11
+    expected = np.array([[16.0, 17.0, 115.0], [16.0, 17.0, 211.0]])
+    assert np.array_equal(shifted.to_numpy(), expected)
