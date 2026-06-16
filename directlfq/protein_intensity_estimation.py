@@ -113,7 +113,6 @@ def get_protein_workitems(
     )
 
 
-
 def find_nameswitch_indices(arr):
     change_indices = np.where(arr[:-1] != arr[1:])[0] + 1
 
@@ -124,8 +123,6 @@ def find_nameswitch_indices(arr):
     start_indices = np.append(start_indices, len(arr))
 
     return start_indices
-
-
 
 
 def get_list_with_sequential_processing(protein_workitems):

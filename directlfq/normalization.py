@@ -497,6 +497,7 @@ class NormalizationManagerSamplesOnSelectedProteins(NormalizationManager):
             linear_shifted_dataframe
         )
 
+
 class NormalizationManagerProtein(NormalizationManager):
     def __init__(self, complete_dataframe, num_samples_quadratic):
         super().__init__(complete_dataframe, num_samples_quadratic)
@@ -517,6 +518,7 @@ class NormalizationManagerProtein(NormalizationManager):
         )
         self.complete_dataframe = pd.DataFrame(arr, index=df.index, columns=df.columns)
 
+
 def normalize_protein_ion_values(
     peptide_values: np.ndarray, num_samples_quadratic: int
 ) -> np.ndarray:
@@ -531,6 +533,12 @@ def normalize_protein_ion_values(
     the label-based MultiIndex round-trips that dominate the estimate stage. The input
     array is not mutated.
     """
+    # Mirrors NormalizationManager._run_normalization's dispatch: proteins with at most
+    # num_samples_quadratic ions take the quadratic-only branch
+    # (_normalize_complete_input_quadratic), which shifts rows in their ORIGINAL order.
+    # The hot path calls this function directly and bypasses that dispatch, so the branch
+    # must be reproduced here -- do not fold it into the sorted split below, which would
+    # change the row order fed to get_normfacts and diverge from the original output.
     if peptide_values.shape[0] <= num_samples_quadratic:
         values = peptide_values.copy()
         sample2shift = get_normfacts(values)
@@ -553,15 +561,14 @@ def normalize_protein_ion_values(
     arr[q_pos] = q_normed
 
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN slices -> NaN
+        warnings.simplefilter(
+            "ignore", category=RuntimeWarning
+        )  # all-NaN slices -> NaN
         reference = np.nanmedian(q_normed, axis=0)
         if lin_pos.size:
             shifts = np.nanmedian(reference - arr[lin_pos], axis=1)
             arr[lin_pos] = arr[lin_pos] + shifts[:, None]
     return arr
-
-
-
 
 
 class SampleShifterLinearToMedian:

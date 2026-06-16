@@ -208,9 +208,11 @@ def test_protein_value_per_sample_applies_min_nonan_threshold(min_nonan, expecte
 # ============================================================================
 # Step 5 ships numpy slices to workers instead of per-protein DataFrames. The hot
 # path and NormalizationManagerProtein now share one implementation
-# (normalize_protein_ion_values); these tests check it against the DataFrame-based
-# manager wiring, and the cutting helper against hardcoded expectations (the old
-# ProtvalCutter has been removed).
+# (normalize_protein_ion_values); these tests pin it against the original DataFrame
+# pipeline (the base-class .loc-based NormalizationManager that the numpy code was
+# written to mirror), not against the delegating manager, so the comparison is
+# independent of normalize_protein_ion_values itself. The cutting helper is checked
+# against hardcoded expectations (the old ProtvalCutter has been removed).
 # Gotcha 1 (Fortran-order summed_pepint on >100-ion proteins) is covered by the
 # bit-exact reference check (optbench), which the unit data is too small to show.
 
@@ -220,6 +222,23 @@ def _multiindex_df(values, n_ions):
         [("P", f"i{j}") for j in range(n_ions)], names=["protein", "ion"]
     )
     return pd.DataFrame(values, index=index)
+
+
+def _reference_normalize(values, num_samples_quadratic):
+    """Normalize via the original base-class DataFrame pipeline.
+
+    Drives the inherited ``.loc``-based ``NormalizationManager`` (quadratic-only or
+    quadratic+linear, dispatched by ion count) that ``normalize_protein_ion_values``
+    reimplements in numpy, giving an expected value that does not route through the
+    function under test.
+    """
+    df = _multiindex_df(values, n_ions=values.shape[0])
+    manager = lfq_norm.NormalizationManager(
+        df, num_samples_quadratic=num_samples_quadratic
+    )
+    manager.normalization_function = lfq_norm.normalize_ion_profiles
+    manager._run_normalization()
+    return manager.complete_dataframe.to_numpy()
 
 
 def test_cut_peptide_values_including_ties():
@@ -255,7 +274,7 @@ def test_cut_peptide_values_is_noop_within_limit():
     assert np.array_equal(cut_values, values)
 
 
-def test_normalize_protein_values_matches_manager_quadratic_linear():
+def test_normalize_protein_values_matches_original_pipeline_quadratic_linear():
     # given - 5 ions > k=3 (quadratic+linear path), with mixed NaNs
     values = np.array(
         [
@@ -266,10 +285,7 @@ def test_normalize_protein_values_matches_manager_quadratic_linear():
             [np.nan, np.nan, 20.0, 21.0],
         ]
     )
-    df = _multiindex_df(values, n_ions=5)
-    expected = lfq_norm.NormalizationManagerProtein(
-        df.copy(), num_samples_quadratic=3
-    ).complete_dataframe.to_numpy()
+    expected = _reference_normalize(values, num_samples_quadratic=3)
 
     # when
     result = lfq_norm.normalize_protein_ion_values(
@@ -280,13 +296,10 @@ def test_normalize_protein_values_matches_manager_quadratic_linear():
     assert np.array_equal(result, expected, equal_nan=True)
 
 
-def test_normalize_protein_values_matches_manager_quadratic_only():
-    # given - 3 ions <= k=5 (quadratic-only path)
+def test_normalize_protein_values_matches_original_pipeline_quadratic_only():
+    # given - 3 ions <= k=5 (quadratic-only path; original shifts rows in input order)
     values = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
-    df = _multiindex_df(values, n_ions=3)
-    expected = lfq_norm.NormalizationManagerProtein(
-        df.copy(), num_samples_quadratic=5
-    ).complete_dataframe.to_numpy()
+    expected = _reference_normalize(values, num_samples_quadratic=5)
 
     # when
     result = lfq_norm.normalize_protein_ion_values(
@@ -350,10 +363,8 @@ def test_calculate_peptide_and_protein_intensities_keeps_single_sample_values():
     peptide_values = np.array([[10.0], [11.0], [12.0]])
 
     # when
-    profile, _, _, shifted = (
-        lfq_protint.calculate_peptide_and_protein_intensities(
-            0, "protA", ion_names, peptide_values, num_samples_quadratic=100, min_nonan=1
-        )
+    profile, _, _, shifted = lfq_protint.calculate_peptide_and_protein_intensities(
+        0, "protA", ion_names, peptide_values, num_samples_quadratic=100, min_nonan=1
     )
 
     # then - values are kept as-is (not NaN-ed) and the protein is retained
