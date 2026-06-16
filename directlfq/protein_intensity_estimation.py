@@ -217,9 +217,15 @@ def calculate_peptide_and_protein_intensities(
     # frame column-major) -> keeps summed_pepint bit-identical.
     summed_pepint = np.nansum(np.asfortranarray(2**peptide_values))
 
-    shifted_values = lfqnorm.normalize_protein_ion_values(
-        peptide_values, num_samples_quadratic
-    )
+    # A single sample has nothing to normalize across; skip normalization so the
+    # values are kept as-is. Otherwise get_normfacts would NaN out every ion row
+    # (each has a single intensity), dropping the protein from the output.
+    if peptide_values.shape[1] < 2:
+        shifted_values = peptide_values
+    else:
+        shifted_values = lfqnorm.normalize_protein_ion_values(
+            peptide_values, num_samples_quadratic
+        )
     protein_profile = get_protein_profile_from_shifted_peptides(
         shifted_values, summed_pepint, min_nonan
     )

@@ -341,3 +341,21 @@ def test_ion_intensity_dataframe_built_from_tuples():
     expected["protein"] = ["protA", "protA", "protB"]
     expected = expected.set_index(["protein", "ion"])
     pd.testing.assert_frame_equal(ion_df, expected)
+
+
+def test_calculate_peptide_and_protein_intensities_keeps_single_sample_values():
+    # given - a protein measured in a single sample (one column); normalizing
+    # across samples would NaN out every single-intensity ion row
+    ion_names = np.array(["i0", "i1", "i2"])
+    peptide_values = np.array([[10.0], [11.0], [12.0]])
+
+    # when
+    profile, _, _, shifted = (
+        lfq_protint.calculate_peptide_and_protein_intensities(
+            0, "protA", ion_names, peptide_values, num_samples_quadratic=100, min_nonan=1
+        )
+    )
+
+    # then - values are kept as-is (not NaN-ed) and the protein is retained
+    assert np.array_equal(shifted, peptide_values)
+    assert profile is not None and not np.isnan(profile).all()
