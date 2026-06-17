@@ -294,6 +294,70 @@ def test_normalize_quadratic_and_linear_overlaps_noisefree_profiles():
 
 
 # ============================================================================
+# normalize_protein_ion_values (optimization step 5)
+# ============================================================================
+# Standalone numpy normalization shared by the class and the hot path. Pinned
+# against the base-class label-based .loc pipeline it reimplements -- driven via
+# a plain NormalizationManager (not the delegating subclass, which would be
+# circular). Covers both dispatch branches.
+
+
+def _base_class_normalized(df, num_samples_quadratic):
+    """Run the original base-class .loc pipeline (normalize_ion_profiles)."""
+    manager = lfq_norm.NormalizationManager(
+        df.copy(), num_samples_quadratic=num_samples_quadratic
+    )
+    manager.normalization_function = lfq_norm.normalize_ion_profiles
+    manager._run_normalization()
+    return manager.complete_dataframe.to_numpy()
+
+
+def test_normalize_protein_ion_values_matches_base_class_quadratic_and_linear():
+    # given - 5 ions x 4 samples, n=5 > k=3 -> quadratic+linear branch
+    df = _create_input_df_from_input_vals(
+        [
+            [1.0, 2.0, 3.0, 4.0],
+            [2.0, 3.0, 4.0, 5.0],
+            [10.0, np.nan, 12.0, 13.0],
+            [3.0, 4.0, 5.0, 6.0],
+            [np.nan, np.nan, 20.0, 21.0],
+        ]
+    )
+    expected = _base_class_normalized(df, num_samples_quadratic=3)
+
+    # when
+    result = lfq_norm.normalize_protein_ion_values(df.to_numpy(dtype=float), 3)
+
+    # then
+    assert np.array_equal(result, expected, equal_nan=True)
+
+
+def test_normalize_protein_ion_values_matches_base_class_quadratic_only():
+    # given - 3 ions x 4 samples, n=3 <= k=5 -> quadratic-only (original-order) branch
+    df = _create_input_df_from_input_vals(
+        [
+            [1.0, 2.0, 3.0, 4.0],
+            [10.0, np.nan, 12.0, 13.0],
+            [3.0, 4.0, 5.0, 6.0],
+        ]
+    )
+    expected = _base_class_normalized(df, num_samples_quadratic=5)
+
+    # when
+    result = lfq_norm.normalize_protein_ion_values(df.to_numpy(dtype=float), 5)
+
+    # then
+    assert np.array_equal(result, expected, equal_nan=True)
+
+
+def test_normalize_protein_ion_values_does_not_mutate_input():
+    arr = np.array([[1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 5.0]])
+    arr_before = arr.copy()
+    lfq_norm.normalize_protein_ion_values(arr, 5)
+    assert np.array_equal(arr, arr_before)
+
+
+# ============================================================================
 # SampleShifterLinear._shift_columns_to_reference_sample (optimization step 3)
 # ============================================================================
 # Contract locked in before replacing the per-row `iloc[r,:] +=` shift with a
