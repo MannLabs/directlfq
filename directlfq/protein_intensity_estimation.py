@@ -249,6 +249,24 @@ import pandas as pd
 from numba import njit
 
 
+def _cut_peptide_values(peptide_values, ion_names, maximum=100):
+    """Reduce a protein to its ``maximum`` most informative ions (rows = ions).
+
+    Keeps ions sorted by NaN count ascending, then summed intensity descending --
+    the numpy equivalent of ``ProtvalCutter``. Reproduces ``ProtvalCutter``'s stable
+    ``sorted()`` tie-break: ions tied on both keys keep their original (ion-name) order.
+    """
+    if peptide_values.shape[0] <= maximum:
+        return peptide_values, ion_names
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)  # all-NaN rows -> NaN
+        neg_summed = -np.nansum(peptide_values, axis=1)
+    nan_counts = np.isnan(peptide_values).sum(axis=1)
+    # last key is primary and lexsort is stable -> full ties keep original order (Gotcha 2)
+    order = np.lexsort((neg_summed, nan_counts))[:maximum]
+    return peptide_values[order], ion_names[order]
+
+
 class ProtvalCutter:
     def __init__(self, protvals_df, maximum_df_length=100):
         self._protvals_df = protvals_df
