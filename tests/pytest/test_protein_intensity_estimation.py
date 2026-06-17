@@ -226,14 +226,14 @@ def test_nameswitch_indices_are_recovered_correctly():
 # its ion values when at least ``min_nonan`` are finite, otherwise NaN.
 
 
-def _profile_df(rows):
-    """Build an ion-profile DataFrame (rows = ions, columns = samples)."""
-    return pd.DataFrame(rows)
+def _profile_array(rows):
+    """Build an ion-profile array (rows = ions, columns = samples)."""
+    return np.array(rows, dtype=float)
 
 
 def test_protein_value_per_sample_returns_column_nanmedians_when_all_finite():
     # given - three samples, all values finite
-    df = _profile_df([[1.0, 4.0, 10.0], [3.0, 6.0, 20.0], [5.0, 8.0, 30.0]])
+    df = _profile_array([[1.0, 4.0, 10.0], [3.0, 6.0, 20.0], [5.0, 8.0, 30.0]])
 
     # when
     result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan=1)
@@ -244,7 +244,7 @@ def test_protein_value_per_sample_returns_column_nanmedians_when_all_finite():
 
 def test_protein_value_per_sample_skips_nans_in_median():
     # given - a column with an even number of finite values (median is averaged)
-    df = _profile_df([[4.0], [np.nan], [6.0]])
+    df = _profile_array([[4.0], [np.nan], [6.0]])
 
     # when
     result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan=1)
@@ -255,7 +255,7 @@ def test_protein_value_per_sample_skips_nans_in_median():
 
 def test_protein_value_per_sample_all_nan_column_is_nan():
     # given - one all-NaN sample alongside a finite one
-    df = _profile_df([[1.0, np.nan], [3.0, np.nan]])
+    df = _profile_array([[1.0, np.nan], [3.0, np.nan]])
 
     # when
     result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan=1)
@@ -274,10 +274,36 @@ def test_protein_value_per_sample_all_nan_column_is_nan():
 )
 def test_protein_value_per_sample_applies_min_nonan_threshold(min_nonan, expected):
     # given - sample finite-counts of 3, 2 and 0 respectively
-    df = _profile_df([[1.0, 4.0, np.nan], [3.0, np.nan, np.nan], [5.0, 6.0, np.nan]])
+    df = _profile_array([[1.0, 4.0, np.nan], [3.0, np.nan, np.nan], [5.0, 6.0, np.nan]])
 
     # when
     result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan)
 
     # then - a column is NaN-ed out only when its finite count < min_nonan
     assert np.array_equal(np.asarray(result), np.array(expected), equal_nan=True)
+
+
+# ============================================================================
+# calculate_peptide_and_protein_intensities single-sample guard (step 5)
+# ============================================================================
+# With a single sample every ion has one intensity, so get_normfacts would NaN
+# every row and drop the protein. The guard skips normalization to keep values.
+
+
+def test_single_sample_values_are_kept_and_protein_retained():
+    # given - 3 ions, 1 sample
+    peptide_values = np.array([[5.0], [6.0], [7.0]])
+    ion_names = np.array(["ion0", "ion1", "ion2"])
+
+    # when
+    profile, name, ions, shifted = (
+        lfq_protint.calculate_peptide_and_protein_intensities(
+            0, "protA", ion_names, peptide_values, 10, 1
+        )
+    )
+
+    # then - values kept as-is (not normalized to NaN) and the protein is retained
+    assert np.array_equal(shifted, peptide_values, equal_nan=True)
+    assert profile is not None
+    assert name == "protA"
+    assert list(ions) == ["ion0", "ion1", "ion2"]

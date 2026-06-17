@@ -98,7 +98,7 @@ class IonTraceCompararisonPlotter:
             self._protein_df_after_norm, ax=self.axis_normed
         )
         median_list = lfq_protint.get_list_with_protein_value_for_each_sample(
-            self._protein_df_after_norm, min_nonan=1
+            self._protein_df_after_norm.to_numpy(), min_nonan=1
         )
         visualizer.add_median_trace(median_list)
 
