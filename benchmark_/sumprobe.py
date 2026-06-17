@@ -13,8 +13,8 @@ diff_ids = [ids[i].split("\t")[0] for i in np.where(d.max(axis=1) > 1e-12)[0]]
 print("checking", len(diff_ids), "differing proteins")
 for p in diff_ids[:4]:
     sub = normed[pn == p]
-    # OLD path: ProtvalCutter df -> nansum(2**df)
-    cut_df = lfqprot.ProtvalCutter(sub.copy(), maximum_df_length=100).get_dataframe()
+    # OLD path: ProtvalCutter reference df -> nansum(2**df)
+    cut_df = optbench.protvalcutter_reference_cut(sub.copy(), 100)
     old_sum = np.nansum(2**cut_df)
     # NEW path: array cut -> nansum(2**arr)
     vals = sub.to_numpy()

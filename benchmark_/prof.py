@@ -4,11 +4,7 @@ import directlfq.normalization as lfqnorm, directlfq.protein_intensity_estimatio
 import optbench
 
 normed = optbench.prep()
-spec = list(
-    lfqprot.get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(
-        normed, 10, 1
-    )
-)[:2500]
+spec = list(lfqprot.get_protein_workitems(normed, 10, 1))[:2500]
 pr = cProfile.Profile()
 pr.enable()
 lfqprot.get_list_with_sequential_processing(iter(spec))

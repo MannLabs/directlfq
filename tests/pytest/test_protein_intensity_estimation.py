@@ -1,95 +1,56 @@
 """Tests for directlfq.protein_intensity_estimation, salvaged from nbdev_nbs/03_protein_intensity_estimation.ipynb."""
 
 import numpy as np
-import pandas as pd
 import pytest
 
 import directlfq.protein_intensity_estimation as lfq_protint
 import directlfq.test_utils as lfq_testutils
 
 
-def test_sorting_by_num_nans():
-    vals1 = np.array([9, np.nan, np.nan, np.nan])
-    vals2 = np.array([5, 6, np.nan, np.nan])
-    vals3 = np.array([1, 2, 3, np.nan])
-
-    df = pd.DataFrame([vals1, vals2, vals3], index=[["P", "P", "P"], ["A", "B", "C"]])
-    pcutter = lfq_protint.ProtvalCutter(df, maximum_df_length=2)
-    sorted_idx = pcutter._sorted_idx
-    df_sorted = df.loc[sorted_idx]
-
-    assert np.allclose(df_sorted.iloc[2].to_numpy(), vals1, equal_nan=True)
-    assert np.allclose(df_sorted.iloc[0].to_numpy(), vals3, equal_nan=True)
-
-
-def test_cutting_of_df():
-    vals1 = np.array([9, np.nan, np.nan, np.nan])
-    vals2 = np.array([5, 6, np.nan, np.nan])
-    vals3 = np.array([1, 2, 3, np.nan])
-
-    df = pd.DataFrame([vals1, vals2, vals3], index=[["A", "B", "C"]])
-    pcutter = lfq_protint.ProtvalCutter(df, maximum_df_length=2)
-    cut_df = pcutter.get_dataframe()
-    ion_idx = [x[0] for x in cut_df.index]
-    assert ion_idx == ["C", "B"]
-
-
 # ============================================================================
-# _cut_peptide_values (optimization step 5) -- proven against live ProtvalCutter
+# _cut_peptide_values (optimization step 5)
 # ============================================================================
-# Strangler check: the numpy cutter must produce the SAME ion order (not just the
-# same set) as ProtvalCutter, including the stable tie-break on full ties.
+# The numpy cutter keeps the <= maximum ions sorted by NaN count asc then summed
+# intensity desc, reproducing the former ProtvalCutter's stable sorted() tie-break
+# (ions tied on both keys keep their original order). Expectations are hardcoded.
 
 
-def _make_ion_df(rows, ion_names):
-    index = pd.MultiIndex.from_arrays([["P"] * len(ion_names), ion_names])
-    return pd.DataFrame(rows, index=index)
-
-
-def test_cut_peptide_values_matches_protvalcutter_order_with_full_tie():
+def test_cut_peptide_values_orders_by_nan_then_intensity_with_full_tie():
     # given - ion0 and ion1 are a full tie on both keys (nan=0, sum=6); the cut
     # keeps the top 3, so the tie-break (original order) is observable
-    ion_names = ["ion0", "ion1", "ion2", "ion3", "ion4"]
-    rows = [
-        [1.0, 2.0, 3.0],  # ion0: nan=0 sum=6
-        [1.0, 2.0, 3.0],  # ion1: nan=0 sum=6 (full tie with ion0)
-        [10.0, 20.0, 30.0],  # ion2: nan=0 sum=60
-        [5.0, np.nan, np.nan],  # ion3: nan=2 sum=5
-        [np.nan, np.nan, np.nan],  # ion4: nan=3 sum=0
-    ]
-    df = _make_ion_df(rows, ion_names)
-
-    cut_df = lfq_protint.ProtvalCutter(
-        df.copy(), maximum_df_length=3
-    ).get_dataframe()
-    pc_ions = [t[1] for t in cut_df.index]
+    ion_names = np.array(["ion0", "ion1", "ion2", "ion3", "ion4"])
+    peptide_values = np.array(
+        [
+            [1.0, 2.0, 3.0],  # ion0: nan=0 sum=6
+            [1.0, 2.0, 3.0],  # ion1: nan=0 sum=6 (full tie with ion0)
+            [10.0, 20.0, 30.0],  # ion2: nan=0 sum=60
+            [5.0, np.nan, np.nan],  # ion3: nan=2 sum=5
+            [np.nan, np.nan, np.nan],  # ion4: nan=3 sum=0
+        ]
+    )
 
     # when
     new_vals, new_ions = lfq_protint._cut_peptide_values(
-        df.to_numpy(), np.array(ion_names), maximum=3
+        peptide_values, ion_names, maximum=3
     )
 
-    # then - identical ion order and values
-    assert list(new_ions) == pc_ions
-    assert np.array_equal(new_vals, cut_df.to_numpy(), equal_nan=True)
+    # then - highest-sum first, then the full tie in original (ion-name) order
+    assert list(new_ions) == ["ion2", "ion0", "ion1"]
+    assert np.array_equal(
+        new_vals, np.array([[10.0, 20.0, 30.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
+    )
 
 
 def test_cut_peptide_values_is_noop_within_limit():
-    ion_names = ["ion0", "ion1", "ion2"]
-    rows = [[1.0, 2.0], [3.0, np.nan], [5.0, 6.0]]
-    df = _make_ion_df(rows, ion_names)
-
-    cut_df = lfq_protint.ProtvalCutter(
-        df.copy(), maximum_df_length=100
-    ).get_dataframe()
-    pc_ions = [t[1] for t in cut_df.index]
+    ion_names = np.array(["ion0", "ion1", "ion2"])
+    peptide_values = np.array([[1.0, 2.0], [3.0, np.nan], [5.0, 6.0]])
 
     new_vals, new_ions = lfq_protint._cut_peptide_values(
-        df.to_numpy(), np.array(ion_names), maximum=100
+        peptide_values, ion_names, maximum=100
     )
 
-    assert list(new_ions) == pc_ions == ion_names
-    assert np.array_equal(new_vals, cut_df.to_numpy(), equal_nan=True)
+    assert list(new_ions) == ["ion0", "ion1", "ion2"]
+    assert np.array_equal(new_vals, peptide_values, equal_nan=True)
 
 
 def test_that_protein_intensities_are_retained():

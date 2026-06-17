@@ -5,7 +5,6 @@ __all__ = [
     "get_list_with_multiprocessing",
     "get_configured_multiprocessing_pool",
     "get_protein_workitems",
-    "get_normed_dfs",
     "get_ion_intensity_dataframe_from_list_of_shifted_peptides",
     "add_protein_names_to_ion_ints",
     "add_protein_name_to_ion_df",
@@ -13,10 +12,6 @@ __all__ = [
     "calculate_peptide_and_protein_intensities",
     "get_protein_profile_from_shifted_peptides",
     "get_list_with_protein_value_for_each_sample",
-    "ProtvalCutter",
-    "OrphanIonRemover",
-    "OrphanIonsForDeletionSelector",
-    "IonCheckedForOrphan",
 ]
 
 import pandas as pd
@@ -113,21 +108,6 @@ def get_protein_workitems(normed_df, num_samples_quadratic, min_nonan):
         )
 
 
-def get_normed_dfs(normed_df):
-    protein_names = normed_df.index.get_level_values(0).to_numpy()
-    ion_names = normed_df.index.get_level_values(1).to_numpy()
-    normed_array = normed_df.to_numpy()
-    indices_of_proteinname_switch = find_nameswitch_indices(protein_names)
-    results_list = [
-        get_subdf(
-            normed_array, indices_of_proteinname_switch, idx, protein_names, ion_names
-        )
-        for idx in range(len(indices_of_proteinname_switch) - 1)
-    ]
-
-    return results_list
-
-
 def find_nameswitch_indices(arr):
     change_indices = np.where(arr[:-1] != arr[1:])[0] + 1
 
@@ -138,19 +118,6 @@ def find_nameswitch_indices(arr):
     start_indices = np.append(start_indices, len(arr))
 
     return start_indices
-
-
-def get_subdf(
-    normed_array, indices_of_proteinname_switch, idx, protein_names, ion_names
-):
-    start_switch = indices_of_proteinname_switch[idx]
-    end_switch = indices_of_proteinname_switch[idx + 1]
-    sub_array = normed_array[start_switch:end_switch]
-    index_sub_array = pd.MultiIndex.from_arrays(
-        [protein_names[start_switch:end_switch], ion_names[start_switch:end_switch]],
-        names=[config.PROTEIN_ID, config.QUANT_ID],
-    )
-    return pd.DataFrame(sub_array, index=index_sub_array)
 
 
 def get_list_with_sequential_processing(protein_workitems):
@@ -248,10 +215,6 @@ def get_list_with_protein_value_for_each_sample(
     return intens_vec
 
 
-import pandas as pd
-from numba import njit
-
-
 def _cut_peptide_values(peptide_values, ion_names, maximum=100):
     """Reduce a protein to its ``maximum`` most informative ions (rows = ions).
 
@@ -268,61 +231,6 @@ def _cut_peptide_values(peptide_values, ion_names, maximum=100):
     # last key is primary and lexsort is stable -> full ties keep original order (Gotcha 2)
     order = np.lexsort((neg_summed, nan_counts))[:maximum]
     return peptide_values[order], ion_names[order]
-
-
-class ProtvalCutter:
-    def __init__(self, protvals_df, maximum_df_length=100):
-        self._protvals_df = protvals_df
-        self._maximum_df_length = maximum_df_length
-        self._dataframe_too_long = None
-        self._sorted_idx = None
-        self._check_if_df_too_long_and_sort_index_if_so()
-
-    def _check_if_df_too_long_and_sort_index_if_so(self):
-        self._dataframe_too_long = (
-            len(self._protvals_df.index) > self._maximum_df_length
-        )
-        if self._dataframe_too_long:
-            self._determine_nansorted_df_index()
-
-    def _determine_nansorted_df_index(self):
-        """Sorts the dataframe index primarily by number of NaN values (ascending) and secondarily by summed intensity (descending). Sorting by intensties in case multiple ions have identical missing value counts. We expect initial sorting by ion name (which is done in the run_lfq module) to be deterministic.
-
-        The sorting prioritizes:
-        1. Rows with fewer NaN values come first
-        2. For rows with equal number of NaNs, higher intensity sums come first
-        """
-        idxs = self._protvals_df.index
-        self._sorted_idx = sorted(
-            idxs,
-            key=lambda idx: (
-                sum(
-                    np.isnan(self._protvals_df.loc[idx].to_numpy())
-                ),  # First by number of NaNs (ascending)
-                -np.nansum(
-                    self._protvals_df.loc[idx].to_numpy()
-                ),  # Then by sum of intensities (descending)
-            ),
-        )
-
-    @staticmethod
-    @njit
-    def _get_num_nas_in_row(row):
-        sum = 0
-        isnans = np.isnan(row)
-        for is_nan in isnans:
-            sum += is_nan
-        return sum
-
-    def get_dataframe(self):
-        if self._dataframe_too_long:
-            return self._get_shortened_dataframe()
-        else:
-            return self._protvals_df
-
-    def _get_shortened_dataframe(self):
-        shortened_index = self._sorted_idx[: self._maximum_df_length]
-        return self._protvals_df.loc[shortened_index]
 
 
 def get_ion_intensity_dataframe_from_list_of_shifted_peptides(

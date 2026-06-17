@@ -11,7 +11,7 @@ diff_ids = [ids[i].split("\t")[0] for i in np.where(d.max(axis=1) > 1e-12)[0]]
 ok = {"C": 0, "F": 0, "T": 0, "col": 0}
 for p in diff_ids:
     sub = normed[pn == p]
-    cut_df = lfqprot.ProtvalCutter(sub.copy(), maximum_df_length=100).get_dataframe()
+    cut_df = optbench.protvalcutter_reference_cut(sub.copy(), 100)
     old = np.nansum(2**cut_df)
     vals = sub.to_numpy()
     ino = sub.index.get_level_values(1).to_numpy()

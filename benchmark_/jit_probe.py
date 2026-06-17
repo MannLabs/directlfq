@@ -20,11 +20,7 @@ df = lfqutils.remove_allnan_rows_input_df(df)
 normed = lfqnorm.NormalizationManagerSamplesOnSelectedProteins(
     df, num_samples_quadratic=50, selected_proteins_file=None
 ).complete_dataframe
-spec = list(
-    lfqprot.get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(
-        normed, 10, 1
-    )
-)
+spec = list(lfqprot.get_protein_workitems(normed, 10, 1))
 # process just first 50 proteins single-core: time dominated by one-time JIT compile
 t = time.perf_counter()
 lfqprot.get_list_with_sequential_processing(iter(spec[:50]))

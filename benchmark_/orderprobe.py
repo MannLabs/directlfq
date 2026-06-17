@@ -12,9 +12,8 @@ target = [p for p, c in counts.items() if c == 102][0]
 sub = normed[pn == target]
 vals = sub.to_numpy()
 ion_names = sub.index.get_level_values(1).to_numpy()
-# ProtvalCutter order
-pc = lfqprot.ProtvalCutter(sub.copy(), maximum_df_length=100)
-pc_idx = pc._sorted_idx[:100]
+# ProtvalCutter reference order
+pc_idx = optbench.protvalcutter_reference_sorted_index(sub.copy())[:100]
 pc_ions = [t[1] for t in pc_idx]
 # my lexsort order
 with np.errstate(all="ignore"):

@@ -1,7 +1,7 @@
 """Break the 'estimate' stage into its serial vs parallel sub-steps.
 
 estimate_protein_intensities does, in order:
-  1. build per-protein sub-DataFrames (get_normed_dfs)   -> SERIAL
+  1. build per-protein work items (get_protein_workitems) -> SERIAL
   2. map calculate_peptide_and_protein_intensities       -> PARALLEL (pool) / serial
   3. assemble protein dataframe                           -> SERIAL
   4. compile ion dataframe                                -> SERIAL
@@ -42,13 +42,9 @@ def main() -> None:
         df, num_samples_quadratic=50, selected_proteins_file=None
     ).complete_dataframe
 
-    # 1. build per-protein sub-DataFrames (this is what gets pickled to workers)
+    # 1. build per-protein work items (this is what gets pickled to workers)
     t = time.perf_counter()
-    spec = list(
-        lfqprot.get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(
-            normed_df, 10, 1
-        )
-    )
+    spec = list(lfqprot.get_protein_workitems(normed_df, 10, 1))
     t_build = time.perf_counter() - t
     n = len(spec)
 
