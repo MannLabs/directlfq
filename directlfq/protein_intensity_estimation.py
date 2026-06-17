@@ -4,7 +4,7 @@ __all__ = [
     "get_list_with_sequential_processing",
     "get_list_with_multiprocessing",
     "get_configured_multiprocessing_pool",
-    "get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan",
+    "get_protein_workitems",
     "get_normed_dfs",
     "get_ion_intensity_dataframe_from_list_of_shifted_peptides",
     "add_protein_names_to_ion_ints",
@@ -75,9 +75,7 @@ def get_list_of_tuple_w_protein_profiles_and_shifted_peptides(
     normed_df, num_samples_quadratic, min_nonan, num_cores
 ):
     input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan = (
-        get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(
-            normed_df, num_samples_quadratic, min_nonan
-        )
+        get_protein_workitems(normed_df, num_samples_quadratic, min_nonan)
     )
 
     if num_cores is not None and num_cores <= 1:
@@ -96,9 +94,7 @@ def get_list_of_tuple_w_protein_profiles_and_shifted_peptides(
     return list_of_tuple_w_protein_profiles_and_shifted_peptides
 
 
-def get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(
-    normed_df, num_samples_quadratic, min_nonan
-):
+def get_protein_workitems(normed_df, num_samples_quadratic, min_nonan):
     list_of_normed_dfs = get_normed_dfs(normed_df)
     return zip(
         range(len(list_of_normed_dfs)),
@@ -208,7 +204,11 @@ def calculate_peptide_and_protein_intensities(
         shifted_peptides, summed_pepint, min_nonan
     )
 
-    return protein_profile, shifted_peptides
+    protein_name = shifted_peptides.index.get_level_values(0)[0]
+    ion_names = shifted_peptides.index.get_level_values(1).to_numpy()
+    shifted_values = shifted_peptides.to_numpy()
+
+    return protein_profile, protein_name, ion_names, shifted_values
 
 
 def get_protein_profile_from_shifted_peptides(
@@ -311,11 +311,12 @@ def get_ion_intensity_dataframe_from_list_of_shifted_peptides(
     ion_vals = []
     protein_names = []
     for idx in range(len(list_of_tuple_w_protein_profiles_and_shifted_peptides)):
-        ion_df = list_of_tuple_w_protein_profiles_and_shifted_peptides[idx][1]
-        protein_name = ion_df.index.get_level_values(0)[0]
-        ion_names += ion_df.index.get_level_values(1).tolist()
-        ion_vals.append(ion_df.to_numpy())
-        protein_names.extend([protein_name] * len(ion_df.index))
+        _, protein_name, ion_names_arr, shifted_values = (
+            list_of_tuple_w_protein_profiles_and_shifted_peptides[idx]
+        )
+        ion_names += ion_names_arr.tolist()
+        ion_vals.append(shifted_values)
+        protein_names.extend([protein_name] * len(ion_names_arr))
     merged_ions = 2 ** np.concatenate(ion_vals)
     merged_ions = np.nan_to_num(merged_ions)
     ion_df = pd.DataFrame(merged_ions)
@@ -349,10 +350,7 @@ def get_protein_dataframe_from_list_of_protein_profiles(
     list_of_protein_profiles = [
         x[0] for x in list_of_tuple_w_protein_profiles_and_shifted_peptides
     ]
-    allprots = [
-        x[1].index.get_level_values(0)[0]
-        for x in list_of_tuple_w_protein_profiles_and_shifted_peptides
-    ]
+    allprots = [x[1] for x in list_of_tuple_w_protein_profiles_and_shifted_peptides]
 
     for idx in range(len(allprots)):
         if list_of_protein_profiles[idx] is None:
