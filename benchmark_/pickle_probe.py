@@ -1,5 +1,4 @@
 import time, pickle
-import numpy as np
 import directlfq.config as config
 import directlfq.utils as lfqutils
 import directlfq.normalization as lfqnorm
@@ -21,20 +20,14 @@ df = lfqutils.remove_allnan_rows_input_df(df)
 normed = lfqnorm.NormalizationManagerSamplesOnSelectedProteins(
     df, num_samples_quadratic=50, selected_proteins_file=None
 ).complete_dataframe
-dfs = lfqprot.get_normed_dfs(normed)
-print("n sub-dataframes:", len(dfs))
-# pickle the list of per-protein DataFrames (what Pool ships to workers)
+workitems = list(lfqprot.get_protein_workitems(normed, 10, 1))
+print("n work items:", len(workitems))
+# pickle the list of per-protein numpy work items (what Pool ships to workers)
 t = time.perf_counter()
-blob = pickle.dumps(dfs, protocol=pickle.HIGHEST_PROTOCOL)
-t_df = time.perf_counter() - t
-print(f"DataFrames: pickle {t_df:.2f}s  size {len(blob) / 1e6:.1f} MB")
+blob = pickle.dumps(workitems, protocol=pickle.HIGHEST_PROTOCOL)
+t_wi = time.perf_counter() - t
+print(f"work items: pickle {t_wi:.2f}s  size {len(blob) / 1e6:.1f} MB")
 t = time.perf_counter()
 _ = pickle.loads(blob)
-t_dfl = time.perf_counter() - t
-print(f"DataFrames: unpickle {t_dfl:.2f}s")
-# equivalent as raw numpy arrays (values only)
-arrs = [d.to_numpy() for d in dfs]
-t = time.perf_counter()
-blob2 = pickle.dumps(arrs, protocol=pickle.HIGHEST_PROTOCOL)
-t_np = time.perf_counter() - t
-print(f"numpy arrays: pickle {t_np:.2f}s  size {len(blob2) / 1e6:.1f} MB")
+t_wil = time.perf_counter() - t
+print(f"work items: unpickle {t_wil:.2f}s")

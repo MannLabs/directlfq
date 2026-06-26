@@ -15,6 +15,7 @@ __all__ = [
     "merge_distribs",
     "normalize_dataframe_between_samples",
     "normalize_ion_profiles",
+    "normalize_protein_ion_values",
     "drop_nas_if_possible",
     "calculate_fraction_with_no_NAs",
     "NormalizationManager",
@@ -302,6 +303,58 @@ def normalize_ion_profiles(protein_profile_df):
     return df_normed
 
 
+def normalize_protein_ion_values(peptide_values, num_samples_quadratic):
+    """Normalize one protein's ion rows (rows = ions, columns = samples) and return a new array.
+
+    Reproduces the dispatch in ``NormalizationManager._run_normalization`` so the hot
+    path can bypass the class and its label-based MultiIndex round-trips:
+
+    - ``n_ions <= num_samples_quadratic``: every row is normalized together with the
+      quadratic pairwise-shift procedure, in original (ion-name) order.
+    - ``n_ions > num_samples_quadratic``: the ``num_samples_quadratic`` rows with the
+      fewest NaNs are normalized quadratically; the remaining rows are each shifted onto
+      the column-median of those normalized rows.
+
+    The input array is not mutated.
+    """
+    arr = peptide_values.astype(float, copy=True)
+    k = num_samples_quadratic
+
+    # cf. NormalizationManager._normalize_complete_input_quadratic (normalize_ion_profiles):
+    # the quadratic-only path must keep rows in original order -- get_normfacts' pair
+    # selection is order-sensitive, so this branch must not be folded into the sorted split.
+    if arr.shape[0] <= k:
+        sample2shift = get_normfacts(arr)  # mutates single-intensity rows -> NaN
+        return apply_sampleshifts(arr, sample2shift)
+
+    # cf. _determine_subset_rows(): positional k-fewest-NaN quadratic split, linear in original order
+    nan_counts = np.isnan(arr).sum(axis=1)
+    order = np.argsort(nan_counts, kind="stable")
+    q_pos = order[:k]
+    linear_mask = np.ones(arr.shape[0], dtype=bool)
+    linear_mask[q_pos] = False
+    lin_pos = np.flatnonzero(linear_mask)
+
+    # cf. _normalize_quadratic_selection()
+    q_vals = arr[q_pos].copy()
+    sample2shift = get_normfacts(q_vals)  # mutates single-intensity rows -> NaN
+    q_normed = apply_sampleshifts(q_vals, sample2shift)
+    arr[q_pos] = q_normed
+
+    with warnings.catch_warnings():
+        warnings.simplefilter(
+            "ignore", category=RuntimeWarning
+        )  # all-NaN slices -> NaN
+        # cf. _create_reference_sample()
+        reference = np.nanmedian(q_normed, axis=0)
+        # cf. _shift_remaining_dataframe_to_reference_sample()
+        if lin_pos.size:
+            shifts = np.nanmedian(reference - arr[lin_pos], axis=1)
+            arr[lin_pos] = arr[lin_pos] + shifts[:, None]
+
+    return arr
+
+
 def drop_nas_if_possible(df):
     df_nonans = df.dropna(axis=1)
     fraction_nonans = calculate_fraction_with_no_NAs(df, df_nonans)
@@ -505,44 +558,16 @@ class NormalizationManagerProtein(NormalizationManager):
         self._run_normalization()
 
     def _normalize_quadratic_and_linear(self) -> None:
-        """Normalize ion rows in two tiers and write the result back to ``complete_dataframe``.
+        """Delegate the two-tier ion normalization to the shared numpy implementation.
 
-        The ``num_samples_quadratic`` rows with the fewest NaNs are normalized with the
-        quadratic pairwise-shift procedure; every remaining row is shifted onto the median
-        profile of those normalized rows.
-
-        Numpy mirror of the base class's four-step ``.loc``-based pipeline, dropping the
-        label-based MultiIndex round-trips that dominate the estimate stage.
+        The base class only dispatches here on the ``n_ions > num_samples_quadratic``
+        branch, which ``normalize_protein_ion_values`` reproduces exactly; the same
+        function backs the numpy hot path in ``protein_intensity_estimation``.
         """
         df = self.complete_dataframe
-        arr = df.to_numpy(dtype=float, copy=True)  # copy as arr is mutated in-place
-        k = self._num_samples_quadratic
-
-        # cf. _determine_subset_rows(): positional k-fewest-NaN quadratic split, linear in original order
-        nan_counts = np.isnan(arr).sum(axis=1)
-        order = np.argsort(nan_counts, kind="stable")
-        q_pos = order[:k]
-        linear_mask = np.ones(arr.shape[0], dtype=bool)
-        linear_mask[q_pos] = False
-        lin_pos = np.flatnonzero(linear_mask)
-
-        # cf. _normalize_quadratic_selection()
-        q_vals = arr[q_pos].copy()
-        sample2shift = get_normfacts(q_vals)  # mutates single-intensity rows -> NaN
-        q_normed = apply_sampleshifts(q_vals, sample2shift)
-        arr[q_pos] = q_normed
-
-        with warnings.catch_warnings():
-            warnings.simplefilter(
-                "ignore", category=RuntimeWarning
-            )  # all-NaN slices -> NaN
-            # cf. _create_reference_sample()
-            reference = np.nanmedian(q_normed, axis=0)
-            # cf. _shift_remaining_dataframe_to_reference_sample()
-            if lin_pos.size:
-                shifts = np.nanmedian(reference - arr[lin_pos], axis=1)
-                arr[lin_pos] = arr[lin_pos] + shifts[:, None]
-
+        arr = normalize_protein_ion_values(
+            df.to_numpy(dtype=float), self._num_samples_quadratic
+        )
         self.complete_dataframe = pd.DataFrame(arr, index=df.index, columns=df.columns)
 
 

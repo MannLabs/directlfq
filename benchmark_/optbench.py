@@ -49,6 +49,36 @@ def prep():
     ).complete_dataframe
 
 
+def protvalcutter_reference_sorted_index(protvals_df):
+    """Reference: the original ProtvalCutter index sort, kept for the probes to compare
+    the numpy _cut_peptide_values against now that ProtvalCutter is removed.
+
+    Primary key: number of NaNs (ascending); secondary: summed intensity (descending).
+    """
+    idxs = protvals_df.index
+    return sorted(
+        idxs,
+        key=lambda idx: (
+            sum(
+                np.isnan(protvals_df.loc[idx].to_numpy())
+            ),  # First by number of NaNs (ascending)
+            -np.nansum(
+                protvals_df.loc[idx].to_numpy()
+            ),  # Then by sum of intensities (descending)
+        ),
+    )
+
+
+def protvalcutter_reference_cut(protvals_df, maximum_df_length=100):
+    """Reference: the original ProtvalCutter cut -- keep the top maximum_df_length rows."""
+    if len(protvals_df.index) <= maximum_df_length:
+        return protvals_df
+    shortened_index = protvalcutter_reference_sorted_index(protvals_df)[
+        :maximum_df_length
+    ]
+    return protvals_df.loc[shortened_index]
+
+
 def df_to_arrays(df):
     """Stable representation: id strings (from protein/ion id cols) + sorted float matrix."""
     df = df.reset_index()

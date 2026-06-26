@@ -1,37 +1,56 @@
 """Tests for directlfq.protein_intensity_estimation, salvaged from nbdev_nbs/03_protein_intensity_estimation.ipynb."""
 
 import numpy as np
-import pandas as pd
 import pytest
 
 import directlfq.protein_intensity_estimation as lfq_protint
 import directlfq.test_utils as lfq_testutils
 
 
-def test_sorting_by_num_nans():
-    vals1 = np.array([9, np.nan, np.nan, np.nan])
-    vals2 = np.array([5, 6, np.nan, np.nan])
-    vals3 = np.array([1, 2, 3, np.nan])
-
-    df = pd.DataFrame([vals1, vals2, vals3], index=[["P", "P", "P"], ["A", "B", "C"]])
-    pcutter = lfq_protint.ProtvalCutter(df, maximum_df_length=2)
-    sorted_idx = pcutter._sorted_idx
-    df_sorted = df.loc[sorted_idx]
-
-    assert np.allclose(df_sorted.iloc[2].to_numpy(), vals1, equal_nan=True)
-    assert np.allclose(df_sorted.iloc[0].to_numpy(), vals3, equal_nan=True)
+# ============================================================================
+# _cut_peptide_values (optimization step 5)
+# ============================================================================
+# The numpy cutter keeps the <= maximum ions sorted by NaN count asc then summed
+# intensity desc, reproducing the former ProtvalCutter's stable sorted() tie-break
+# (ions tied on both keys keep their original order). Expectations are hardcoded.
 
 
-def test_cutting_of_df():
-    vals1 = np.array([9, np.nan, np.nan, np.nan])
-    vals2 = np.array([5, 6, np.nan, np.nan])
-    vals3 = np.array([1, 2, 3, np.nan])
+def test_cut_peptide_values_orders_by_nan_then_intensity_with_full_tie():
+    # given - ion0 and ion1 are a full tie on both keys (nan=0, sum=6); the cut
+    # keeps the top 3, so the tie-break (original order) is observable
+    ion_names = np.array(["ion0", "ion1", "ion2", "ion3", "ion4"])
+    peptide_values = np.array(
+        [
+            [1.0, 2.0, 3.0],  # ion0: nan=0 sum=6
+            [1.0, 2.0, 3.0],  # ion1: nan=0 sum=6 (full tie with ion0)
+            [10.0, 20.0, 30.0],  # ion2: nan=0 sum=60
+            [5.0, np.nan, np.nan],  # ion3: nan=2 sum=5
+            [np.nan, np.nan, np.nan],  # ion4: nan=3 sum=0
+        ]
+    )
 
-    df = pd.DataFrame([vals1, vals2, vals3], index=[["A", "B", "C"]])
-    pcutter = lfq_protint.ProtvalCutter(df, maximum_df_length=2)
-    cut_df = pcutter.get_dataframe()
-    ion_idx = [x[0] for x in cut_df.index]
-    assert ion_idx == ["C", "B"]
+    # when
+    new_vals, new_ions = lfq_protint._cut_peptide_values(
+        peptide_values, ion_names, maximum=3
+    )
+
+    # then - highest-sum first, then the full tie in original (ion-name) order
+    assert list(new_ions) == ["ion2", "ion0", "ion1"]
+    assert np.array_equal(
+        new_vals, np.array([[10.0, 20.0, 30.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
+    )
+
+
+def test_cut_peptide_values_is_noop_within_limit():
+    ion_names = np.array(["ion0", "ion1", "ion2"])
+    peptide_values = np.array([[1.0, 2.0], [3.0, np.nan], [5.0, 6.0]])
+
+    new_vals, new_ions = lfq_protint._cut_peptide_values(
+        peptide_values, ion_names, maximum=100
+    )
+
+    assert list(new_ions) == ["ion0", "ion1", "ion2"]
+    assert np.array_equal(new_vals, peptide_values, equal_nan=True)
 
 
 def test_that_protein_intensities_are_retained():
@@ -168,14 +187,14 @@ def test_nameswitch_indices_are_recovered_correctly():
 # its ion values when at least ``min_nonan`` are finite, otherwise NaN.
 
 
-def _profile_df(rows):
-    """Build an ion-profile DataFrame (rows = ions, columns = samples)."""
-    return pd.DataFrame(rows)
+def _profile_array(rows):
+    """Build an ion-profile array (rows = ions, columns = samples)."""
+    return np.array(rows, dtype=float)
 
 
 def test_protein_value_per_sample_returns_column_nanmedians_when_all_finite():
     # given - three samples, all values finite
-    df = _profile_df([[1.0, 4.0, 10.0], [3.0, 6.0, 20.0], [5.0, 8.0, 30.0]])
+    df = _profile_array([[1.0, 4.0, 10.0], [3.0, 6.0, 20.0], [5.0, 8.0, 30.0]])
 
     # when
     result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan=1)
@@ -186,7 +205,7 @@ def test_protein_value_per_sample_returns_column_nanmedians_when_all_finite():
 
 def test_protein_value_per_sample_skips_nans_in_median():
     # given - a column with an even number of finite values (median is averaged)
-    df = _profile_df([[4.0], [np.nan], [6.0]])
+    df = _profile_array([[4.0], [np.nan], [6.0]])
 
     # when
     result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan=1)
@@ -197,7 +216,7 @@ def test_protein_value_per_sample_skips_nans_in_median():
 
 def test_protein_value_per_sample_all_nan_column_is_nan():
     # given - one all-NaN sample alongside a finite one
-    df = _profile_df([[1.0, np.nan], [3.0, np.nan]])
+    df = _profile_array([[1.0, np.nan], [3.0, np.nan]])
 
     # when
     result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan=1)
@@ -216,10 +235,36 @@ def test_protein_value_per_sample_all_nan_column_is_nan():
 )
 def test_protein_value_per_sample_applies_min_nonan_threshold(min_nonan, expected):
     # given - sample finite-counts of 3, 2 and 0 respectively
-    df = _profile_df([[1.0, 4.0, np.nan], [3.0, np.nan, np.nan], [5.0, 6.0, np.nan]])
+    df = _profile_array([[1.0, 4.0, np.nan], [3.0, np.nan, np.nan], [5.0, 6.0, np.nan]])
 
     # when
     result = lfq_protint.get_list_with_protein_value_for_each_sample(df, min_nonan)
 
     # then - a column is NaN-ed out only when its finite count < min_nonan
     assert np.array_equal(np.asarray(result), np.array(expected), equal_nan=True)
+
+
+# ============================================================================
+# calculate_peptide_and_protein_intensities single-sample guard (step 5)
+# ============================================================================
+# With a single sample every ion has one intensity, so get_normfacts would NaN
+# every row and drop the protein. The guard skips normalization to keep values.
+
+
+def test_single_sample_values_are_kept_and_protein_retained():
+    # given - 3 ions, 1 sample
+    peptide_values = np.array([[5.0], [6.0], [7.0]])
+    ion_names = np.array(["ion0", "ion1", "ion2"])
+
+    # when
+    profile, name, ions, shifted = (
+        lfq_protint.calculate_peptide_and_protein_intensities(
+            0, "protA", ion_names, peptide_values, 10, 1
+        )
+    )
+
+    # then - values kept as-is (not normalized to NaN) and the protein is retained
+    assert np.array_equal(shifted, peptide_values, equal_nan=True)
+    assert profile is not None
+    assert name == "protA"
+    assert list(ions) == ["ion0", "ion1", "ion2"]
