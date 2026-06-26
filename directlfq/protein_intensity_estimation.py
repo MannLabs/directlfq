@@ -167,7 +167,9 @@ def calculate_peptide_and_protein_intensities(
     summed_pepint = np.nansum(np.asfortranarray(2**peptide_values))
 
     if peptide_values.shape[1] < 2:
-        shifted_values = peptide_values  # single sample: skip normalization, keep values as-is
+        shifted_values = (
+            peptide_values  # single sample: skip normalization, keep values as-is
+        )
     else:
         shifted_values = lfqnorm.normalize_protein_ion_values(
             peptide_values, num_samples_quadratic
