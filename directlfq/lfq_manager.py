@@ -122,7 +122,7 @@ def run_lfq(
         save_ion_df(ion_df, outfile_basename)
 
     LOGGER.info("Analysis finished!")
-    
+
     return protein_df, ion_df, config_saved
 
 
