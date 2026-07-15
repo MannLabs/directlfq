@@ -154,6 +154,17 @@ float32 arrays).
 signature and call `config.set_intensity_dtype(use_float32=use_float32)` alongside
 the other `config.set_*` calls.
 
+Caveat:
+  The algorithm leaves log space and does magnitude-mixing sum reductions to conserve total intensity, in protein_intensity_estimation.py:
+
+  167:  summed_pepint    = np.nansum(np.asfortranarray(2**peptide_values))
+  192:  summed_intensity = np.nansum(2**intens_vec)
+  195:  intens_conversion_factor = summed_pepints / summed_intensity
+  196:  scaled_vec = intens_vec + np.log2(intens_conversion_factor)
+
+  If peptide_values is float32, then 2**peptide_values is float32 and np.nansum accumulates in a float32 accumulator. Linear intensities span many orders of magnitude within one protein, so summing e.g. 1e11 + 1e3 in float32 silently drops the small term (ULP at 1e11 is ~8000). That biases
+  summed_pepint.
+
 ### A4. Read intensities directly as float32  (part of the opt-in path)
 **File:** `directlfq/utils.py::_read_wide_tsv`. **Gain:** 1c peak 0.62→0.47 GB
 (stable). Attacks the import peak, which A3 alone did not (it read float64 then cast).
@@ -192,185 +203,3 @@ return pd.read_csv(file_to_read, sep="\t", encoding="latin1", usecols=samples_su
 pages, and has ±0.1 GB run-to-run variance that swamps the float32 saving).
 
 ---
-
-## SECTION B — reduce multi-core scaling overhead
-
-### B.0 Why (measured)
-After the speed work, per-protein compute is ~0.1 ms, so `multiprocess.Pool`
-overhead dominates. Benchmarked (map-only wall, `benchmarks/explore_parallel.py`,
-all bit-identical to sequential):
-
-| strategy | 1c | 2c | 4c | 8c |
-|---|--:|--:|--:|--:|
-| sequential | 1263 ms | – | – | – |
-| Pool.starmap (old) | 3196 | 1967 | 1641 | 1568 |
-| chunksize=1 | 11963 | 5692 | 4642 | 7519 |
-| **shared-memory + ranges** | 2885 | 1570 | 924 | **571** |
-| ranges, no ion return | 1665 | 930 | 516 | 335 |
-| threads (nogil kernels) | 1270 | 1045 | 1216 | 2953 |
-
-Conclusions: (1) the old pool is **slower than sequential at every core count** —
-it pickles ~58 MB of value slices out and ~58 MB of results back; (2) chunksize is
-not the lever (default already auto-chunks; forcing 1 is catastrophic); (3)
-**threads are a dead end** — the per-protein Python/numpy glue holds the GIL, so
-even `nogil` kernels only help at 2c then degrade; (4) **shared-memory + index
-ranges wins** (2.2× vs sequential at 8c) and is portable (works on fork and spawn).
-
-### B1. Implement shared-memory + index ranges  (bit-exact)
-**File:** `directlfq/protein_intensity_estimation.py`. **Gain:** estimate stage 8c
-1.75→0.83 s; multi-core now *scales* instead of regressing.
-
-**Design:** intensity matrix → a `multiprocessing.shared_memory` segment (workers
-attach, not pickle); workers get only `(start,end)` protein-index ranges + the
-small `switch` array via the pool initializer; protein/ion names stay in the
-parent and are attached after workers return (no string metadata shipped).
-
-**B1a — imports:** add `from multiprocessing import shared_memory as _shared_memory`.
-
-**B1b — extract a names-independent core** so both sequential and parallel paths
-share it, and expose the >100-ion cut permutation so the parent can reorder names:
-```python
-def calculate_peptide_and_protein_intensities(idx, protein_name, ion_names, peptide_values, num_samples_quadratic, min_nonan):
-    if config.LOG_PROCESSED_PROTEINS and (idx % config.LOG_PROCESSED_PROTEINS_INTERVAL == 0):
-        LOGGER.info(f"lfq-object {idx}")
-    protein_profile, shifted_values, cut_order = _compute_protein_core(peptide_values, num_samples_quadratic, min_nonan)
-    if cut_order is not None:
-        ion_names = ion_names[cut_order]
-    return protein_profile, protein_name, ion_names, shifted_values
-
-def _compute_protein_core(peptide_values, num_samples_quadratic, min_nonan):
-    cut_order = _cut_order(peptide_values, maximum=100)
-    if cut_order is not None:
-        peptide_values = peptide_values[cut_order]
-    summed_pepint = np.nansum(np.asfortranarray(2**peptide_values))   # keep F-order (bit-exact)
-    shifted_values = _normalize_protein_values(peptide_values, num_samples_quadratic)
-    protein_profile = get_protein_profile_from_shifted_peptides(shifted_values, summed_pepint, min_nonan)
-    return protein_profile, shifted_values, cut_order
-
-def _cut_order(peptide_values, maximum=100):
-    if peptide_values.shape[0] <= maximum:
-        return None
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=RuntimeWarning)
-        neg_summed = -np.nansum(peptide_values, axis=1)
-    nan_counts = np.isnan(peptide_values).sum(axis=1)
-    return np.lexsort((neg_summed, nan_counts))[:maximum]   # stable, matches ProtvalCutter order
-```
-(Keep a `_cut_peptide_values(values, names, maximum)` helper that applies
-`_cut_order` to both, for backward compatibility.)
-
-**B1c — worker + pool plumbing** (all module-level so they are picklable / present
-after fork or spawn):
-```python
-def _split_ranges(n_items, n_chunks):
-    edges = np.linspace(0, n_items, n_chunks + 1).astype(int)
-    return [(int(edges[k]), int(edges[k+1])) for k in range(n_chunks) if edges[k] < edges[k+1]]
-
-_PARALLEL_STATE = {}
-
-def _shm_worker_init(shm_name, shape, dtype, switch, num_samples_quadratic, min_nonan):
-    shm = _shared_memory.SharedMemory(name=shm_name)
-    _PARALLEL_STATE.update(shm=shm,   # keep ref so the segment stays mapped
-        arr=np.ndarray(shape, dtype=dtype, buffer=shm.buf),
-        switch=switch, num_samples_quadratic=num_samples_quadratic, min_nonan=min_nonan)
-
-def _shm_worker_range(bounds):
-    lo, hi = bounds
-    st = _PARALLEL_STATE
-    arr, switch = st["arr"], st["switch"]
-    nsq, min_nonan = st["num_samples_quadratic"], st["min_nonan"]
-    return [_compute_protein_core(arr[switch[i]:switch[i+1]], nsq, min_nonan) for i in range(lo, hi)]
-
-def get_list_with_shared_memory(normed_array, switch, protein_names, ion_names, num_samples_quadratic, min_nonan, num_cores):
-    n_proteins = len(switch) - 1
-    shm = _shared_memory.SharedMemory(create=True, size=max(int(normed_array.nbytes), 1))
-    try:
-        buf = np.ndarray(normed_array.shape, dtype=normed_array.dtype, buffer=shm.buf)
-        buf[:] = normed_array
-        bounds = _split_ranges(n_proteins, num_cores * 4)   # 4 chunks/core for load balance
-        pool = multiprocess.Pool(num_cores, initializer=_shm_worker_init,
-            initargs=(shm.name, normed_array.shape, normed_array.dtype, switch, num_samples_quadratic, min_nonan))
-        try:
-            parts = pool.map(_shm_worker_range, bounds)
-        finally:
-            pool.close(); pool.join()
-    finally:
-        shm.close(); shm.unlink()
-    results, idx = [], 0
-    for part in parts:
-        for protein_profile, shifted_values, cut_order in part:
-            start = switch[idx]                         # <-- CRITICAL: index by switch, see gotcha
-            inames = ion_names[start:switch[idx+1]]
-            if cut_order is not None:
-                inames = inames[cut_order]
-            results.append((protein_profile, protein_names[start], inames, shifted_values))
-            idx += 1
-    return results
-```
-
-**B1d — route the top-level dispatcher:**
-```python
-def get_list_of_tuple_w_protein_profiles_and_shifted_peptides(normed_df, num_samples_quadratic, min_nonan, num_cores):
-    num_cores = _resolve_num_cores(num_cores)
-    if num_cores <= 1:
-        spec = get_input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan(normed_df, num_samples_quadratic, min_nonan)
-        return get_list_with_sequential_processing(spec)
-    protein_names = normed_df.index.get_level_values(0).to_numpy()
-    ion_names = normed_df.index.get_level_values(1).to_numpy()
-    normed_array = normed_df.to_numpy()
-    switch = find_nameswitch_indices(protein_names)
-    return get_list_with_shared_memory(normed_array, switch, protein_names, ion_names,
-                                       num_samples_quadratic, min_nonan, num_cores)
-```
-
-> **CRITICAL GOTCHA (cost hours if missed).** `protein_names` and `ion_names` are
-> per-**row** arrays (length = n_ions = 301,528), NOT per-protein. Protein `idx`'s
-> name is `protein_names[switch[idx]]` (its first row), exactly as the sequential
-> spec does with `protein_names[switch[i]]`. Using `protein_names[idx]` silently
-> corrupts both the protein names and the ion table's protein index (it looked
-> "protein max_abs_diff=0" but nan-pattern differed and the ion table was fully
-> wrong). Always index names by `switch[idx]`.
-
-### B2. Fix the default  (behaviour change)
-**File:** same. Add and use `_resolve_num_cores`:
-```python
-def _resolve_num_cores(num_cores):
-    if num_cores is None:
-        return 1     # default = sequential; multi-core is opt-in (num_cores>=2)
-    return num_cores
-```
-**Motivation.** The old default (`None` → all cores via `cpu_count`) was
-counterproductive: the pool never beat sequential, and it used more memory. Per-
-protein work is too cheap to parallelize by default. Sequential is fastest and
-lightest for typical sizes; users with much larger inputs opt into `num_cores>=2`
-and now get a real, bit-exact speedup via the shared-memory path.
-
-**Not done (lower value):** a shared-memory *output* buffer to also eliminate the
-result-side pickle (~40% of the residual IPC — see the `ranges, no ion return`
-row). Results currently still pickle back to the parent.
-
----
-
-## 3. Order, gains, and exactness — summary
-
-| step | file · method(s) | gain | exact? |
-|---|---|---|---|
-| A1 | utils: `_read_wide_tsv`, `index_and_log_transform_input_df` | peak 1c 0.74→0.60 GB | yes |
-| A2 | protein_intensity: `get_ion_intensity_dataframe_from_list_of_shifted_peptides` | −1 ion-matrix copy | yes |
-| A3 | config: `INTENSITY_DTYPE`/`set_intensity_dtype`; utils cast point; lfq_manager `run_lfq(use_float32=)` | (enables A4) | default yes / float32 ~6e-6 |
-| A4 | utils: `_read_wide_tsv` float32 column types | peak 1c 0.60→0.47 GB | default yes / float32 ~6e-6 |
-| B1 | protein_intensity: `_compute_protein_core`, `_cut_order`, `_split_ranges`, `_shm_worker_init`, `_shm_worker_range`, `get_list_with_shared_memory`, `get_list_of_tuple_…`, import shared_memory | estimate 8c 1.75→0.83 s | yes (seq + 2/4/8c) |
-| B2 | protein_intensity: `_resolve_num_cores` | default no longer regresses | n/a (default→sequential) |
-
-**Rejected options (documented so they are not re-attempted):** chunked `to_csv`
-(no memory benefit; pandas already streams); threads / `nogil` kernels (GIL-bound
-per-protein glue; do not scale); larger `starmap` chunksize (not the bottleneck —
-data volume is); a fully-numba-batched estimate that would fold `summed_pepint`
-into numba (`numba.nansum` ≠ numpy F-order `nansum`, breaks bit-exactness).
-
-## 4. Reproduction harnesses (in `benchmarks/`)
-- `optbench.py [save]` — estimate timing + bit-exact check vs reference.
-- `memprofile.py <cores>` — full-pipeline peak RSS/PSS via `/proc` sampling
-  (set env `DLFQ_F32=1` to exercise float32).
-- `explore_parallel.py` — times all multi-core strategies, checks each bit-exact.
-- Companion result write-ups: `MEMORY_PROFILE.md`, `PARALLEL_EXPLORATION.md`.
