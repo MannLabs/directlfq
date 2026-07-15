@@ -8,6 +8,13 @@ pip install pre-commit
 pre-commit install
 ```
 
+If you need to run all tools on all files, because you forget to setup pre-commit hooks
+earlier, you can run:
+
+```
+pre-commit run --all-files
+```
+
 ## Did you find a bug?
 
 * Ensure the bug was not already reported by searching on GitHub under Issues.

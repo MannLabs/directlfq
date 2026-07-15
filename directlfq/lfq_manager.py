@@ -7,15 +7,17 @@ __all__ = [
     "save_run_config",
 ]
 
+import logging
+import os
+import warnings
+
+import pandas as pd
+
+import directlfq
 import directlfq.config as config
 import directlfq.normalization as lfqnorm
 import directlfq.protein_intensity_estimation as lfqprot_estimation
 import directlfq.utils as lfqutils
-import pandas as pd
-import directlfq
-import os
-import logging
-import warnings
 
 warnings.filterwarnings(action="once")
 config.setup_logging()
@@ -112,13 +114,16 @@ def run_lfq(
         deactivate_normalization,
         filename_suffix,
     )
-    save_run_config(outfile_basename, locals())
+    LOGGER.info(f"Output files will be written to {outfile_basename}.")
+    config_saved = save_run_config(outfile_basename, locals())
     save_protein_df(protein_df, outfile_basename)
 
     if config.COMPILE_NORMALIZED_ION_TABLE:
         save_ion_df(ion_df, outfile_basename)
 
     LOGGER.info("Analysis finished!")
+
+    return protein_df, ion_df, config_saved
 
 
 def load_filter_dict_if_given_as_yaml(filter_dict):
@@ -176,6 +181,8 @@ def save_run_config(outfile_basename, kwargs):
         df_configs.to_csv(f"{outfile_basename}.run_config.tsv", sep="\t")
     except Exception as e:
         LOGGER.error(f"Could not save run config: {e}")
+
+    return simple_kwargs
 
 
 def is_simple_data(value):

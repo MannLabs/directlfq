@@ -1,17 +1,17 @@
 #!python
 
 
+import contextlib
+import copy
+import json
+import os
+
 # external
 import click
-import os
-import json
-import copy
-import contextlib
 
 # local
 import directlfq
 import directlfq.utils
-
 
 with open(f"{directlfq.utils.CONFIG_PATH}/interface_parameters.json") as in_file:
     INTERFACE_PARAMETERS = json.load(in_file)
