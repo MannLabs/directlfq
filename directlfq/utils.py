@@ -353,7 +353,7 @@ def write_chunk_to_file(chunk, filepath, write_header):
 
 def index_and_log_transform_input_df(data_df):
     data_df = data_df.set_index([config.PROTEIN_ID, config.QUANT_ID])
-    values = data_df.to_numpy(dtype=np.float64, copy=True)
+    values = data_df.to_numpy(dtype=config.INTENSITY_DTYPE, copy=True)
     values[values == 0] = np.nan
     np.log2(values, out=values)
     return pd.DataFrame(values, index=data_df.index, columns=data_df.columns)

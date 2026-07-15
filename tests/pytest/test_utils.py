@@ -2,10 +2,18 @@
 
 import numpy as np
 import pandas as pd
+import pytest
 from pandas.testing import assert_frame_equal
 
 import directlfq.config as config
 import directlfq.utils as lfqutils
+
+
+@pytest.fixture
+def _restore_intensity_dtype():
+    original = config.INTENSITY_DTYPE
+    yield
+    config.INTENSITY_DTYPE = original
 
 
 # ============================================================================
@@ -74,3 +82,22 @@ def test_index_and_log_transform_does_not_mutate_input_df():
 
     # then - the caller's frame is untouched
     assert_frame_equal(df, df_before)
+
+
+def test_index_and_log_transform_follows_config_intensity_dtype(
+    _restore_intensity_dtype,
+):  # noqa: ARG001
+    # given - the opt-in float32 dtype is selected
+    df = _wide_input_df({"S1": [1.0, 4.0, 2.0], "S2": [8.0, 16.0, 32.0]})
+    config.INTENSITY_DTYPE = np.float32
+
+    # when
+    result = lfqutils.index_and_log_transform_input_df(df)
+
+    # then - output is float32 and stays close to the float64 log2 values
+    assert all(result.dtypes == np.float32)
+    config.INTENSITY_DTYPE = np.float64
+    expected_float64 = lfqutils.index_and_log_transform_input_df(df)
+    assert np.allclose(
+        result.to_numpy(), expected_float64.to_numpy(), rtol=1e-6, equal_nan=True
+    )

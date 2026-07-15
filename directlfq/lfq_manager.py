@@ -40,6 +40,7 @@ def run_lfq(
     protein_id="protein",
     quant_id="ion",
     compile_normalized_ion_table=True,
+    use_float32=False,
 ):
     """Run the directLFQ pipeline on a given input file. The input file is expected to contain ion intensities. The output is a table containing protein intensities.
 
@@ -59,6 +60,7 @@ def run_lfq(
     config.set_compile_normalized_ion_table(
         compile_normalized_ion_table=compile_normalized_ion_table
     )
+    config.set_intensity_dtype(use_float32=use_float32)
     config.check_wether_to_copy_numpy_arrays_derived_from_pandas()
 
     LOGGER.info("Starting directLFQ analysis.")
