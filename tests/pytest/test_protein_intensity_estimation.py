@@ -1,7 +1,9 @@
 """Tests for directlfq.protein_intensity_estimation, salvaged from nbdev_nbs/03_protein_intensity_estimation.ipynb."""
 
 import numpy as np
+import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal
 
 import directlfq.protein_intensity_estimation as lfq_protint
 import directlfq.test_utils as lfq_testutils
@@ -268,3 +270,40 @@ def test_single_sample_values_are_kept_and_protein_retained():
     assert profile is not None
     assert name == "protA"
     assert list(ions) == ["ion0", "ion1", "ion2"]
+
+
+# ============================================================================
+# get_ion_intensity_dataframe_from_list_of_shifted_peptides (memory optim. A2)
+# ============================================================================
+# Contract locked in before switching the ion-table nan_to_num to in-place: each
+# per-protein (profile, name, ion_names, shifted_values) tuple contributes its
+# ions to one (protein, ion)-indexed frame; shifted log2 values are raised to
+# 2**x back into linear space and NaNs are replaced with 0.
+
+
+def test_ion_intensity_dataframe_delogs_values_and_zeroes_nans():
+    # given - two proteins; shifted values are in log2 space, one NaN per protein
+    tuples = [
+        (
+            None,
+            "protA",
+            np.array(["ion0", "ion1"]),
+            np.array([[1.0, 2.0], [3.0, np.nan]]),
+        ),
+        (None, "protB", np.array(["ion2"]), np.array([[0.0, np.nan]])),
+    ]
+
+    # when
+    result = lfq_protint.get_ion_intensity_dataframe_from_list_of_shifted_peptides(
+        tuples, column_names=["S1", "S2"]
+    )
+
+    # then - 2**x back to linear space, NaN -> 0, indexed by (protein, ion)
+    expected = pd.DataFrame(
+        {"S1": [2.0, 8.0, 1.0], "S2": [4.0, 0.0, 0.0]},
+        index=pd.MultiIndex.from_arrays(
+            [["protA", "protA", "protB"], ["ion0", "ion1", "ion2"]],
+            names=["protein", "ion"],
+        ),
+    )
+    assert_frame_equal(result, expected)
