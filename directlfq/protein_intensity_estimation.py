@@ -249,7 +249,7 @@ def get_ion_intensity_dataframe_from_list_of_shifted_peptides(
         ion_vals.append(shifted_values)
         protein_names.extend([protein_name] * len(ion_names_arr))
     merged_ions = 2 ** np.concatenate(ion_vals)
-    merged_ions = np.nan_to_num(merged_ions)
+    np.nan_to_num(merged_ions, copy=False)
     ion_df = pd.DataFrame(merged_ions)
     ion_df.columns = column_names
     ion_df["ion"] = ion_names
