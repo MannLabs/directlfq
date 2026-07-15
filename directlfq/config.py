@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 import pandas as pd
 
 
@@ -33,6 +34,15 @@ def set_global_protein_and_ion_id(protein_id="protein", quant_id="ion"):
     global QUANT_ID
     PROTEIN_ID = protein_id
     QUANT_ID = quant_id
+
+
+##########################
+INTENSITY_DTYPE = np.float64
+
+
+def set_intensity_dtype(use_float32: bool = False) -> None:
+    global INTENSITY_DTYPE
+    INTENSITY_DTYPE = np.float32 if use_float32 else np.float64
 
 
 ##########################
