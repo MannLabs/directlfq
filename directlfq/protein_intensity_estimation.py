@@ -168,6 +168,8 @@ def get_list_with_multiprocessing(
         input_specification_tuplelist_idx__df__num_samples_quadratic__min_nonan,
     )
     pool.close()
+    # Without join, workers still alive at garbage collection are terminated with SIGTERM.
+    pool.join()
     return list_of_tuple_w_protein_profiles_and_shifted_peptides
 
 

@@ -157,3 +157,47 @@ def test_nameswitch_indices_are_recovered_correctly():
 
     assert (array[start_indices[3] : start_indices[4]] == "d").all()
     assert len(array[start_indices[3] : start_indices[4]]) == 1
+
+
+def test_multiprocessing_pool_is_joined(monkeypatch):
+    # Workers still alive when the pool is garbage collected are terminated with SIGTERM.
+    # A SIGTERM handler they inherited from the parent (e.g. the .NET runtime loaded via
+    # pythonnet) can then take the parent process down as well, so the pool must be joined.
+    calls = []
+    create_pool = lfq_protint.get_configured_multiprocessing_pool
+
+    def create_recording_pool(num_cores):
+        pool = create_pool(num_cores)
+        for method in ("close", "join", "terminate"):
+            original = getattr(pool, method)
+
+            def record(original=original, method=method):
+                calls.append(method)
+                return original()
+
+            setattr(pool, method, record)
+        return pool
+
+    monkeypatch.setattr(
+        lfq_protint, "get_configured_multiprocessing_pool", create_recording_pool
+    )
+    input_specification = [
+        (
+            idx,
+            pd.DataFrame(
+                np.full((3, 2), 20.0),
+                index=pd.MultiIndex.from_tuples(
+                    [(f"prot{idx}", f"ion{ion}") for ion in range(3)],
+                    names=["protein", "ion"],
+                ),
+            ),
+            100,
+            1,
+        )
+        for idx in range(10)
+    ]
+
+    result = lfq_protint.get_list_with_multiprocessing(input_specification, 2)
+
+    assert len(result) == len(input_specification)
+    assert calls == ["close", "join"]
